@@ -8,9 +8,9 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/Xquik-dev/x-twitter-scraper-go"
+	"github.com/Xquik-dev/x-twitter-scraper-go/option"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/stainless-sdks/x-twitter-scraper-go"
-	"github.com/stainless-sdks/x-twitter-scraper-go/option"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/apijson"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/logging"
 )
