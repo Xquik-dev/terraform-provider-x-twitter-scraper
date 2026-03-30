@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package x_dm
+package x_profile
 
 import (
 	"context"
@@ -16,23 +16,23 @@ import (
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ resource.ResourceWithConfigure = (*XDmResource)(nil)
-var _ resource.ResourceWithModifyPlan = (*XDmResource)(nil)
+var _ resource.ResourceWithConfigure = (*XProfileResource)(nil)
+var _ resource.ResourceWithModifyPlan = (*XProfileResource)(nil)
 
 func NewResource() resource.Resource {
-	return &XDmResource{}
+	return &XProfileResource{}
 }
 
-// XDmResource defines the resource implementation.
-type XDmResource struct {
+// XProfileResource defines the resource implementation.
+type XProfileResource struct {
 	client *xtwitterscraper.Client
 }
 
-func (r *XDmResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_x_dm"
+func (r *XProfileResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_x_profile"
 }
 
-func (r *XDmResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *XProfileResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -51,8 +51,8 @@ func (r *XDmResource) Configure(ctx context.Context, req resource.ConfigureReque
 	r.client = client
 }
 
-func (r *XDmResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data *XDmModel
+func (r *XProfileResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data *XProfileModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -66,10 +66,9 @@ func (r *XDmResource) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 	res := new(http.Response)
-	_, err = r.client.X.Dm.Update(
+	_, err = r.client.X.Profile.Update(
 		ctx,
-		data.UserID.ValueString(),
-		xtwitterscraper.XDmUpdateParams{},
+		xtwitterscraper.XProfileUpdateParams{},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -88,8 +87,8 @@ func (r *XDmResource) Create(ctx context.Context, req resource.CreateRequest, re
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *XDmResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data *XDmModel
+func (r *XProfileResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data *XProfileModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -97,7 +96,7 @@ func (r *XDmResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
-	var state *XDmModel
+	var state *XProfileModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
@@ -111,10 +110,9 @@ func (r *XDmResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 	res := new(http.Response)
-	_, err = r.client.X.Dm.Update(
+	_, err = r.client.X.Profile.Update(
 		ctx,
-		data.UserID.ValueString(),
-		xtwitterscraper.XDmUpdateParams{},
+		xtwitterscraper.XProfileUpdateParams{},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -133,15 +131,15 @@ func (r *XDmResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *XDmResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *XProfileResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 
 }
 
-func (r *XDmResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *XProfileResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 
 }
 
-func (r *XDmResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+func (r *XProfileResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.State.Raw.IsNull() {
 		resp.Diagnostics.AddWarning(
 			"Resource Destruction Considerations",

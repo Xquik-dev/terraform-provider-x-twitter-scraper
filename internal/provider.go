@@ -15,7 +15,6 @@ import (
 	"github.com/stainless-sdks/x-twitter-scraper-go/option"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/account"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/api_key"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/bot_platform_link"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/compose"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/draft"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/draw"
@@ -30,8 +29,7 @@ import (
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_account"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_community"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_community_join"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_dm"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_media"
+	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_profile"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_tweet"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_tweet_like"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_tweet_retweet"
@@ -134,12 +132,10 @@ func (p *XTwitterScraperProvider) Resources(ctx context.Context) []func() resour
 		x_tweet_like.NewResource,
 		x_tweet_retweet.NewResource,
 		x_user_follow.NewResource,
-		x_dm.NewResource,
-		x_media.NewResource,
+		x_profile.NewResource,
 		x_community.NewResource,
 		x_community_join.NewResource,
 		x_account.NewResource,
-		bot_platform_link.NewResource,
 		support_ticket.NewResource,
 	}
 }
