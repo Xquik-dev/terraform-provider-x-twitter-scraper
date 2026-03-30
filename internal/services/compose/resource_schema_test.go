@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/compose"
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/test_helpers"
+	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/compose"
+	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/test_helpers"
 )
 
 func TestComposeModelSchemaParity(t *testing.T) {
