@@ -1,6 +1,6 @@
 # X Twitter Scraper Terraform Provider
 
-The [X Twitter Scraper Terraform provider](https://registry.terraform.io/providers/stainless-sdks/x-twitter-scraper/latest/docs) provides convenient access to
+The [X Twitter Scraper Terraform provider](https://registry.terraform.io/providers/Xquik-dev/x-twitter-scraper/latest/docs) provides convenient access to
 the [X Twitter Scraper REST API](https://xquik.com) from Terraform.
 
 It is generated with [Stainless](https://www.stainless.com/).
@@ -14,12 +14,14 @@ on Hashicorp's website.
 
 Add the following to your `main.tf` file:
 
+<!-- x-release-please-start-version -->
+
 ```hcl
 # Declare the provider and version
 terraform {
   required_providers {
     x-twitter-scraper = {
-      source  = "stainless-sdks/x-twitter-scraper"
+      source  = "Xquik-dev/x-twitter-scraper"
       version = "~> 0.0.1"
     }
   }
@@ -38,10 +40,12 @@ resource "x-twitter-scraper_x_tweet" "example_x_tweet" {
 }
 ```
 
+<!-- x-release-please-end -->
+
 Initialize your project by running `terraform init` in the directory.
 
 Additional examples can be found in the [./examples](./examples) folder within this repository, and you can
-refer to the full documentation on [the Terraform Registry](https://registry.terraform.io/providers/stainless-sdks/x-twitter-scraper/latest/docs).
+refer to the full documentation on [the Terraform Registry](https://registry.terraform.io/providers/Xquik-dev/x-twitter-scraper/latest/docs).
 
 ### Provider Options
 
@@ -62,7 +66,7 @@ This package generally follows [SemVer](https://semver.org/spec/v2.0.0.html) con
 
 We take backwards-compatibility seriously and work hard to ensure you can rely on a smooth upgrade experience.
 
-We are keen for your feedback; please open an [issue](https://www.github.com/stainless-sdks/x-twitter-scraper-terraform/issues) with questions, bugs, or suggestions.
+We are keen for your feedback; please open an [issue](https://www.github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues) with questions, bugs, or suggestions.
 
 ## Contributing
 
