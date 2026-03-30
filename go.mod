@@ -11,7 +11,7 @@ require (
 	github.com/hashicorp/terraform-plugin-framework-validators v0.17.0
 	github.com/hashicorp/terraform-plugin-go v0.28.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
-	github.com/stainless-sdks/x-twitter-scraper-go v0.0.0-20260330004330-de5dcd6df96c
+	github.com/stainless-sdks/x-twitter-scraper-go v0.0.0-20260330004914-c9da1484f10b
 	github.com/tidwall/gjson v1.18.0
 	github.com/tidwall/sjson v1.2.5
 )
