@@ -33,13 +33,8 @@ provider "x-twitter-scraper" {
 }
 
 # Configure a resource
-resource "x-twitter-scraper_integration" "example_integration" {
-  config = {
-    chat_id = "chatId"
-  }
-  event_types = ["tweet.new"]
-  name = "name"
-  type = "telegram"
+resource "x-twitter-scraper_x_tweet" "example_x_tweet" {
+
 }
 ```
 
