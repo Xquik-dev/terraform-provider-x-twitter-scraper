@@ -7,8 +7,8 @@ import (
 	"flag"
 	"log"
 
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal"
 )
 
 var (
@@ -22,7 +22,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "registry.terraform.io/stainless-sdks/x-twitter-scraper",
+		Address: "registry.terraform.io/Xquik-dev/x-twitter-scraper",
 		Debug:   debug,
 	}
 
