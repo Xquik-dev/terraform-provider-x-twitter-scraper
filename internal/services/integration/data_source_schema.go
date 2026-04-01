@@ -52,6 +52,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"config": schema.MapAttribute{
+				Description: "Integration config — shape varies by type (JSON)",
 				Computed:    true,
 				CustomType:  customfield.NewMapType[jsontypes.Normalized](ctx),
 				ElementType: jsontypes.NormalizedType{},
@@ -74,6 +75,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				ElementType: types.StringType,
 			},
 			"filters": schema.MapAttribute{
+				Description: "Event filter rules (JSON)",
 				Computed:    true,
 				CustomType:  customfield.NewMapType[jsontypes.Normalized](ctx),
 				ElementType: jsontypes.NormalizedType{},

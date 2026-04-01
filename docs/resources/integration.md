@@ -24,9 +24,9 @@ Push notification integrations (Telegram)
 
 ### Optional
 
-- `filters` (Map of String)
+- `filters` (Map of String) Event filter rules (JSON)
 - `is_active` (Boolean)
-- `message_template` (Map of String)
+- `message_template` (Map of String) Custom message template (JSON)
 - `scope_all_monitors` (Boolean)
 - `silent_push` (Boolean)
 

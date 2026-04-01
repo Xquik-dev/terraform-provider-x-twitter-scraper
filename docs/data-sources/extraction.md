@@ -24,6 +24,6 @@ Bulk data extraction (20 tool types)
 
 - `has_more` (Boolean)
 - `id` (String) The ID of this resource.
-- `job` (Map of String)
+- `job` (Map of String) Extraction job metadata — shape varies by tool type (JSON)
 - `next_cursor` (String)
 - `results` (List of Map of String)
