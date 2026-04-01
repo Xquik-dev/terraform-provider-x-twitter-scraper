@@ -3,7 +3,7 @@ module github.com/Xquik-dev/terraform-provider-x-twitter-scraper
 go 1.24.0
 
 require (
-	github.com/Xquik-dev/x-twitter-scraper-go v0.1.0
+	github.com/Xquik-dev/x-twitter-scraper-go v0.2.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/hashicorp/terraform-plugin-docs v0.24.0
 	github.com/hashicorp/terraform-plugin-framework v1.15.0
