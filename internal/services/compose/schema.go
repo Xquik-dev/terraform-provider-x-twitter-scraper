@@ -5,6 +5,7 @@ package compose
 import (
 	"context"
 
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -12,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var _ resource.ResourceWithConfigValidators = (*ComposeResource)(nil)
@@ -96,6 +98,24 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Description:   "Tweet topic (compose, refine)",
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"feedback": schema.StringAttribute{
+				Description: "AI feedback on the draft",
+				Computed:    true,
+			},
+			"score": schema.Float64Attribute{
+				Description: "Engagement score (0-100)",
+				Computed:    true,
+			},
+			"text": schema.StringAttribute{
+				Description: "Generated or refined tweet text",
+				Computed:    true,
+			},
+			"suggestions": schema.ListAttribute{
+				Description: "Improvement suggestions",
+				Computed:    true,
+				CustomType:  customfield.NewListType[types.String](ctx),
+				ElementType: types.StringType,
 			},
 		},
 	}
