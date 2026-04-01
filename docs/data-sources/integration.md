@@ -17,10 +17,10 @@ Push notification integrations (Telegram)
 
 ### Read-Only
 
-- `config` (Map of String)
+- `config` (Map of String) Integration config — shape varies by type (JSON)
 - `created_at` (String)
 - `event_types` (List of String)
-- `filters` (Map of String)
+- `filters` (Map of String) Event filter rules (JSON)
 - `id` (String) The ID of this resource.
 - `is_active` (Boolean)
 - `message_template` (String)

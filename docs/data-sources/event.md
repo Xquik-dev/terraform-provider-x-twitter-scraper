@@ -17,7 +17,7 @@ Activity events from monitored accounts
 
 ### Read-Only
 
-- `data` (Map of String)
+- `data` (Map of String) Event payload — shape varies by event type (JSON)
 - `id` (String) The ID of this resource.
 - `monitor_id` (String)
 - `occurred_at` (String)

@@ -34,3 +34,10 @@ Available values: "photo", "video", "none".
 - `style_username` (String) Cached style username for voice matching (compose)
 - `tone` (String) Desired tone (refine)
 - `topic` (String) Tweet topic (compose, refine)
+
+### Read-Only
+
+- `feedback` (String) AI feedback on the draft
+- `score` (Number) Engagement score (0-100)
+- `suggestions` (List of String) Improvement suggestions
+- `text` (String) Generated or refined tweet text

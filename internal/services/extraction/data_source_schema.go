@@ -41,6 +41,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed: true,
 			},
 			"job": schema.MapAttribute{
+				Description: "Extraction job metadata — shape varies by tool type (JSON)",
 				Computed:    true,
 				CustomType:  customfield.NewMapType[jsontypes.Normalized](ctx),
 				ElementType: jsontypes.NormalizedType{},

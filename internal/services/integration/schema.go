@@ -75,10 +75,12 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional: true,
 			},
 			"filters": schema.MapAttribute{
+				Description: "Event filter rules (JSON)",
 				Optional:    true,
 				ElementType: jsontypes.NormalizedType{},
 			},
 			"message_template": schema.MapAttribute{
+				Description: "Custom message template (JSON)",
 				Optional:    true,
 				ElementType: jsontypes.NormalizedType{},
 			},

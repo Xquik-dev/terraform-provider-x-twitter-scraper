@@ -51,6 +51,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed: true,
 			},
 			"data": schema.MapAttribute{
+				Description: "Event payload — shape varies by event type (JSON)",
 				Computed:    true,
 				CustomType:  customfield.NewMapType[jsontypes.Normalized](ctx),
 				ElementType: jsontypes.NormalizedType{},
