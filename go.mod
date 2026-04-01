@@ -1,4 +1,4 @@
-module github.com/stainless-sdks/x-twitter-scraper-terraform
+module github.com/Xquik-dev/terraform-provider-x-twitter-scraper
 
 go 1.24.0
 
