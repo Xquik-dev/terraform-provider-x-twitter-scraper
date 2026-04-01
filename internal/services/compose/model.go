@@ -3,8 +3,8 @@
 package compose
 
 import (
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/apijson"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/apijson"
 )
 
 type ComposeModel struct {
