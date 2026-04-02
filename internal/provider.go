@@ -15,7 +15,6 @@ import (
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/extraction"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/integration"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/monitor"
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/style"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/subscribe"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/support_ticket"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/webhook"
@@ -24,10 +23,6 @@ import (
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_community_join"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_profile"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_tweet"
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_tweet_like"
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_tweet_retweet"
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_user"
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_user_follow"
 	"github.com/Xquik-dev/x-twitter-scraper-go"
 	"github.com/Xquik-dev/x-twitter-scraper-go/option"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -124,14 +119,10 @@ func (p *XTwitterScraperProvider) Resources(ctx context.Context) []func() resour
 		subscribe.NewResource,
 		compose.NewResource,
 		draft.NewResource,
-		style.NewResource,
 		monitor.NewResource,
 		webhook.NewResource,
 		integration.NewResource,
 		x_tweet.NewResource,
-		x_tweet_like.NewResource,
-		x_tweet_retweet.NewResource,
-		x_user_follow.NewResource,
 		x_profile.NewResource,
 		x_community.NewResource,
 		x_community_join.NewResource,
@@ -144,14 +135,11 @@ func (p *XTwitterScraperProvider) DataSources(ctx context.Context) []func() data
 	return []func() datasource.DataSource{
 		account.NewAccountDataSource,
 		draft.NewDraftDataSource,
-		style.NewStyleDataSource,
 		monitor.NewMonitorDataSource,
 		event.NewEventDataSource,
 		extraction.NewExtractionDataSource,
 		draw.NewDrawDataSource,
 		integration.NewIntegrationDataSource,
-		x_tweet.NewXTweetDataSource,
-		x_user.NewXUserDataSource,
 		x_account.NewXAccountDataSource,
 		support_ticket.NewSupportTicketDataSource,
 	}

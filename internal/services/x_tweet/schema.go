@@ -5,7 +5,6 @@ package x_tweet
 import (
 	"context"
 
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -20,10 +19,6 @@ var _ resource.ResourceWithConfigValidators = (*XTweetResource)(nil)
 func ResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"tweet_id": schema.StringAttribute{
-				Optional:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-			},
 			"account": schema.StringAttribute{
 				Description:   "X account (@username or account ID)",
 				Required:      true,
@@ -57,59 +52,8 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			"success": schema.BoolAttribute{
 				Computed: true,
 			},
-			"author": schema.SingleNestedAttribute{
-				Computed:   true,
-				CustomType: customfield.NewNestedObjectType[XTweetAuthorModel](ctx),
-				Attributes: map[string]schema.Attribute{
-					"id": schema.StringAttribute{
-						Computed: true,
-					},
-					"followers": schema.Int64Attribute{
-						Computed: true,
-					},
-					"username": schema.StringAttribute{
-						Computed: true,
-					},
-					"verified": schema.BoolAttribute{
-						Computed: true,
-					},
-					"profile_picture": schema.StringAttribute{
-						Computed: true,
-					},
-				},
-			},
-			"tweet": schema.SingleNestedAttribute{
-				Computed:   true,
-				CustomType: customfield.NewNestedObjectType[XTweetTweetModel](ctx),
-				Attributes: map[string]schema.Attribute{
-					"id": schema.StringAttribute{
-						Computed: true,
-					},
-					"bookmark_count": schema.Int64Attribute{
-						Computed: true,
-					},
-					"like_count": schema.Int64Attribute{
-						Computed: true,
-					},
-					"quote_count": schema.Int64Attribute{
-						Computed: true,
-					},
-					"reply_count": schema.Int64Attribute{
-						Computed: true,
-					},
-					"retweet_count": schema.Int64Attribute{
-						Computed: true,
-					},
-					"text": schema.StringAttribute{
-						Computed: true,
-					},
-					"view_count": schema.Int64Attribute{
-						Computed: true,
-					},
-					"created_at": schema.StringAttribute{
-						Computed: true,
-					},
-				},
+			"tweet_id": schema.StringAttribute{
+				Computed: true,
 			},
 		},
 	}
