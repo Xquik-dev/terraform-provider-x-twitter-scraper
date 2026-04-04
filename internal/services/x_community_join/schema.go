@@ -15,7 +15,7 @@ var _ resource.ResourceWithConfigValidators = (*XCommunityJoinResource)(nil)
 
 func ResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "X write actions (tweets, likes, follows, DMs)",
+		MarkdownDescription: "X write actions (tweets, likes, follows, DMs)",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Required:      true,

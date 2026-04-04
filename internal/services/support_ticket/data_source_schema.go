@@ -15,7 +15,7 @@ var _ datasource.DataSourceWithConfigValidators = (*SupportTicketDataSource)(nil
 
 func DataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Support ticket management",
+		MarkdownDescription: "Support ticket management",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Required: true,

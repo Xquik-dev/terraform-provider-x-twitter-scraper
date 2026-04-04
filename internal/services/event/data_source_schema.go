@@ -18,7 +18,7 @@ var _ datasource.DataSourceWithConfigValidators = (*EventDataSource)(nil)
 
 func DataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Activity events from monitored accounts",
+		MarkdownDescription: "Activity events from monitored accounts",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Required: true,

@@ -15,7 +15,7 @@ var _ resource.ResourceWithConfigValidators = (*SubscribeResource)(nil)
 
 func ResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Subscription & billing",
+		MarkdownDescription: "Subscription & billing",
 		Attributes: map[string]schema.Attribute{
 			"message": schema.StringAttribute{
 				Computed: true,

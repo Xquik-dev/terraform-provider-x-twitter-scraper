@@ -18,7 +18,7 @@ var _ datasource.DataSourceWithConfigValidators = (*ExtractionDataSource)(nil)
 
 func DataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Bulk data extraction (20 tool types)",
+		MarkdownDescription: "Bulk data extraction (20 tool types)",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Required: true,

@@ -20,7 +20,7 @@ var _ resource.ResourceWithConfigValidators = (*ComposeResource)(nil)
 
 func ResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Tweet composition, drafts, writing styles & radar",
+		MarkdownDescription: "Tweet composition, drafts, writing styles & radar",
 		Attributes: map[string]schema.Attribute{
 			"step": schema.StringAttribute{
 				Description: "Workflow step\nAvailable values: \"compose\", \"refine\", \"score\".",
