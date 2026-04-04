@@ -16,7 +16,7 @@ var _ resource.ResourceWithConfigValidators = (*APIKeyResource)(nil)
 
 func ResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "API key management (session auth only)",
+		MarkdownDescription: "API key management (session auth only)",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:      true,

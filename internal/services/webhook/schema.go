@@ -20,7 +20,7 @@ var _ resource.ResourceWithConfigValidators = (*WebhookResource)(nil)
 
 func ResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Webhook endpoint management & delivery",
+		MarkdownDescription: "Webhook endpoint management & delivery",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:      true,

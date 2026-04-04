@@ -14,7 +14,7 @@ var _ datasource.DataSourceWithConfigValidators = (*XAccountDataSource)(nil)
 
 func DataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Connected X account management",
+		MarkdownDescription: "Connected X account management",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Required: true,

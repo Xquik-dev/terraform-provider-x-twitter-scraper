@@ -16,7 +16,7 @@ var _ resource.ResourceWithConfigValidators = (*XAccountResource)(nil)
 
 func ResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Connected X account management",
+		MarkdownDescription: "Connected X account management",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:      true,

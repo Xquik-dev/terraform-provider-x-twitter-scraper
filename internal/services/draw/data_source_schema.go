@@ -15,7 +15,7 @@ var _ datasource.DataSourceWithConfigValidators = (*DrawDataSource)(nil)
 
 func DataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Giveaway draws from tweet replies",
+		MarkdownDescription: "Giveaway draws from tweet replies",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Required: true,
