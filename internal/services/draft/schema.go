@@ -18,7 +18,7 @@ var _ resource.ResourceWithConfigValidators = (*DraftResource)(nil)
 
 func ResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Tweet composition, drafts, writing styles & radar",
+		MarkdownDescription: "Tweet composition, drafts, writing styles & radar",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:      true,

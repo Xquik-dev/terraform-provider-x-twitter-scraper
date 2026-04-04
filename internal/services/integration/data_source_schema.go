@@ -20,7 +20,7 @@ var _ datasource.DataSourceWithConfigValidators = (*IntegrationDataSource)(nil)
 
 func DataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Push notification integrations (Telegram)",
+		MarkdownDescription: "Push notification integrations (Telegram)",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Required: true,

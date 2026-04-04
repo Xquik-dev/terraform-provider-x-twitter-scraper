@@ -17,7 +17,7 @@ var _ datasource.DataSourceWithConfigValidators = (*AccountDataSource)(nil)
 
 func DataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Account info & settings",
+		MarkdownDescription: "Account info & settings",
 		Attributes: map[string]schema.Attribute{
 			"monitors_allowed": schema.Int64Attribute{
 				Computed: true,

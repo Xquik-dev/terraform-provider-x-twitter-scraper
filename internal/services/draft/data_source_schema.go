@@ -14,7 +14,7 @@ var _ datasource.DataSourceWithConfigValidators = (*DraftDataSource)(nil)
 
 func DataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Tweet composition, drafts, writing styles & radar",
+		MarkdownDescription: "Tweet composition, drafts, writing styles & radar",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Required: true,

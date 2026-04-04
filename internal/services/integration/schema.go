@@ -22,7 +22,7 @@ var _ resource.ResourceWithConfigValidators = (*IntegrationResource)(nil)
 
 func ResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Push notification integrations (Telegram)",
+		MarkdownDescription: "Push notification integrations (Telegram)",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:      true,
