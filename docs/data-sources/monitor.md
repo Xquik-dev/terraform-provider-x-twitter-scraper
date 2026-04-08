@@ -18,7 +18,7 @@ Real-time X account monitoring
 ### Read-Only
 
 - `created_at` (String)
-- `event_types` (List of String)
+- `event_types` (List of String) Array of event types to subscribe to.
 - `id` (String) The ID of this resource.
 - `is_active` (Boolean)
 - `username` (String)

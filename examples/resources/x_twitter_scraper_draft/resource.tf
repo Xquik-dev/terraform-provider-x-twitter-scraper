@@ -1,5 +1,5 @@
 resource "x-twitter-scraper_draft" "example_draft" {
-  text = "text"
+  text = "AI is the future of productivity"
   goal = "engagement"
-  topic = "topic"
+  topic = "AI trends"
 }

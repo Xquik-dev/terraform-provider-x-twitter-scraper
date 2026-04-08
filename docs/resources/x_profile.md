@@ -17,7 +17,7 @@ X write actions (tweets, likes, follows, DMs)
 
 ### Required
 
-- `account` (String) X account (@username or account ID)
+- `account` (String) X account (@username or ID) to update profile
 
 ### Optional
 

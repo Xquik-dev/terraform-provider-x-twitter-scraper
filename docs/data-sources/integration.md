@@ -19,7 +19,7 @@ Push notification integrations (Telegram)
 
 - `config` (Map of String) Integration config — shape varies by type (JSON)
 - `created_at` (String)
-- `event_types` (List of String)
+- `event_types` (List of String) Array of event types to subscribe to.
 - `filters` (Map of String) Event filter rules (JSON)
 - `id` (String) The ID of this resource.
 - `is_active` (Boolean)

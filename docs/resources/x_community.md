@@ -17,7 +17,7 @@ description: |-
 
 ### Required
 
-- `account` (String) X account (@username or account ID)
+- `account` (String) X account (@username or ID) creating the community
 - `name` (String) Community name
 
 ### Optional

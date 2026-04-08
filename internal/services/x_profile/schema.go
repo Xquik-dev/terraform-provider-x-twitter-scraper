@@ -16,7 +16,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 		MarkdownDescription: "X write actions (tweets, likes, follows, DMs)",
 		Attributes: map[string]schema.Attribute{
 			"account": schema.StringAttribute{
-				Description: "X account (@username or account ID)",
+				Description: "X account (@username or ID) to update profile",
 				Required:    true,
 			},
 			"description": schema.StringAttribute{

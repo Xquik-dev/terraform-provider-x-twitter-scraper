@@ -58,7 +58,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				ElementType: jsontypes.NormalizedType{},
 			},
 			"event_types": schema.ListAttribute{
-				Computed: true,
+				Description: "Array of event types to subscribe to.",
+				Computed:    true,
 				Validators: []validator.List{
 					listvalidator.ValueStringsAre(
 						stringvalidator.OneOfCaseInsensitive(
