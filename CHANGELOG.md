@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.3.0 (2026-04-08)
+
+Full Changelog: [v0.2.0...v0.3.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.2.0...v0.3.0)
+
+### Features
+
+* add per-resource api permissions to schema description ([615b2bb](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/615b2bbfd03c87ccd674e055c83baebb879cf11d))
+* **api:** api update ([895b19c](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/895b19c9504a039c80202a907466adec797de690))
+* **api:** api update ([ba0d3b5](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/ba0d3b59d1ef4469361476fc720ce3d6237c8d28))
+* **api:** api update ([e4afc9f](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/e4afc9f18d5d8b96c6bd91edb0e2f989eea22eeb))
+
+
+### Bug Fixes
+
+* **ci:** in custom setup-go, pass through go-version and cache-dependency-path ([cde8333](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/cde8333cacabd7efbff02fcd928ce9c89cfb19ad))
+* fall back to main branch if linking fails in CI ([f00c66e](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/f00c66e8099c7246c4588d26dc14ee5668b9c9e1))
+* fix quoting typo ([4365ec3](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/4365ec308fdcf683477c0eccdcd12ab3c2fc0cdf))
+
 ## 0.2.0 (2026-04-01)
 
 Full Changelog: [v0.1.0...v0.2.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.1.0...v0.2.0)
