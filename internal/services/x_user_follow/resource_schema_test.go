@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_user_follow"
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/test_helpers"
+	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_user_follow"
+	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/test_helpers"
 )
 
 func TestXUserFollowModelSchemaParity(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/importpath"
+	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/importpath"
 )
 
 func TestParseID(t *testing.T) {
