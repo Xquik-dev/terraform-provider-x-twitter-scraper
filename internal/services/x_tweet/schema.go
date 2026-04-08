@@ -5,6 +5,7 @@ package x_tweet
 import (
 	"context"
 
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -15,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/customfield"
 )
 
 var _ resource.ResourceWithConfigValidators = (*XTweetResource)(nil)

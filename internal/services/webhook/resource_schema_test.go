@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/webhook"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/test_helpers"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/webhook"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/test_helpers"
 )
 
 func TestWebhookModelSchemaParity(t *testing.T) {

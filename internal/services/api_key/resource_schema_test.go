@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/api_key"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/test_helpers"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/api_key"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/test_helpers"
 )
 
 func TestAPIKeyModelSchemaParity(t *testing.T) {

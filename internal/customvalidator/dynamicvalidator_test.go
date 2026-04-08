@@ -2,7 +2,7 @@ package customvalidator_test
 
 import (
 	"context"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/customvalidator"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/customvalidator"
 	"math/big"
 	"testing"
 
