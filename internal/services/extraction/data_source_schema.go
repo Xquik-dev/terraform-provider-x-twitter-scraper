@@ -24,12 +24,13 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Required: true,
 			},
 			"after": schema.StringAttribute{
-				Description: "Cursor for pagination",
+				Description: "Cursor for keyset pagination",
 				Optional:    true,
 			},
 			"limit": schema.Int64Attribute{
-				Computed: true,
-				Optional: true,
+				Description: "Maximum number of results to return (1-1000, default 100)",
+				Computed:    true,
+				Optional:    true,
 				Validators: []validator.Int64{
 					int64validator.Between(1, 1000),
 				},

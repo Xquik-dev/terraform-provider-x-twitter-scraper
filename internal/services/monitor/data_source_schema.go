@@ -38,7 +38,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed: true,
 			},
 			"event_types": schema.ListAttribute{
-				Computed: true,
+				Description: "Array of event types to subscribe to.",
+				Computed:    true,
 				Validators: []validator.List{
 					listvalidator.ValueStringsAre(
 						stringvalidator.OneOfCaseInsensitive(

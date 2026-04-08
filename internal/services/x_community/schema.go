@@ -21,7 +21,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"account": schema.StringAttribute{
-				Description:   "X account (@username or account ID)",
+				Description:   "X account (@username or ID) creating the community",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},

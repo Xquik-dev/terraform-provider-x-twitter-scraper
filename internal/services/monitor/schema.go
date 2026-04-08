@@ -32,7 +32,8 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"event_types": schema.ListAttribute{
-				Required: true,
+				Description: "Array of event types to subscribe to.",
+				Required:    true,
 				Validators: []validator.List{
 					listvalidator.ValueStringsAre(
 						stringvalidator.OneOfCaseInsensitive(

@@ -21,8 +21,9 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Required: true,
 			},
 			"draw": schema.SingleNestedAttribute{
-				Computed:   true,
-				CustomType: customfield.NewNestedObjectType[DrawDrawDataSourceModel](ctx),
+				Description: "Full giveaway draw with tweet metrics, entries, and timing.",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectType[DrawDrawDataSourceModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Computed: true,
