@@ -17,7 +17,7 @@ Webhook endpoint management & delivery
 
 ### Required
 
-- `event_types` (List of String)
+- `event_types` (List of String) Array of event types to subscribe to.
 - `url` (String) HTTPS URL
 
 ### Optional

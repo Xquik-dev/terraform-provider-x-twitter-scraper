@@ -17,7 +17,7 @@ Real-time X account monitoring
 
 ### Required
 
-- `event_types` (List of String)
+- `event_types` (List of String) Array of event types to subscribe to.
 - `username` (String) X username (without @)
 
 ### Optional

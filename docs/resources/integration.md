@@ -18,7 +18,7 @@ Push notification integrations (Telegram)
 ### Required
 
 - `config` (Attributes) Integration config (e.g. Telegram chatId) (see [below for nested schema](#nestedatt--config))
-- `event_types` (List of String)
+- `event_types` (List of String) Array of event types to subscribe to.
 - `name` (String)
 - `type` (String) Available values: "telegram".
 

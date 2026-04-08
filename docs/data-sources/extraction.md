@@ -17,8 +17,8 @@ Bulk data extraction (20 tool types)
 
 ### Optional
 
-- `after` (String) Cursor for pagination
-- `limit` (Number)
+- `after` (String) Cursor for keyset pagination
+- `limit` (Number) Maximum number of results to return (1-1000, default 100)
 
 ### Read-Only
 
