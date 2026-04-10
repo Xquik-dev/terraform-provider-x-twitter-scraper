@@ -3,12 +3,12 @@
 page_title: "x-twitter-scraper_x_user Data Source - X Twitter Scraper"
 subcategory: ""
 description: |-
-  X data lookups (subscription required)
+  Look up, search, and explore user profiles and relationships
 ---
 
 # x-twitter-scraper_x_user (Data Source)
 
-X data lookups (subscription required)
+Look up, search, and explore user profiles and relationships
 
 
 

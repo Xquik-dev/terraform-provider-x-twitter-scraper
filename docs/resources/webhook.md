@@ -3,12 +3,12 @@
 page_title: "x-twitter-scraper_webhook Resource - X Twitter Scraper"
 subcategory: ""
 description: |-
-  Webhook endpoint management & delivery
+  Webhook endpoint management and delivery
 ---
 
 # x-twitter-scraper_webhook (Resource)
 
-Webhook endpoint management & delivery
+Webhook endpoint management and delivery
 
 
 

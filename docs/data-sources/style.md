@@ -3,12 +3,12 @@
 page_title: "x-twitter-scraper_style Data Source - X Twitter Scraper"
 subcategory: ""
 description: |-
-  Tweet composition, drafts, writing styles & radar
+  AI tweet composition, drafts, writing styles, and radar
 ---
 
 # x-twitter-scraper_style (Data Source)
 
-Tweet composition, drafts, writing styles & radar
+AI tweet composition, drafts, writing styles, and radar
 
 
 

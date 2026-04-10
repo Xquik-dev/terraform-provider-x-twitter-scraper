@@ -3,12 +3,12 @@
 page_title: "x-twitter-scraper_account Data Source - X Twitter Scraper"
 subcategory: ""
 description: |-
-  Account info & settings
+  Account info and settings
 ---
 
 # x-twitter-scraper_account (Data Source)
 
-Account info & settings
+Account info and settings
 
 
 

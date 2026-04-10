@@ -13,7 +13,7 @@ var _ datasource.DataSourceWithConfigValidators = (*XUserDataSource)(nil)
 
 func DataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		MarkdownDescription: "X data lookups (subscription required)",
+		MarkdownDescription: "Look up, search, and explore user profiles and relationships",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Required: true,
