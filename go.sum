@@ -163,8 +163,8 @@ github.com/skeema/knownhosts v1.3.1/go.mod h1:r7KTdC8l4uxWRyK2TpQZ/1o5HaSzh06ePQ
 github.com/spf13/cast v1.3.1/go.mod h1:Qx5cxh0v+4UWYiBimWS+eyWzqEqokIECu5etghLkUJE=
 github.com/spf13/cast v1.5.0 h1:rj3WzYc11XZaIZMPKmwP96zkFEnnAmV8s6XbB2aY32w=
 github.com/spf13/cast v1.5.0/go.mod h1:SpXXQ5YoyJw6s3/6cMTQuxvgRl3PCJiyaX9p6b155UU=
-github.com/stainless-sdks/x-twitter-scraper-go v0.0.0-20260409204939-4274efae4c28 h1:u8lj1iQPnZzHol0+VKfSrfHLABBuaglqj2wySn35P5Y=
-github.com/stainless-sdks/x-twitter-scraper-go v0.0.0-20260409204939-4274efae4c28/go.mod h1:9GY88rxORz/BTFqe3La7SnPoTdiH0M9HnMT5Kx0K4dk=
+github.com/stainless-sdks/x-twitter-scraper-go v0.0.0-20260410005837-5c75387c5d10 h1:H3wXnJbrpTK2gWLswToKUvf06Ixh4myk5To0qSHsHss=
+github.com/stainless-sdks/x-twitter-scraper-go v0.0.0-20260410005837-5c75387c5d10/go.mod h1:9GY88rxORz/BTFqe3La7SnPoTdiH0M9HnMT5Kx0K4dk=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
