@@ -25,10 +25,8 @@ import (
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/support_ticket"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/webhook"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_account"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_bookmark"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_community"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_community_join"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_community_tweet"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_profile"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_tweet"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_tweet_like"
@@ -150,9 +148,7 @@ func (p *XTwitterScraperProvider) DataSources(ctx context.Context) []func() data
 		integration.NewIntegrationDataSource,
 		x_tweet.NewXTweetDataSource,
 		x_user.NewXUserDataSource,
-		x_community_tweet.NewXCommunityTweetsDataSource,
 		x_account.NewXAccountDataSource,
-		x_bookmark.NewXBookmarksDataSource,
 		support_ticket.NewSupportTicketDataSource,
 	}
 }
