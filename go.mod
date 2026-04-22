@@ -1,8 +1,9 @@
-module github.com/stainless-sdks/x-twitter-scraper-terraform
+module github.com/Xquik-dev/terraform-provider-x-twitter-scraper
 
 go 1.24.0
 
 require (
+	github.com/Xquik-dev/x-twitter-scraper-go v0.3.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/hashicorp/terraform-plugin-docs v0.24.0
 	github.com/hashicorp/terraform-plugin-framework v1.15.0
@@ -11,7 +12,6 @@ require (
 	github.com/hashicorp/terraform-plugin-framework-validators v0.17.0
 	github.com/hashicorp/terraform-plugin-go v0.28.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
-	github.com/stainless-sdks/x-twitter-scraper-go v0.0.0-20260422204909-2fba029d3dfa
 	github.com/tidwall/gjson v1.18.0
 	github.com/tidwall/sjson v1.2.5
 )

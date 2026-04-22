@@ -3,9 +3,9 @@
 package monitor
 
 import (
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/customfield"
 )
 
 type MonitorDataSourceModel struct {
