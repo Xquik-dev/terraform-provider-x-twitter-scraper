@@ -19,7 +19,6 @@ import (
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/draw"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/event"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/extraction"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/integration"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/monitor"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/style"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/support_ticket"
@@ -123,7 +122,6 @@ func (p *XTwitterScraperProvider) Resources(ctx context.Context) []func() resour
 		style.NewResource,
 		monitor.NewResource,
 		webhook.NewResource,
-		integration.NewResource,
 		x_tweet.NewResource,
 		x_tweet_like.NewResource,
 		x_tweet_retweet.NewResource,
@@ -145,7 +143,6 @@ func (p *XTwitterScraperProvider) DataSources(ctx context.Context) []func() data
 		event.NewEventDataSource,
 		extraction.NewExtractionDataSource,
 		draw.NewDrawDataSource,
-		integration.NewIntegrationDataSource,
 		x_tweet.NewXTweetDataSource,
 		x_user.NewXUserDataSource,
 		x_account.NewXAccountDataSource,

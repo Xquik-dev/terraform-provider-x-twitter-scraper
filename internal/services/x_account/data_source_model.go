@@ -11,6 +11,7 @@ type XAccountDataSourceModel struct {
 	ID                types.String      `tfsdk:"id" path:"id,required"`
 	CookiesObtainedAt timetypes.RFC3339 `tfsdk:"cookies_obtained_at" json:"cookiesObtainedAt,computed" format:"date-time"`
 	CreatedAt         timetypes.RFC3339 `tfsdk:"created_at" json:"createdAt,computed" format:"date-time"`
+	Health            types.String      `tfsdk:"health" json:"health,computed"`
 	ProxyCountry      types.String      `tfsdk:"proxy_country" json:"proxyCountry,computed"`
 	Status            types.String      `tfsdk:"status" json:"status,computed"`
 	UpdatedAt         timetypes.RFC3339 `tfsdk:"updated_at" json:"updatedAt,computed" format:"date-time"`

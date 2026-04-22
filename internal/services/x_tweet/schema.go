@@ -32,10 +32,6 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
-			"text": schema.StringAttribute{
-				Required:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-			},
 			"attachment_url": schema.StringAttribute{
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
@@ -52,7 +48,19 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
+			"text": schema.StringAttribute{
+				Description:   "Tweet text (optional when media is provided)",
+				Optional:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"media": schema.ListAttribute{
+				Description:   "Array of media URLs to attach (mutually exclusive with media_ids)",
+				Optional:      true,
+				ElementType:   types.StringType,
+				PlanModifiers: []planmodifier.List{listplanmodifier.RequiresReplace()},
+			},
 			"media_ids": schema.ListAttribute{
+				Description:   "Array of media IDs to attach (mutually exclusive with media)",
 				Optional:      true,
 				ElementType:   types.StringType,
 				PlanModifiers: []planmodifier.List{listplanmodifier.RequiresReplace()},

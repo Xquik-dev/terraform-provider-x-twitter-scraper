@@ -41,8 +41,6 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							"tweet.reply",
 							"tweet.retweet",
 							"tweet.quote",
-							"follower.gained",
-							"follower.lost",
 						),
 					),
 				},

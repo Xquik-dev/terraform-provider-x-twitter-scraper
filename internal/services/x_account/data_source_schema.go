@@ -6,8 +6,10 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
 var _ datasource.DataSourceWithConfigValidators = (*XAccountDataSource)(nil)
@@ -26,6 +28,20 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 			"created_at": schema.StringAttribute{
 				Computed:   true,
 				CustomType: timetypes.RFC3339Type{},
+			},
+			"health": schema.StringAttribute{
+				Description: `Available values: "healthy", "locked", "needsReauth", "recovering", "suspended", "temporaryIssue".`,
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive(
+						"healthy",
+						"locked",
+						"needsReauth",
+						"recovering",
+						"suspended",
+						"temporaryIssue",
+					),
+				},
 			},
 			"proxy_country": schema.StringAttribute{
 				Computed: true,

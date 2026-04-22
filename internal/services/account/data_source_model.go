@@ -3,20 +3,20 @@
 package account
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/customfield"
 )
 
 type AccountDataSourceModel struct {
-	MonitorsAllowed types.Int64                                                   `tfsdk:"monitors_allowed" json:"monitorsAllowed,computed"`
-	MonitorsUsed    types.Int64                                                   `tfsdk:"monitors_used" json:"monitorsUsed,computed"`
-	Plan            types.String                                                  `tfsdk:"plan" json:"plan,computed"`
-	CurrentPeriod   customfield.NestedObject[AccountCurrentPeriodDataSourceModel] `tfsdk:"current_period" json:"currentPeriod,computed"`
+	MonitorsAllowed types.Int64                                                `tfsdk:"monitors_allowed" json:"monitorsAllowed,computed"`
+	MonitorsUsed    types.Int64                                                `tfsdk:"monitors_used" json:"monitorsUsed,computed"`
+	Plan            types.String                                               `tfsdk:"plan" json:"plan,computed"`
+	CreditInfo      customfield.NestedObject[AccountCreditInfoDataSourceModel] `tfsdk:"credit_info" json:"creditInfo,computed"`
 }
 
-type AccountCurrentPeriodDataSourceModel struct {
-	End          timetypes.RFC3339 `tfsdk:"end" json:"end,computed" format:"date-time"`
-	Start        timetypes.RFC3339 `tfsdk:"start" json:"start,computed" format:"date-time"`
-	UsagePercent types.Float64     `tfsdk:"usage_percent" json:"usagePercent,computed"`
+type AccountCreditInfoDataSourceModel struct {
+	AutoTopupEnabled  types.Bool  `tfsdk:"auto_topup_enabled" json:"autoTopupEnabled,computed"`
+	Balance           types.Int64 `tfsdk:"balance" json:"balance,computed"`
+	LifetimePurchased types.Int64 `tfsdk:"lifetime_purchased" json:"lifetimePurchased,computed"`
+	LifetimeUsed      types.Int64 `tfsdk:"lifetime_used" json:"lifetimeUsed,computed"`
 }

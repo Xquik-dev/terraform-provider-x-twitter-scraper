@@ -31,7 +31,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				CustomType: timetypes.RFC3339Type{},
 			},
 			"type": schema.StringAttribute{
-				Description: "Type of monitor event fired when account activity occurs.\nAvailable values: \"tweet.new\", \"tweet.reply\", \"tweet.retweet\", \"tweet.quote\", \"follower.gained\", \"follower.lost\".",
+				Description: "Type of monitor event fired when account activity occurs.\nAvailable values: \"tweet.new\", \"tweet.reply\", \"tweet.retweet\", \"tweet.quote\".",
 				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive(
@@ -39,8 +39,6 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						"tweet.reply",
 						"tweet.retweet",
 						"tweet.quote",
-						"follower.gained",
-						"follower.lost",
 					),
 				},
 			},

@@ -12,11 +12,12 @@ import (
 type XTweetModel struct {
 	ID             types.String                                `tfsdk:"id" path:"id,optional"`
 	Account        types.String                                `tfsdk:"account" json:"account,required,no_refresh"`
-	Text           types.String                                `tfsdk:"text" json:"text,required,no_refresh"`
 	AttachmentURL  types.String                                `tfsdk:"attachment_url" json:"attachment_url,optional,no_refresh"`
 	CommunityID    types.String                                `tfsdk:"community_id" json:"community_id,optional,no_refresh"`
 	IsNoteTweet    types.Bool                                  `tfsdk:"is_note_tweet" json:"is_note_tweet,optional,no_refresh"`
 	ReplyToTweetID types.String                                `tfsdk:"reply_to_tweet_id" json:"reply_to_tweet_id,optional,no_refresh"`
+	Text           types.String                                `tfsdk:"text" json:"text,optional,no_refresh"`
+	Media          *[]types.String                             `tfsdk:"media" json:"media,optional,no_refresh"`
 	MediaIDs       *[]types.String                             `tfsdk:"media_ids" json:"media_ids,optional,no_refresh"`
 	Success        types.Bool                                  `tfsdk:"success" json:"success,computed,no_refresh"`
 	TweetID        types.String                                `tfsdk:"tweet_id" json:"tweetId,computed,no_refresh"`

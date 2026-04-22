@@ -5,7 +5,6 @@ package account
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -32,19 +31,20 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 					stringvalidator.OneOfCaseInsensitive("active", "inactive"),
 				},
 			},
-			"current_period": schema.SingleNestedAttribute{
+			"credit_info": schema.SingleNestedAttribute{
 				Computed:   true,
-				CustomType: customfield.NewNestedObjectType[AccountCurrentPeriodDataSourceModel](ctx),
+				CustomType: customfield.NewNestedObjectType[AccountCreditInfoDataSourceModel](ctx),
 				Attributes: map[string]schema.Attribute{
-					"end": schema.StringAttribute{
-						Computed:   true,
-						CustomType: timetypes.RFC3339Type{},
+					"auto_topup_enabled": schema.BoolAttribute{
+						Computed: true,
 					},
-					"start": schema.StringAttribute{
-						Computed:   true,
-						CustomType: timetypes.RFC3339Type{},
+					"balance": schema.Int64Attribute{
+						Computed: true,
 					},
-					"usage_percent": schema.Float64Attribute{
+					"lifetime_purchased": schema.Int64Attribute{
+						Computed: true,
+					},
+					"lifetime_used": schema.Int64Attribute{
 						Computed: true,
 					},
 				},

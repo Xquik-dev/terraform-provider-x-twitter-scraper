@@ -6,10 +6,12 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
 var _ resource.ResourceWithConfigValidators = (*XAccountResource)(nil)
@@ -54,6 +56,24 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			"created_at": schema.StringAttribute{
 				Computed:   true,
 				CustomType: timetypes.RFC3339Type{},
+			},
+			"health": schema.StringAttribute{
+				Description: `Available values: "healthy", "locked", "needsReauth", "recovering", "suspended", "temporaryIssue".`,
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive(
+						"healthy",
+						"locked",
+						"needsReauth",
+						"recovering",
+						"suspended",
+						"temporaryIssue",
+					),
+				},
+			},
+			"login_country": schema.StringAttribute{
+				Description: "ISO-3166-1 alpha-2 country code of the Driver consumer device used for this login. Present only when the US fallback was triggered because Driver had no capacity in the declared region. Omitted otherwise.",
+				Computed:    true,
 			},
 			"status": schema.StringAttribute{
 				Computed: true,
