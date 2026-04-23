@@ -18,15 +18,16 @@ description: |-
 ### Required
 
 - `account` (String) X account (@username or account ID)
-- `text` (String)
 
 ### Optional
 
 - `attachment_url` (String)
 - `community_id` (String)
 - `is_note_tweet` (Boolean)
-- `media_ids` (List of String)
+- `media` (List of String) Array of media URLs to attach (mutually exclusive with media_ids)
+- `media_ids` (List of String) Array of media IDs to attach (mutually exclusive with media)
 - `reply_to_tweet_id` (String)
+- `text` (String) Tweet text (optional when media is provided)
 
 ### Read-Only
 

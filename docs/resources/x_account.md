@@ -30,7 +30,9 @@ Connected X account management
 
 - `cookies_obtained_at` (String)
 - `created_at` (String)
+- `health` (String) Available values: "healthy", "locked", "needsReauth", "recovering", "suspended", "temporaryIssue".
 - `id` (String) The ID of this resource.
+- `login_country` (String) ISO-3166-1 alpha-2 country code of the Driver consumer device used for this login. Present only when the US fallback was triggered because Driver had no capacity in the declared region. Omitted otherwise.
 - `status` (String)
 - `updated_at` (String)
 - `x_user_id` (String)

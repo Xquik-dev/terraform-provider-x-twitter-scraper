@@ -17,16 +17,17 @@ Account info and settings
 
 ### Read-Only
 
-- `current_period` (Attributes) (see [below for nested schema](#nestedatt--current_period))
+- `credit_info` (Attributes) (see [below for nested schema](#nestedatt--credit_info))
 - `monitors_allowed` (Number)
 - `monitors_used` (Number)
 - `plan` (String) Available values: "active", "inactive".
 
-<a id="nestedatt--current_period"></a>
-### Nested Schema for `current_period`
+<a id="nestedatt--credit_info"></a>
+### Nested Schema for `credit_info`
 
 Read-Only:
 
-- `end` (String)
-- `start` (String)
-- `usage_percent` (Number)
+- `auto_topup_enabled` (Boolean)
+- `balance` (Number)
+- `lifetime_purchased` (Number)
+- `lifetime_used` (Number)
