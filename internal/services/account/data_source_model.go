@@ -3,14 +3,15 @@
 package account
 
 import (
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/customfield"
 )
 
 type AccountDataSourceModel struct {
 	MonitorsAllowed types.Int64                                                `tfsdk:"monitors_allowed" json:"monitorsAllowed,computed"`
 	MonitorsUsed    types.Int64                                                `tfsdk:"monitors_used" json:"monitorsUsed,computed"`
 	Plan            types.String                                               `tfsdk:"plan" json:"plan,computed"`
+	XUsername       types.String                                               `tfsdk:"x_username" json:"xUsername,computed"`
 	CreditInfo      customfield.NestedObject[AccountCreditInfoDataSourceModel] `tfsdk:"credit_info" json:"creditInfo,computed"`
 }
 

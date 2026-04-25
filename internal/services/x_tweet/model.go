@@ -3,10 +3,10 @@
 package x_tweet
 
 import (
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/apijson"
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/apijson"
+	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/customfield"
 )
 
 type XTweetModel struct {
@@ -18,7 +18,6 @@ type XTweetModel struct {
 	ReplyToTweetID types.String                                `tfsdk:"reply_to_tweet_id" json:"reply_to_tweet_id,optional,no_refresh"`
 	Text           types.String                                `tfsdk:"text" json:"text,optional,no_refresh"`
 	Media          *[]types.String                             `tfsdk:"media" json:"media,optional,no_refresh"`
-	MediaIDs       *[]types.String                             `tfsdk:"media_ids" json:"media_ids,optional,no_refresh"`
 	Success        types.Bool                                  `tfsdk:"success" json:"success,computed,no_refresh"`
 	TweetID        types.String                                `tfsdk:"tweet_id" json:"tweetId,computed,no_refresh"`
 	Author         customfield.NestedObject[XTweetAuthorModel] `tfsdk:"author" json:"author,computed"`

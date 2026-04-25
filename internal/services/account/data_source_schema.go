@@ -5,11 +5,11 @@ package account
 import (
 	"context"
 
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/customfield"
 )
 
 var _ datasource.DataSourceWithConfigValidators = (*AccountDataSource)(nil)
@@ -30,6 +30,10 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive("active", "inactive"),
 				},
+			},
+			"x_username": schema.StringAttribute{
+				Description: "Linked X username, omitted when no X account is connected.",
+				Computed:    true,
 			},
 			"credit_info": schema.SingleNestedAttribute{
 				Computed:   true,

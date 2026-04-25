@@ -5,7 +5,6 @@ package x_tweet
 import (
 	"context"
 
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -16,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/customfield"
 )
 
 var _ resource.ResourceWithConfigValidators = (*XTweetResource)(nil)
@@ -54,13 +54,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"media": schema.ListAttribute{
-				Description:   "Array of media URLs to attach (mutually exclusive with media_ids)",
-				Optional:      true,
-				ElementType:   types.StringType,
-				PlanModifiers: []planmodifier.List{listplanmodifier.RequiresReplace()},
-			},
-			"media_ids": schema.ListAttribute{
-				Description:   "Array of media IDs to attach (mutually exclusive with media)",
+				Description:   "Array of public image URLs to attach (max 4). Each URL must be publicly reachable - the browser composer fetches them directly.",
 				Optional:      true,
 				ElementType:   types.StringType,
 				PlanModifiers: []planmodifier.List{listplanmodifier.RequiresReplace()},

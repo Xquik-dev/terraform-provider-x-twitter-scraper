@@ -5,13 +5,13 @@ package extraction
 import (
 	"context"
 
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/customfield"
 )
 
 var _ datasource.DataSourceWithConfigValidators = (*ExtractionDataSource)(nil)
@@ -42,7 +42,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed: true,
 			},
 			"job": schema.MapAttribute{
-				Description: "Extraction job metadata — shape varies by tool type (JSON)",
+				Description: "Extraction job metadata - shape varies by tool type (JSON)",
 				Computed:    true,
 				CustomType:  customfield.NewMapType[jsontypes.Normalized](ctx),
 				ElementType: jsontypes.NormalizedType{},

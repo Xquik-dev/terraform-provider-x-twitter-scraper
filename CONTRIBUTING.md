@@ -26,7 +26,7 @@ Then edit (or create) your `~/.terraformrc` to look something like this:
 ```hcl
   provider_installation {
     dev_overrides {
-      "Xquik-dev/x-twitter-scraper" = "/local/path/to/this/repo"
+      "stainless-sdks/x-twitter-scraper" = "/local/path/to/this/repo"
     }
     direct {}
   }
