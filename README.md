@@ -1,6 +1,6 @@
-# X Twitter Scraper Terraform Provider
+# Xquik Provider
 
-The [X Twitter Scraper Terraform provider](https://registry.terraform.io/providers/stainless-sdks/x-twitter-scraper/latest/docs) provides convenient access to
+The [Xquik provider](https://registry.terraform.io/providers/stainless-sdks/x-twitter-scraper/latest/docs) provides convenient access to
 the [X Twitter Scraper REST API](https://xquik.com) from Terraform.
 
 It is generated with [Stainless](https://www.stainless.com/).
