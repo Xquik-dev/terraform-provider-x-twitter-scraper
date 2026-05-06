@@ -1,5 +1,7 @@
 # X Twitter Scraper Terraform Provider
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg?url=https%3A%2F%2Fgithub.com%2FXquik-dev%2Fterraform-provider-x-twitter-scraper)](https://deepwiki.com/Xquik-dev/terraform-provider-x-twitter-scraper)
+
 The X Twitter Scraper Terraform provider provides convenient access to
 the [X Twitter Scraper REST API](https://xquik.com) from Terraform.
 
