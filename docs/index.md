@@ -13,8 +13,7 @@ description: |-
 
 ```terraform
 provider "x-twitter-scraper" {
-  api_key = "My API Key"
-  bearer_token = "My Bearer Token"
+  # Prefer X_TWITTER_SCRAPER_API_KEY or X_TWITTER_SCRAPER_BEARER_TOKEN.
 }
 ```
 

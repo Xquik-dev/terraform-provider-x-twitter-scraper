@@ -1,9 +1,12 @@
-# X Twitter Scraper Terraform Provider
+# Xquik Terraform Provider for X (Twitter) Scraper API
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg?url=https%3A%2F%2Fgithub.com%2FXquik-dev%2Fterraform-provider-x-twitter-scraper)](https://deepwiki.com/Xquik-dev/terraform-provider-x-twitter-scraper)
 
-The X Twitter Scraper Terraform provider provides convenient access to
-the [X Twitter Scraper REST API](https://xquik.com) from Terraform.
+Xquik Terraform Provider for the X (Twitter) Scraper API manages X data and automation workflows as infrastructure: monitors, HMAC webhooks, API keys, compose and draft resources, tweet actions, user data, draws, and extraction jobs.
+
+Use it when Terraform should own Xquik API resources for social media automation, account monitoring, webhook delivery, and repeatable X data workflows. Start with the [Terraform quickstart](docs/guides/quickstart.md), generated [provider docs](docs/index.md), [examples](examples), or the [REST API docs](https://docs.xquik.com/api-reference/overview).
+
+[Terraform Quickstart](docs/guides/quickstart.md) | [Provider Docs](docs/index.md) | [Examples](examples) | [REST API Docs](https://docs.xquik.com/api-reference/overview) | [OpenAPI Spec](https://xquik.com/openapi.json) | [Webhooks](https://docs.xquik.com/api-reference/webhooks/create)
 
 It is generated with [Stainless](https://www.stainless.com/).
 
@@ -59,8 +62,7 @@ terraform {
 }
 
 provider "x-twitter-scraper" {
-  api_key = "My API Key" # or set X_TWITTER_SCRAPER_API_KEY env variable
-  bearer_token = "My Bearer Token" # or set X_TWITTER_SCRAPER_BEARER_TOKEN env variable
+  # Prefer X_TWITTER_SCRAPER_API_KEY or X_TWITTER_SCRAPER_BEARER_TOKEN.
 }
 ```
 
