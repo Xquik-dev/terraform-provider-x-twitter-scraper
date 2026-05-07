@@ -4,9 +4,9 @@
 
 Xquik Terraform Provider for the X (Twitter) Scraper API manages X data and automation workflows as infrastructure: monitors, HMAC webhooks, API keys, compose and draft resources, tweet actions, user data, draws, and extraction jobs.
 
-Use it when Terraform should own Xquik API resources for social media automation, account monitoring, webhook delivery, and repeatable X data workflows. Start with the [Terraform quickstart](docs/guides/quickstart.md), generated [provider docs](docs/index.md), [examples](examples), or the [REST API docs](https://docs.xquik.com/api-reference/overview).
+Use it when Terraform should own Xquik API resources for social media automation, account monitoring, webhook delivery, and repeatable X data workflows. Start with the [Terraform quickstart](docs/guides/quickstart.md), [Context7 guide](docs/CONTEXT7.md), generated [provider docs](docs/index.md), [examples](examples), or the [REST API docs](https://docs.xquik.com/api-reference/overview).
 
-[Terraform Quickstart](docs/guides/quickstart.md) | [Provider Docs](docs/index.md) | [Examples](examples) | [REST API Docs](https://docs.xquik.com/api-reference/overview) | [OpenAPI Spec](https://xquik.com/openapi.json) | [Webhooks](https://docs.xquik.com/api-reference/webhooks/create)
+[Terraform Quickstart](docs/guides/quickstart.md) | [Context7 Guide](docs/CONTEXT7.md) | [Provider Docs](docs/index.md) | [Examples](examples) | [REST API Docs](https://docs.xquik.com/api-reference/overview) | [OpenAPI Spec](https://xquik.com/openapi.json) | [Webhooks](https://docs.xquik.com/api-reference/webhooks/create)
 
 It is generated with [Stainless](https://www.stainless.com/).
 
