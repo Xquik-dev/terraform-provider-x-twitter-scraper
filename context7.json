@@ -1,4 +1,15 @@
 {
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "X Twitter Scraper Terraform Provider",
+  "description": "Official Terraform provider for Xquik's X/Twitter API: configure API access and automate X data workflows with infrastructure code.",
+  "branch": "main",
+  "rules": [
+    "Use source Xquik-dev/x-twitter-scraper in required_providers.",
+    "Authenticate with provider fields or the documented X_TWITTER_SCRAPER_* environment variables.",
+    "Use docs/index.md and examples for generated provider documentation and Terraform examples.",
+    "Use scripts/build for local development until Terraform Registry publication is complete.",
+    "Never commit API keys, local credentials, Terraform state files, or local provider binaries."
+  ],
   "url": "https://context7.com/xquik-dev/terraform-provider-x-twitter-scraper",
   "public_key": "pk_oCPeRRqZFJsY4cCUSotDD"
 }
