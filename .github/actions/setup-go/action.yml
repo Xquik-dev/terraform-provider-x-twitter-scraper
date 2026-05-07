@@ -20,7 +20,7 @@ runs:
       run: git config --global url."https://x-access-token:${{ steps.get_token.outputs.github_access_token }}@github.com/stainless-sdks/x-twitter-scraper-go".insteadOf "https://github.com/stainless-sdks/x-twitter-scraper-go"
 
     - name: Setup go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v6
       with:
         go-version-file: ./go.mod
 
