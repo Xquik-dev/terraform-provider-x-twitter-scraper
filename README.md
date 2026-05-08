@@ -1,6 +1,7 @@
 # Xquik Terraform Provider for X (Twitter) Scraper API
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg?url=https%3A%2F%2Fgithub.com%2FXquik-dev%2Fterraform-provider-x-twitter-scraper)](https://deepwiki.com/Xquik-dev/terraform-provider-x-twitter-scraper)
+<a href="https://nothumansearch.ai/site/xquik.com" target="_blank" rel="noopener"><img src="https://nothumansearch.ai/badge/xquik.com.svg" alt="NHS Agentic Readiness Score" height="28"></a>
 
 Xquik Terraform Provider for the X (Twitter) Scraper API manages X data and automation workflows as infrastructure: monitors, HMAC webhooks, API keys, compose and draft resources, tweet actions, user data, draws, and extraction jobs.
 
