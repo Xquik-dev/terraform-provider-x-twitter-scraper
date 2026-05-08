@@ -1,11 +1,11 @@
-# Xquik Terraform Provider for X (Twitter) Scraper API
+# X (Twitter) Scraper Terraform Provider: Monitors, Webhooks, Tweet Actions & Automation
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg?url=https%3A%2F%2Fgithub.com%2FXquik-dev%2Fterraform-provider-x-twitter-scraper)](https://deepwiki.com/Xquik-dev/terraform-provider-x-twitter-scraper)
 <a href="https://nothumansearch.ai/site/xquik.com" target="_blank" rel="noopener"><img src="https://nothumansearch.ai/badge/xquik.com.svg" alt="NHS Agentic Readiness Score" height="28"></a>
 
-Xquik Terraform Provider for the X (Twitter) Scraper API manages X data and automation workflows as infrastructure: monitors, HMAC webhooks, API keys, compose and draft resources, tweet actions, user data, draws, and extraction jobs.
+Xquik Terraform Provider for the X (Twitter) Scraper API manages Twitter automation and X data workflows as infrastructure: monitors, HMAC webhooks, API keys, compose and draft resources, tweet actions, user data, giveaway draws, follower exports, and extraction jobs.
 
-Use it when Terraform should own Xquik API resources for social media automation, account monitoring, webhook delivery, and repeatable X data workflows. Start with the [Terraform quickstart](docs/guides/quickstart.md), [Context7 guide](docs/CONTEXT7.md), generated [provider docs](docs/index.md), [examples](examples), or the [REST API docs](https://docs.xquik.com/api-reference/overview).
+Use it when Terraform should own Xquik API resources for social media automation, account monitoring, webhook delivery, tweet search workflows, profile tweet collection, follower export jobs, and repeatable posting infrastructure. Start with the [Terraform quickstart](docs/guides/quickstart.md), [Context7 guide](docs/CONTEXT7.md), generated [provider docs](docs/index.md), [examples](examples), or the [REST API docs](https://docs.xquik.com/api-reference/overview).
 
 [Terraform Quickstart](docs/guides/quickstart.md) | [Context7 Guide](docs/CONTEXT7.md) | [Provider Docs](docs/index.md) | [Examples](examples) | [REST API Docs](https://docs.xquik.com/api-reference/overview) | [OpenAPI Spec](https://xquik.com/openapi.json) | [Webhooks](https://docs.xquik.com/api-reference/webhooks/create)
 
