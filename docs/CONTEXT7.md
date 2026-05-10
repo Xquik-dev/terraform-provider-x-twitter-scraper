@@ -52,6 +52,17 @@ provider "x-twitter-scraper" {}
 
 Run `terraform init` from your Terraform project directory after the local override is configured.
 
+Validate that Terraform sees the local provider before adding resources:
+
+```sh
+terraform providers
+terraform validate
+```
+
+Terraform may warn that development overrides skip normal provider checksums.
+That is expected for local development and does not mean the provider is listed
+in the Terraform Registry.
+
 ## First Resources
 
 Create a monitor for account activity:
@@ -77,6 +88,16 @@ Create an API key for automation workloads:
 ```hcl
 resource "x-twitter-scraper_api_key" "automation" {
   name = "terraform-automation"
+}
+```
+
+Read the current account state with a data source:
+
+```hcl
+data "x-twitter-scraper_account" "current" {}
+
+output "xquik_plan" {
+  value = data.x-twitter-scraper_account.current.plan
 }
 ```
 
