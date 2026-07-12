@@ -1,7 +1,7 @@
 {
   "$schema": "https://context7.com/schema/context7.json",
   "projectTitle": "Xquik Terraform Provider",
-  "description": "Official Terraform provider for Xquik's X/Twitter API with resources for monitors, webhooks, API keys, tweet workflows, draws, and extraction jobs.",
+  "description": "Xquik Terraform provider for X/Twitter workflows with resources for monitors, webhooks, API keys, tweet workflows, draws, and extraction jobs. Not affiliated with X Corp.",
   "branch": "main",
   "folders": [
     "docs",
