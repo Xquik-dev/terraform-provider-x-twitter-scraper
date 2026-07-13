@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package api_key
+package guest_wallet
 
 import (
 	"context"
@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
-var _ resource.ResourceWithUpgradeState = (*APIKeyResource)(nil)
+var _ resource.ResourceWithUpgradeState = (*GuestWalletResource)(nil)
 
-func (r *APIKeyResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+func (r *GuestWalletResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
 	return map[int64]resource.StateUpgrader{}
 }

@@ -5,6 +5,7 @@ package monitor
 import (
 	"context"
 
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -12,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/customfield"
 )
 
 var _ datasource.DataSourceWithConfigValidators = (*MonitorDataSource)(nil)
@@ -31,6 +31,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 			"is_active": schema.BoolAttribute{
 				Computed: true,
 			},
+			"next_billing_at": schema.StringAttribute{
+				Description: "Next hourly credit charge time for this account monitor.",
+				Computed:    true,
+				CustomType:  timetypes.RFC3339Type{},
+			},
 			"username": schema.StringAttribute{
 				Computed: true,
 			},
@@ -47,6 +52,23 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 							"tweet.reply",
 							"tweet.retweet",
 							"tweet.quote",
+							"tweet.media",
+							"tweet.link",
+							"tweet.poll",
+							"tweet.mention",
+							"tweet.hashtag",
+							"tweet.longform",
+							"profile.avatar.changed",
+							"profile.banner.changed",
+							"profile.name.changed",
+							"profile.username.changed",
+							"profile.bio.changed",
+							"profile.location.changed",
+							"profile.url.changed",
+							"profile.verified.changed",
+							"profile.protected.changed",
+							"profile.pinned_tweet.changed",
+							"profile.unavailable.changed",
 						),
 					),
 				},

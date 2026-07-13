@@ -8,13 +8,13 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/apijson"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/importpath"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/logging"
+	"github.com/Xquik-dev/x-twitter-scraper-go"
+	"github.com/Xquik-dev/x-twitter-scraper-go/option"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/stainless-sdks/x-twitter-scraper-go"
-	"github.com/stainless-sdks/x-twitter-scraper-go/option"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/apijson"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/importpath"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/logging"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.

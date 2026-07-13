@@ -40,6 +40,23 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							"tweet.reply",
 							"tweet.retweet",
 							"tweet.quote",
+							"tweet.media",
+							"tweet.link",
+							"tweet.poll",
+							"tweet.mention",
+							"tweet.hashtag",
+							"tweet.longform",
+							"profile.avatar.changed",
+							"profile.banner.changed",
+							"profile.name.changed",
+							"profile.username.changed",
+							"profile.bio.changed",
+							"profile.location.changed",
+							"profile.url.changed",
+							"profile.verified.changed",
+							"profile.protected.changed",
+							"profile.pinned_tweet.changed",
+							"profile.unavailable.changed",
 						),
 					),
 				},
@@ -48,12 +65,32 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			"is_active": schema.BoolAttribute{
 				Optional: true,
 			},
+			"consecutive_failures": schema.Int64Attribute{
+				Description: "Consecutive failed delivery attempts since the last success.",
+				Computed:    true,
+			},
 			"created_at": schema.StringAttribute{
 				Computed:   true,
 				CustomType: timetypes.RFC3339Type{},
 			},
+			"delivery_status": schema.StringAttribute{
+				Description: "Endpoint delivery state. needs_attention means delivery stopped after repeated failures.\nAvailable values: \"active\", \"paused\", \"needs_attention\".",
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive(
+						"active",
+						"paused",
+						"needs_attention",
+					),
+				},
+			},
+			"failure_hard_cap": schema.Int64Attribute{
+				Description: "Consecutive delivery failures that pause the endpoint.",
+				Computed:    true,
+			},
 			"secret": schema.StringAttribute{
-				Computed: true,
+				Description: "Plaintext HMAC signing secret returned only at creation.",
+				Computed:    true,
 			},
 		},
 	}

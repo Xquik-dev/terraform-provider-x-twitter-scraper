@@ -39,11 +39,6 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
-			"proxy_country": schema.StringAttribute{
-				Description:   "Proxy country code",
-				Optional:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-			},
 			"totp_secret": schema.StringAttribute{
 				Description:   "TOTP secret for 2FA",
 				Optional:      true,
@@ -70,10 +65,6 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						"temporaryIssue",
 					),
 				},
-			},
-			"login_country": schema.StringAttribute{
-				Description: "ISO-3166-1 alpha-2 country code of the Driver consumer device used for this login. Present only when the US fallback was triggered because Driver had no capacity in the declared region. Omitted otherwise.",
-				Computed:    true,
 			},
 			"status": schema.StringAttribute{
 				Computed: true,

@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package extraction
+package x_write_action
 
 import (
 	"context"
@@ -8,28 +8,28 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/apijson"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/logging"
+	"github.com/Xquik-dev/x-twitter-scraper-go"
+	"github.com/Xquik-dev/x-twitter-scraper-go/option"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/stainless-sdks/x-twitter-scraper-go"
-	"github.com/stainless-sdks/x-twitter-scraper-go/option"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/apijson"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/logging"
 )
 
-type ExtractionDataSource struct {
+type XWriteActionDataSource struct {
 	client *xtwitterscraper.Client
 }
 
-var _ datasource.DataSourceWithConfigure = (*ExtractionDataSource)(nil)
+var _ datasource.DataSourceWithConfigure = (*XWriteActionDataSource)(nil)
 
-func NewExtractionDataSource() datasource.DataSource {
-	return &ExtractionDataSource{}
+func NewXWriteActionDataSource() datasource.DataSource {
+	return &XWriteActionDataSource{}
 }
 
-func (d *ExtractionDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_extraction"
+func (d *XWriteActionDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_x_write_action"
 }
 
-func (d *ExtractionDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *XWriteActionDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -48,8 +48,8 @@ func (d *ExtractionDataSource) Configure(ctx context.Context, req datasource.Con
 	d.client = client
 }
 
-func (d *ExtractionDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data *ExtractionDataSourceModel
+func (d *XWriteActionDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data *XWriteActionDataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -57,17 +57,10 @@ func (d *ExtractionDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		return
 	}
 
-	params, diags := data.toReadParams(ctx)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	res := new(http.Response)
-	_, err := d.client.Extractions.Get(
+	_, err := d.client.X.WriteActions.Get(
 		ctx,
 		data.ID.ValueString(),
-		params,
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)

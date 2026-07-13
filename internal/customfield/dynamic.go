@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
-	t "github.com/stainless-sdks/x-twitter-scraper-terraform/internal/types"
+	t "github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/types"
 )
 
 var (
@@ -127,6 +127,13 @@ func semanticEquals(ctx context.Context, lhs attr.Value, rhs attr.Value) (eq boo
 
 	if (lhs.Equal(rhs)) || (lhs.IsNull() && rhs.IsNull()) || (lhs.IsUnknown() && rhs.IsUnknown()) {
 		return true, nil
+	}
+
+	// At this point at most one side is null or unknown, so the two values
+	// cannot be semantically equal. Returning early also protects the value
+	// accessors below from dereferencing null values.
+	if lhs.IsNull() || lhs.IsUnknown() || rhs.IsNull() || rhs.IsUnknown() {
+		return false, nil
 	}
 
 	if l, ok := lhs.(basetypes.DynamicValuable); ok {

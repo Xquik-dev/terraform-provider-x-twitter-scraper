@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package api_key
+package guest_wallet
 
 import (
 	"context"
@@ -8,31 +8,31 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/apijson"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/logging"
+	"github.com/Xquik-dev/x-twitter-scraper-go"
+	"github.com/Xquik-dev/x-twitter-scraper-go/option"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/stainless-sdks/x-twitter-scraper-go"
-	"github.com/stainless-sdks/x-twitter-scraper-go/option"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/apijson"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/logging"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
-var _ resource.ResourceWithConfigure = (*APIKeyResource)(nil)
-var _ resource.ResourceWithModifyPlan = (*APIKeyResource)(nil)
+var _ resource.ResourceWithConfigure = (*GuestWalletResource)(nil)
+var _ resource.ResourceWithModifyPlan = (*GuestWalletResource)(nil)
 
 func NewResource() resource.Resource {
-	return &APIKeyResource{}
+	return &GuestWalletResource{}
 }
 
-// APIKeyResource defines the resource implementation.
-type APIKeyResource struct {
+// GuestWalletResource defines the resource implementation.
+type GuestWalletResource struct {
 	client *xtwitterscraper.Client
 }
 
-func (r *APIKeyResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_api_key"
+func (r *GuestWalletResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_guest_wallet"
 }
 
-func (r *APIKeyResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *GuestWalletResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -51,8 +51,8 @@ func (r *APIKeyResource) Configure(ctx context.Context, req resource.ConfigureRe
 	r.client = client
 }
 
-func (r *APIKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data *APIKeyModel
+func (r *GuestWalletResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data *GuestWalletModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
@@ -66,9 +66,9 @@ func (r *APIKeyResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 	res := new(http.Response)
-	_, err = r.client.APIKeys.New(
+	_, err = r.client.GuestWallets.New(
 		ctx,
-		xtwitterscraper.APIKeyNewParams{},
+		xtwitterscraper.GuestWalletNewParams{},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -87,19 +87,19 @@ func (r *APIKeyResource) Create(ctx context.Context, req resource.CreateRequest,
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *APIKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *GuestWalletResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Update is not supported for this resource
 }
 
-func (r *APIKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *GuestWalletResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 
 }
 
-func (r *APIKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *GuestWalletResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 
 }
 
-func (r *APIKeyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+func (r *GuestWalletResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	if req.State.Raw.IsNull() {
 		resp.Diagnostics.AddWarning(
 			"Resource Destruction Considerations",

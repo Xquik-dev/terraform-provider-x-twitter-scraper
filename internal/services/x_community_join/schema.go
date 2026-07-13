@@ -26,12 +26,6 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
-			"community_id": schema.StringAttribute{
-				Computed: true,
-			},
-			"community_name": schema.StringAttribute{
-				Computed: true,
-			},
 			"success": schema.BoolAttribute{
 				Computed: true,
 			},

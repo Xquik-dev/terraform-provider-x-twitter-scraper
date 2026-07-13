@@ -43,9 +43,6 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 					),
 				},
 			},
-			"proxy_country": schema.StringAttribute{
-				Computed: true,
-			},
 			"status": schema.StringAttribute{
 				Computed: true,
 			},

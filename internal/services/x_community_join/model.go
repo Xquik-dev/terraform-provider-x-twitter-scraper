@@ -3,16 +3,14 @@
 package x_community_join
 
 import (
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/apijson"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/apijson"
 )
 
 type XCommunityJoinModel struct {
-	ID            types.String `tfsdk:"id" path:"id,required"`
-	Account       types.String `tfsdk:"account" json:"account,required"`
-	CommunityID   types.String `tfsdk:"community_id" json:"communityId,computed"`
-	CommunityName types.String `tfsdk:"community_name" json:"communityName,computed"`
-	Success       types.Bool   `tfsdk:"success" json:"success,computed"`
+	ID      types.String `tfsdk:"id" path:"id,required"`
+	Account types.String `tfsdk:"account" json:"account,required"`
+	Success types.Bool   `tfsdk:"success" json:"success,computed"`
 }
 
 func (m XCommunityJoinModel) MarshalJSON() (data []byte, err error) {

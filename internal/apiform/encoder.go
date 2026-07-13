@@ -21,8 +21,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/apijson"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/customfield"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/apijson"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/customfield"
 )
 
 var encoders sync.Map // map[encoderEntry]encoderFunc

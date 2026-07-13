@@ -6,32 +6,32 @@ import (
 	"context"
 	"os"
 
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/account"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/draft"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/draw"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/guest_wallet"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/monitor"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/monitor_keyword"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/style"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/support_ticket"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/webhook"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_account"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_community"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_community_join"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_profile"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_tweet"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_tweet_like"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_tweet_retweet"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_user"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_user_follow"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_write_action"
+	"github.com/Xquik-dev/x-twitter-scraper-go"
+	"github.com/Xquik-dev/x-twitter-scraper-go/option"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/stainless-sdks/x-twitter-scraper-go"
-	"github.com/stainless-sdks/x-twitter-scraper-go/option"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/account"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/api_key"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/draft"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/draw"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/event"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/extraction"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/monitor"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/style"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/support_ticket"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/webhook"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_account"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_community"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_community_join"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_profile"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_tweet"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_tweet_like"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_tweet_retweet"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_user"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/x_user_follow"
 )
 
 var _ provider.ProviderWithConfigValidators = (*XTwitterScraperProvider)(nil)
@@ -117,10 +117,10 @@ func (p *XTwitterScraperProvider) ConfigValidators(_ context.Context) []provider
 
 func (p *XTwitterScraperProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		api_key.NewResource,
 		draft.NewResource,
 		style.NewResource,
 		monitor.NewResource,
+		monitor_keyword.NewResource,
 		webhook.NewResource,
 		x_tweet.NewResource,
 		x_tweet_like.NewResource,
@@ -131,6 +131,7 @@ func (p *XTwitterScraperProvider) Resources(ctx context.Context) []func() resour
 		x_community_join.NewResource,
 		x_account.NewResource,
 		support_ticket.NewResource,
+		guest_wallet.NewResource,
 	}
 }
 
@@ -140,9 +141,9 @@ func (p *XTwitterScraperProvider) DataSources(ctx context.Context) []func() data
 		draft.NewDraftDataSource,
 		style.NewStyleDataSource,
 		monitor.NewMonitorDataSource,
-		event.NewEventDataSource,
-		extraction.NewExtractionDataSource,
+		monitor_keyword.NewMonitorKeywordDataSource,
 		draw.NewDrawDataSource,
+		x_write_action.NewXWriteActionDataSource,
 		x_tweet.NewXTweetDataSource,
 		x_user.NewXUserDataSource,
 		x_account.NewXAccountDataSource,

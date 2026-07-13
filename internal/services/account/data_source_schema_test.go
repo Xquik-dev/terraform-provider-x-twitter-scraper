@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/services/account"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/test_helpers"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/account"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/test_helpers"
 )
 
 func TestAccountDataSourceModelSchemaParity(t *testing.T) {

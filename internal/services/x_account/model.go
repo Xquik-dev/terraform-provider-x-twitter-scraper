@@ -3,9 +3,9 @@
 package x_account
 
 import (
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/apijson"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/apijson"
 )
 
 type XAccountModel struct {
@@ -13,12 +13,10 @@ type XAccountModel struct {
 	Email             types.String      `tfsdk:"email" json:"email,required,no_refresh"`
 	Password          types.String      `tfsdk:"password" json:"password,required,no_refresh"`
 	Username          types.String      `tfsdk:"username" json:"username,required,no_refresh"`
-	ProxyCountry      types.String      `tfsdk:"proxy_country" json:"proxy_country,optional"`
 	TotpSecret        types.String      `tfsdk:"totp_secret" json:"totp_secret,optional,no_refresh"`
 	CookiesObtainedAt timetypes.RFC3339 `tfsdk:"cookies_obtained_at" json:"cookiesObtainedAt,computed" format:"date-time"`
 	CreatedAt         timetypes.RFC3339 `tfsdk:"created_at" json:"createdAt,computed" format:"date-time"`
 	Health            types.String      `tfsdk:"health" json:"health,computed"`
-	LoginCountry      types.String      `tfsdk:"login_country" json:"loginCountry,computed,no_refresh"`
 	Status            types.String      `tfsdk:"status" json:"status,computed"`
 	UpdatedAt         timetypes.RFC3339 `tfsdk:"updated_at" json:"updatedAt,computed" format:"date-time"`
 	XUserID           types.String      `tfsdk:"x_user_id" json:"xUserId,computed"`

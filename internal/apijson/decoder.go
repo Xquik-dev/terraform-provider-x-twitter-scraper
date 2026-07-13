@@ -19,8 +19,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/tidwall/gjson"
 
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/customfield"
-	type_helpers "github.com/stainless-sdks/x-twitter-scraper-terraform/internal/types"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/customfield"
+	type_helpers "github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/types"
 )
 
 // decoders is a synchronized map with roughly the following type:

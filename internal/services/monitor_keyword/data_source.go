@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package event
+package monitor_keyword
 
 import (
 	"context"
@@ -8,28 +8,28 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/apijson"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/logging"
+	"github.com/Xquik-dev/x-twitter-scraper-go"
+	"github.com/Xquik-dev/x-twitter-scraper-go/option"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/stainless-sdks/x-twitter-scraper-go"
-	"github.com/stainless-sdks/x-twitter-scraper-go/option"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/apijson"
-	"github.com/stainless-sdks/x-twitter-scraper-terraform/internal/logging"
 )
 
-type EventDataSource struct {
+type MonitorKeywordDataSource struct {
 	client *xtwitterscraper.Client
 }
 
-var _ datasource.DataSourceWithConfigure = (*EventDataSource)(nil)
+var _ datasource.DataSourceWithConfigure = (*MonitorKeywordDataSource)(nil)
 
-func NewEventDataSource() datasource.DataSource {
-	return &EventDataSource{}
+func NewMonitorKeywordDataSource() datasource.DataSource {
+	return &MonitorKeywordDataSource{}
 }
 
-func (d *EventDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_event"
+func (d *MonitorKeywordDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_monitor_keyword"
 }
 
-func (d *EventDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *MonitorKeywordDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -48,8 +48,8 @@ func (d *EventDataSource) Configure(ctx context.Context, req datasource.Configur
 	d.client = client
 }
 
-func (d *EventDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data *EventDataSourceModel
+func (d *MonitorKeywordDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data *MonitorKeywordDataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -58,7 +58,7 @@ func (d *EventDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	}
 
 	res := new(http.Response)
-	_, err := d.client.Events.Get(
+	_, err := d.client.Monitors.Keywords.Get(
 		ctx,
 		data.ID.ValueString(),
 		option.WithResponseBodyInto(&res),
