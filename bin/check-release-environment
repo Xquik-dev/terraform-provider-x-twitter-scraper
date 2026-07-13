@@ -1,25 +1,23 @@
 #!/usr/bin/env bash
 
-errors=()
+set -euo pipefail
 
-if [ -z "${GPG_SIGNING_KEY}" ]; then
-  errors+=("The GPG_SIGNING_KEY secret has not been set. Please set it in either this repository's secrets or your organization secrets")
-fi
+cd -- "$(dirname -- "$0")/.."
 
-if [ -z "${GPG_SIGNING_PASSWORD}" ]; then
-  errors+=("The GPG_SIGNING_PASSWORD secret has not been set. Please set it in either this repository's secrets or your organization secrets")
-fi
+for file in .goreleaser.yml terraform-registry-manifest.json .github/workflows/publish-release.yml; do
+  if [[ ! -f "$file" ]]; then
+    echo "Missing required release file: $file" >&2
+    exit 1
+  fi
+done
 
-lenErrors=${#errors[@]}
+go run github.com/goreleaser/goreleaser/v2@v2.17.0 check
 
-if [[ lenErrors -gt 0 ]]; then
-  echo -e "Found the following errors in the release environment:\n"
+jq -e '.version == 1 and (.metadata.protocol_versions | index("6.0") != null)' terraform-registry-manifest.json >/dev/null
+grep -Fq 'artifacts: checksum' .goreleaser.yml
+grep -Fq '{{ .Env.GPG_FINGERPRINT }}' .goreleaser.yml
+grep -Fq 'environment: release' .github/workflows/publish-release.yml
+grep -Fq 'secrets.X_TWITTER_SCRAPER_GPG_SIGNING_KEY' .github/workflows/publish-release.yml
+grep -Fq 'secrets.X_TWITTER_SCRAPER_GPG_SIGNING_PASSWORD' .github/workflows/publish-release.yml
 
-  for error in "${errors[@]}"; do
-    echo -e "- $error\n"
-  done
-
-  exit 1
-fi
-
-echo "The environment is ready to push releases!"
+echo "Release configuration is valid. Signing secrets remain isolated from pull requests."

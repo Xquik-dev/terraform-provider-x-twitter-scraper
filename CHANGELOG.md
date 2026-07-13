@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.2.1 (2026-07-13)
+
+Full Changelog: [v0.2.0...v0.2.1](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.2.0...v0.2.1)
+
+### Bug Fixes
+
+* remove stale integration provider surface ([8fe2514](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/8fe251402e2f2170a8b0f222bf19d44241dc1cc1))
+
+
+### Chores
+
+* avoid failing Context7 refresh without secret ([c8bb791](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/c8bb7910cda65c2d02613354af0b37974ae4412d))
+* refresh Terraform provider JSON deps ([e395bdf](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/e395bdf0f9a204705baa883567cbee1eea17fdb3))
+* sync repo ([efde3b4](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/efde3b424e0fe7c5cb6d584285f52643bda425be))
+
+
+### Documentation
+
+* add Contributor Covenant 2.1 Code of Conduct ([#2192](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/2192)) ([4e0d175](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/4e0d175a8d789f320c5bed9d1c5c6277b589e458))
+* add DeepWiki badge ([c5fb7e5](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/c5fb7e5155cf5ffd2532486aa13158ea0507f423))
+
 ## 0.2.0 (2026-04-01)
 
 Full Changelog: [v0.1.0...v0.2.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.1.0...v0.2.0)

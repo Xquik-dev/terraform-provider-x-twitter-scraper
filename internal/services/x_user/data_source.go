@@ -60,7 +60,7 @@ func (d *XUserDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	res := new(http.Response)
 	_, err := d.client.X.Users.Get(
 		ctx,
-		data.Username.ValueString(),
+		data.ID.ValueString(),
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)

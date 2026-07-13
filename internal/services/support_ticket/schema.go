@@ -19,7 +19,7 @@ var _ resource.ResourceWithConfigValidators = (*SupportTicketResource)(nil)
 
 func ResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Support ticket management",
+		MarkdownDescription: "Support ticket management",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Optional:      true,

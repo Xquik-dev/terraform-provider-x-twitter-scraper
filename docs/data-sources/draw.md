@@ -17,7 +17,7 @@ Giveaway draws from tweet replies
 
 ### Read-Only
 
-- `draw` (Attributes) (see [below for nested schema](#nestedatt--draw))
+- `draw` (Attributes) Full giveaway draw with tweet metrics, entries, and timing. (see [below for nested schema](#nestedatt--draw))
 - `id` (String) The ID of this resource.
 - `winners` (Attributes List) (see [below for nested schema](#nestedatt--winners))
 
@@ -28,7 +28,7 @@ Read-Only:
 
 - `created_at` (String)
 - `drawn_at` (String)
-- `id` (String)
+- `id` (String) Draw public ID.
 - `status` (String)
 - `total_entries` (Number)
 - `tweet_author_username` (String)

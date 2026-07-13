@@ -1,7 +1,6 @@
 # X (Twitter) Scraper Terraform Provider: Monitors, Webhooks, Tweet Actions & Automation
 
-> **Xquik is an independent third-party service.** Not affiliated with X Corp.
-> "Twitter" and "X" are trademarks of X Corp.
+> **Xquik is an independent third-party service.** Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg?url=https%3A%2F%2Fgithub.com%2FXquik-dev%2Fterraform-provider-x-twitter-scraper)](https://deepwiki.com/Xquik-dev/terraform-provider-x-twitter-scraper)
 [![Skills.sh x-twitter-scraper Skill](https://skills.sh/b/xquik-dev/x-twitter-scraper)](https://skills.sh/xquik-dev/x-twitter-scraper)
@@ -22,38 +21,7 @@ on HashiCorp's website.
 
 ## Usage
 
-Terraform Registry publication is pending. Until the provider is listed there,
-build it locally and use a Terraform CLI development override.
-
-Build the provider binary:
-
-```sh
-./scripts/build
-```
-
-Move the generated binary into a local plugin directory:
-
-```sh
-mkdir -p ~/.terraform.d/plugins/xquik-dev/x-twitter-scraper/0.2.0/darwin_arm64
-mv terraform-provider-x-twitter-scraper ~/.terraform.d/plugins/xquik-dev/x-twitter-scraper/0.2.0/darwin_arm64/
-```
-
-Use the matching platform directory for your system, such as `linux_amd64`,
-`linux_arm64`, `darwin_amd64`, `darwin_arm64`, or `windows_amd64`.
-
-Add this development override to `~/.terraformrc`:
-
-```hcl
-provider_installation {
-  dev_overrides {
-    "Xquik-dev/x-twitter-scraper" = "/Users/you/.terraform.d/plugins/xquik-dev/x-twitter-scraper/0.2.0/darwin_arm64"
-  }
-
-  direct {}
-}
-```
-
-Then add the provider to your Terraform project:
+Add the provider to your Terraform project:
 
 <!-- x-release-please-start-version -->
 
@@ -61,7 +29,8 @@ Then add the provider to your Terraform project:
 terraform {
   required_providers {
     x-twitter-scraper = {
-      source = "Xquik-dev/x-twitter-scraper"
+      source  = "Xquik-dev/x-twitter-scraper"
+      version = "~> 0.2.1"
     }
   }
 }
@@ -76,7 +45,7 @@ provider "x-twitter-scraper" {
 Initialize your project by running `terraform init` in the directory.
 
 Additional examples can be found in the [./examples](./examples) folder within this repository, and you can
-refer to the generated provider documentation in [./docs](./docs).
+refer to the full documentation on [the Terraform Registry](https://registry.terraform.io/providers/Xquik-dev/x-twitter-scraper/latest/docs).
 
 ### Provider Options
 

@@ -1,7 +1,7 @@
 resource "x-twitter-scraper_style" "example_style" {
-  username = "username"
-  label = "label"
+  id    = "id"
+  label = "Professional Voice"
   tweets = [{
-    text = "text"
+    text = "Excited to share our latest research findings."
   }]
 }

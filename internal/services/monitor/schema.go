@@ -20,11 +20,11 @@ var _ resource.ResourceWithConfigValidators = (*MonitorResource)(nil)
 
 func ResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Real-time X account monitoring",
+		MarkdownDescription: "Real-time X account monitoring",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
 			},
 			"username": schema.StringAttribute{
 				Description:   "X username (without @)",
@@ -32,7 +32,8 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"event_types": schema.ListAttribute{
-				Required: true,
+				Description: "Array of event types to subscribe to.",
+				Required:    true,
 				Validators: []validator.List{
 					listvalidator.ValueStringsAre(
 						stringvalidator.OneOfCaseInsensitive(
@@ -40,8 +41,23 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							"tweet.reply",
 							"tweet.retweet",
 							"tweet.quote",
-							"follower.gained",
-							"follower.lost",
+							"tweet.media",
+							"tweet.link",
+							"tweet.poll",
+							"tweet.mention",
+							"tweet.hashtag",
+							"tweet.longform",
+							"profile.avatar.changed",
+							"profile.banner.changed",
+							"profile.name.changed",
+							"profile.username.changed",
+							"profile.bio.changed",
+							"profile.location.changed",
+							"profile.url.changed",
+							"profile.verified.changed",
+							"profile.protected.changed",
+							"profile.pinned_tweet.changed",
+							"profile.unavailable.changed",
 						),
 					),
 				},
@@ -53,6 +69,11 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			"created_at": schema.StringAttribute{
 				Computed:   true,
 				CustomType: timetypes.RFC3339Type{},
+			},
+			"next_billing_at": schema.StringAttribute{
+				Description: "Next hourly credit charge time for this account monitor.",
+				Computed:    true,
+				CustomType:  timetypes.RFC3339Type{},
 			},
 			"x_user_id": schema.StringAttribute{
 				Computed: true,

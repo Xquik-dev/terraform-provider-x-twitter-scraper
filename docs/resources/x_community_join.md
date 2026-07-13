@@ -17,11 +17,9 @@ X write actions (tweets, likes, follows, DMs)
 
 ### Required
 
-- `account` (String) X account (@username or account ID)
+- `account` (String) X account identifier (@username or account ID)
 
 ### Read-Only
 
-- `community_id` (String)
-- `community_name` (String)
 - `id` (String) The ID of this resource.
 - `success` (Boolean)

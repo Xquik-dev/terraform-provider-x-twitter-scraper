@@ -17,19 +17,19 @@ Connected X account management
 
 ### Required
 
-- `email` (String) Account email
-- `password` (String) Account password
+- `email` (String, Sensitive) Account email
+- `password` (String, Sensitive) Account password
 - `username` (String) X username
 
 ### Optional
 
-- `proxy_country` (String) Proxy country code
-- `totp_secret` (String) TOTP secret for 2FA
+- `totp_secret` (String, Sensitive) TOTP secret for 2FA
 
 ### Read-Only
 
 - `cookies_obtained_at` (String)
 - `created_at` (String)
+- `health` (String) Available values: "healthy", "locked", "needsReauth", "recovering", "suspended", "temporaryIssue".
 - `id` (String) The ID of this resource.
 - `status` (String)
 - `updated_at` (String)

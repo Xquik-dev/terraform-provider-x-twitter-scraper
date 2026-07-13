@@ -9,7 +9,7 @@ import (
 )
 
 type StyleDataSourceModel struct {
-	Username     types.String                                             `tfsdk:"username" path:"username,required"`
+	ID           types.String                                             `tfsdk:"id" path:"id,required"`
 	FetchedAt    timetypes.RFC3339                                        `tfsdk:"fetched_at" json:"fetchedAt,computed" format:"date-time"`
 	IsOwnAccount types.Bool                                               `tfsdk:"is_own_account" json:"isOwnAccount,computed"`
 	TweetCount   types.Int64                                              `tfsdk:"tweet_count" json:"tweetCount,computed"`

@@ -68,7 +68,7 @@ func (r *XTweetLikeResource) Create(ctx context.Context, req resource.CreateRequ
 	res := new(http.Response)
 	_, err = r.client.X.Tweets.Like.New(
 		ctx,
-		data.TweetID.ValueString(),
+		data.ID.ValueString(),
 		xtwitterscraper.XTweetLikeNewParams{},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -107,7 +107,7 @@ func (r *XTweetLikeResource) Delete(ctx context.Context, req resource.DeleteRequ
 
 	_, err := r.client.X.Tweets.Like.Delete(
 		ctx,
-		data.TweetID.ValueString(),
+		data.ID.ValueString(),
 		xtwitterscraper.XTweetLikeDeleteParams{},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)

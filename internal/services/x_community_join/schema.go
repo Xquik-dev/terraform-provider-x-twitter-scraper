@@ -15,22 +15,16 @@ var _ resource.ResourceWithConfigValidators = (*XCommunityJoinResource)(nil)
 
 func ResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "X write actions (tweets, likes, follows, DMs)",
+		MarkdownDescription: "X write actions (tweets, likes, follows, DMs)",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Required:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown(), stringplanmodifier.RequiresReplace()},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown(), stringplanmodifier.RequiresReplace()},
 			},
 			"account": schema.StringAttribute{
-				Description:   "X account (@username or account ID)",
+				Description:   "X account identifier (@username or account ID)",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-			},
-			"community_id": schema.StringAttribute{
-				Computed: true,
-			},
-			"community_name": schema.StringAttribute{
-				Computed: true,
 			},
 			"success": schema.BoolAttribute{
 				Computed: true,

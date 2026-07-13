@@ -3,12 +3,12 @@
 page_title: "x-twitter-scraper_style Resource - X Twitter Scraper"
 subcategory: ""
 description: |-
-  Tweet composition, drafts, writing styles & radar
+  AI tweet composition, drafts, writing styles, and radar
 ---
 
 # x-twitter-scraper_style (Resource)
 
-Tweet composition, drafts, writing styles & radar
+AI tweet composition, drafts, writing styles, and radar
 
 
 
@@ -19,11 +19,11 @@ Tweet composition, drafts, writing styles & radar
 
 - `label` (String) Display label for the style
 - `tweets` (Attributes List) Array of tweet objects (see [below for nested schema](#nestedatt--tweets))
-- `username` (String)
 
 ### Read-Only
 
 - `fetched_at` (String)
+- `id` (String) The ID of this resource.
 - `is_own_account` (Boolean)
 - `tweet_count` (Number)
 - `x_username` (String)

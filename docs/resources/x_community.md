@@ -3,12 +3,12 @@
 page_title: "x-twitter-scraper_x_community Resource - X Twitter Scraper"
 subcategory: ""
 description: |-
-  
+  X community creation and management
 ---
 
 # x-twitter-scraper_x_community (Resource)
 
-
+X community creation and management
 
 
 
@@ -17,7 +17,7 @@ description: |-
 
 ### Required
 
-- `account` (String) X account (@username or account ID)
+- `account` (String) X account (@username or ID) creating the community
 - `name` (String) Community name
 
 ### Optional

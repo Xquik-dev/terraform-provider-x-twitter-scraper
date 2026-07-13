@@ -3,12 +3,12 @@
 page_title: "x-twitter-scraper_account Data Source - X Twitter Scraper"
 subcategory: ""
 description: |-
-  Account info & settings
+  Account info and settings
 ---
 
 # x-twitter-scraper_account (Data Source)
 
-Account info & settings
+Account info and settings
 
 
 
@@ -17,16 +17,35 @@ Account info & settings
 
 ### Read-Only
 
-- `current_period` (Attributes) (see [below for nested schema](#nestedatt--current_period))
-- `monitors_allowed` (Number)
+- `credit_info` (Attributes) (see [below for nested schema](#nestedatt--credit_info))
+- `monitor_billing` (Attributes) (see [below for nested schema](#nestedatt--monitor_billing))
+- `monitors_allowed` (Number, Deprecated) Deprecated. Monitor slots are unlimited, so this is always Number.MAX_SAFE_INTEGER.
 - `monitors_used` (Number)
 - `plan` (String) Available values: "active", "inactive".
+- `x_username` (String) Linked X username, omitted when no X account is connected.
 
-<a id="nestedatt--current_period"></a>
-### Nested Schema for `current_period`
+<a id="nestedatt--credit_info"></a>
+### Nested Schema for `credit_info`
 
 Read-Only:
 
-- `end` (String)
-- `start` (String)
-- `usage_percent` (Number)
+- `auto_topup_amount_dollars` (Number) Dollar amount charged when automatic top-up runs.
+- `auto_topup_enabled` (Boolean)
+- `auto_topup_threshold` (String) Bigint string threshold that triggers automatic top-up when enabled.
+- `balance` (String) Bigint string to preserve precision above Number.MAX_SAFE_INTEGER.
+- `lifetime_purchased` (String) Total purchased credits as a bigint string.
+- `lifetime_used` (String) Total consumed credits as a bigint string.
+
+
+<a id="nestedatt--monitor_billing"></a>
+### Nested Schema for `monitor_billing`
+
+Read-Only:
+
+- `active_daily_estimate` (String) Estimated daily credits for currently active monitors.
+- `active_hourly_burn` (String) Credits charged each hour for currently active monitors.
+- `credits_per_active_monitor_day` (String) Estimated daily credits for 1 active instant monitor.
+- `credits_per_active_monitor_hour` (String) Hourly credits charged for 1 active instant monitor.
+- `events_included` (Boolean) Webhook and event deliveries are included in monitor billing.
+- `instant_check_interval_seconds` (Number) Active monitors check every 1 second.
+- `unlimited_slots` (Boolean) Monitor slot count is unlimited.
