@@ -1,30 +1,23 @@
 # Context7 Guide
 
+Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.
+
 This guide gives coding agents a compact path through the Xquik Terraform Provider for X (Twitter) Scraper API. Use it before generated resource pages when you need install, authentication, resource naming, and first-use examples in one place.
 
 ## Install
 
-Terraform Registry publication is pending. Until the provider is listed there, build the provider locally and use a Terraform CLI development override.
-
-```sh
-./scripts/build
-mkdir -p ~/.terraform.d/plugins/xquik-dev/x-twitter-scraper/0.2.0/darwin_arm64
-mv terraform-provider-x-twitter-scraper ~/.terraform.d/plugins/xquik-dev/x-twitter-scraper/0.2.0/darwin_arm64/
-```
-
-Use the platform directory that matches your machine, such as `linux_amd64`, `linux_arm64`, `darwin_amd64`, `darwin_arm64`, or `windows_amd64`.
-
-Add a local override to `~/.terraformrc`:
-
 ```hcl
-provider_installation {
-  dev_overrides {
-    "Xquik-dev/x-twitter-scraper" = "/Users/you/.terraform.d/plugins/xquik-dev/x-twitter-scraper/0.2.0/darwin_arm64"
+terraform {
+  required_providers {
+    x-twitter-scraper = {
+      source  = "Xquik-dev/x-twitter-scraper"
+      version = "~> 0.2.1"
+    }
   }
-
-  direct {}
 }
 ```
+
+Run `terraform init` from your Terraform project directory.
 
 ## Authenticate
 
@@ -39,29 +32,15 @@ Bearer token authentication is also supported through `X_TWITTER_SCRAPER_BEARER_
 ## Configure
 
 ```hcl
-terraform {
-  required_providers {
-    x-twitter-scraper = {
-      source = "Xquik-dev/x-twitter-scraper"
-    }
-  }
-}
-
 provider "x-twitter-scraper" {}
 ```
 
-Run `terraform init` from your Terraform project directory after the local override is configured.
-
-Validate that Terraform sees the local provider before adding resources:
+Validate the configuration before adding resources:
 
 ```sh
 terraform providers
 terraform validate
 ```
-
-Terraform may warn that development overrides skip normal provider checksums.
-That is expected for local development and does not mean the provider is listed
-in the Terraform Registry.
 
 ## First Resources
 
@@ -143,4 +122,3 @@ Use [docs/data-sources](data-sources) for generated schema details and [examples
 - Prefer `X_TWITTER_SCRAPER_API_KEY` or `X_TWITTER_SCRAPER_BEARER_TOKEN`.
 - Keep credentials in environment variables or approved secret stores.
 - Never commit Terraform state, local plugin binaries, `.terraformrc`, API keys, bearer tokens, or logs.
-- Do not claim Terraform Registry install is available until the registry listing is live.

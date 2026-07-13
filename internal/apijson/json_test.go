@@ -57,7 +57,6 @@ type Primitives struct {
 	D float64 `json:"d"`
 	E float32 `json:"e"`
 	F []int   `json:"f"`
-	G int     `json:"b"`
 }
 
 type PrimitivePointers struct {
@@ -222,13 +221,13 @@ var tests = map[string]struct {
 
 	"primitive_struct": {
 		`{"a":false,"b":237628372683,"c":654,"d":9999.43,"e":43.76,"f":[1,2,3,4]}`,
-		Primitives{A: false, B: 237628372683, C: uint(654), D: 9999.43, E: 43.76, F: []int{1, 2, 3, 4}, G: 237628372683},
+		Primitives{A: false, B: 237628372683, C: uint(654), D: 9999.43, E: 43.76, F: []int{1, 2, 3, 4}},
 	},
 
 	"slices": {
 		`{"slices":[{"a":false,"b":237628372683,"c":654,"d":9999.43,"e":43.76,"f":[1,2,3,4]}]}`,
 		Slices{
-			Slice: []Primitives{{A: false, B: 237628372683, C: uint(654), D: 9999.43, E: 43.76, F: []int{1, 2, 3, 4}, G: 237628372683}},
+			Slice: []Primitives{{A: false, B: 237628372683, C: uint(654), D: 9999.43, E: 43.76, F: []int{1, 2, 3, 4}}},
 		},
 	},
 
@@ -1749,7 +1748,7 @@ func TestDecodeUnsetBehaviour(t *testing.T) {
 
 type StructWithComputedFields struct {
 	RegStr            types.String                                             `tfsdk:"str" json:"str,optional"`
-	DerivedStr        types.String                                             `tfsdk:"str" json:"str,optional"`
+	DerivedStr        types.String                                             `tfsdk:"str" json:"derived_str,optional"`
 	CompStr           types.String                                             `tfsdk:"comp_str" json:"comp_str,computed"`
 	CompOptStr        types.String                                             `tfsdk:"opt_str" json:"opt_str,computed_optional"`
 	CompTime          timetypes.RFC3339                                        `tfsdk:"time" json:"time,computed"`
@@ -1772,6 +1771,7 @@ type NestedStructWithComputedFields struct {
 
 var exampleNestedJson = `{
 	"str":"str",
+	"derived_str":"str",
 	"comp_str":"comp_str",
 	"opt_str":"opt_str",
 	"time":"2006-01-02T15:04:05Z",

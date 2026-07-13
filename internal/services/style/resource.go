@@ -9,15 +9,18 @@ import (
 	"net/http"
 
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/apijson"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/importpath"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/logging"
 	"github.com/Xquik-dev/x-twitter-scraper-go"
 	"github.com/Xquik-dev/x-twitter-scraper-go/option"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.ResourceWithConfigure = (*StyleResource)(nil)
 var _ resource.ResourceWithModifyPlan = (*StyleResource)(nil)
+var _ resource.ResourceWithImportState = (*StyleResource)(nil)
 
 func NewResource() resource.Resource {
 	return &StyleResource{}
@@ -68,7 +71,7 @@ func (r *StyleResource) Create(ctx context.Context, req resource.CreateRequest, 
 	res := new(http.Response)
 	_, err = r.client.Styles.Update(
 		ctx,
-		data.Username.ValueString(),
+		data.ID.ValueString(),
 		xtwitterscraper.StyleUpdateParams{},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -113,7 +116,7 @@ func (r *StyleResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	res := new(http.Response)
 	_, err = r.client.Styles.Update(
 		ctx,
-		data.Username.ValueString(),
+		data.ID.ValueString(),
 		xtwitterscraper.StyleUpdateParams{},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -145,7 +148,7 @@ func (r *StyleResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	res := new(http.Response)
 	_, err := r.client.Styles.Get(
 		ctx,
-		data.Username.ValueString(),
+		data.ID.ValueString(),
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -179,11 +182,48 @@ func (r *StyleResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 
 	err := r.client.Styles.Delete(
 		ctx,
-		data.Username.ValueString(),
+		data.ID.ValueString(),
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *StyleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	var data = new(StyleModel)
+
+	path := ""
+	diags := importpath.ParseImportID(
+		req.ID,
+		"<id>",
+		&path,
+	)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	data.ID = types.StringValue(path)
+
+	res := new(http.Response)
+	_, err := r.client.Styles.Get(
+		ctx,
+		path,
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.Unmarshal(bytes, &data)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
 		return
 	}
 

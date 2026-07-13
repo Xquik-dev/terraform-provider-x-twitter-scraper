@@ -68,7 +68,7 @@ func (r *XTweetRetweetResource) Create(ctx context.Context, req resource.CreateR
 	res := new(http.Response)
 	_, err = r.client.X.Tweets.Retweet.New(
 		ctx,
-		data.TweetID.ValueString(),
+		data.ID.ValueString(),
 		xtwitterscraper.XTweetRetweetNewParams{},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -107,7 +107,7 @@ func (r *XTweetRetweetResource) Delete(ctx context.Context, req resource.DeleteR
 
 	_, err := r.client.X.Tweets.Retweet.Delete(
 		ctx,
-		data.TweetID.ValueString(),
+		data.ID.ValueString(),
 		xtwitterscraper.XTweetRetweetDeleteParams{},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)

@@ -8,11 +8,9 @@ import (
 )
 
 type XCommunityJoinModel struct {
-	ID            types.String `tfsdk:"id" path:"id,required"`
-	Account       types.String `tfsdk:"account" json:"account,required"`
-	CommunityID   types.String `tfsdk:"community_id" json:"communityId,computed"`
-	CommunityName types.String `tfsdk:"community_name" json:"communityName,computed"`
-	Success       types.Bool   `tfsdk:"success" json:"success,computed"`
+	ID      types.String `tfsdk:"id" path:"id,required"`
+	Account types.String `tfsdk:"account" json:"account,required"`
+	Success types.Bool   `tfsdk:"success" json:"success,computed"`
 }
 
 func (m XCommunityJoinModel) MarshalJSON() (data []byte, err error) {

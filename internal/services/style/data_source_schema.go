@@ -15,9 +15,9 @@ var _ datasource.DataSourceWithConfigValidators = (*StyleDataSource)(nil)
 
 func DataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Tweet composition, drafts, writing styles & radar",
+		MarkdownDescription: "AI tweet composition, drafts, writing styles, and radar",
 		Attributes: map[string]schema.Attribute{
-			"username": schema.StringAttribute{
+			"id": schema.StringAttribute{
 				Required: true,
 			},
 			"fetched_at": schema.StringAttribute{

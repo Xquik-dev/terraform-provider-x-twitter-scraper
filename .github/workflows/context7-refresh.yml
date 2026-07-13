@@ -14,8 +14,13 @@ on:
 
 permissions: {}
 
+concurrency:
+  group: context7-refresh
+  cancel-in-progress: true
+
 jobs:
   refresh:
+    name: Refresh Context7 Documentation
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Context7 refresh

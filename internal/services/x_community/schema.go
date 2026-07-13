@@ -15,13 +15,14 @@ var _ resource.ResourceWithConfigValidators = (*XCommunityResource)(nil)
 
 func ResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
+		Description: "X community creation and management",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"account": schema.StringAttribute{
-				Description:   "X account (@username or account ID)",
+				Description:   "X account (@username or ID) creating the community",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},

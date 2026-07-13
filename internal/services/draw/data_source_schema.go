@@ -15,17 +15,19 @@ var _ datasource.DataSourceWithConfigValidators = (*DrawDataSource)(nil)
 
 func DataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Giveaway draws from tweet replies",
+		MarkdownDescription: "Giveaway draws from tweet replies",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Required: true,
 			},
 			"draw": schema.SingleNestedAttribute{
-				Computed:   true,
-				CustomType: customfield.NewNestedObjectType[DrawDrawDataSourceModel](ctx),
+				Description: "Full giveaway draw with tweet metrics, entries, and timing.",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectType[DrawDrawDataSourceModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
-						Computed: true,
+						Description: "Draw public ID.",
+						Computed:    true,
 					},
 					"created_at": schema.StringAttribute{
 						Computed:   true,

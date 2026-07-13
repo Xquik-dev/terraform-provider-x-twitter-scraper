@@ -17,7 +17,7 @@ Real-time X account monitoring
 
 ### Required
 
-- `event_types` (List of String)
+- `event_types` (List of String) Array of event types to subscribe to.
 - `username` (String) X username (without @)
 
 ### Optional
@@ -28,4 +28,5 @@ Real-time X account monitoring
 
 - `created_at` (String)
 - `id` (String) The ID of this resource.
+- `next_billing_at` (String) Next hourly credit charge time for this account monitor.
 - `x_user_id` (String)

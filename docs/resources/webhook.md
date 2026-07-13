@@ -3,12 +3,12 @@
 page_title: "x-twitter-scraper_webhook Resource - X Twitter Scraper"
 subcategory: ""
 description: |-
-  Webhook endpoint management & delivery
+  Webhook endpoint management and delivery
 ---
 
 # x-twitter-scraper_webhook (Resource)
 
-Webhook endpoint management & delivery
+Webhook endpoint management and delivery
 
 
 
@@ -17,7 +17,7 @@ Webhook endpoint management & delivery
 
 ### Required
 
-- `event_types` (List of String)
+- `event_types` (List of String) Array of event types to subscribe to.
 - `url` (String) HTTPS URL
 
 ### Optional
@@ -26,6 +26,10 @@ Webhook endpoint management & delivery
 
 ### Read-Only
 
+- `consecutive_failures` (Number) Consecutive failed delivery attempts since the last success.
 - `created_at` (String)
+- `delivery_status` (String) Endpoint delivery state. needs_attention means delivery stopped after repeated failures.
+Available values: "active", "paused", "needs_attention".
+- `failure_hard_cap` (Number) Consecutive delivery failures that pause the endpoint.
 - `id` (String) The ID of this resource.
-- `secret` (String)
+- `secret` (String, Sensitive) Plaintext HMAC signing secret returned only at creation.

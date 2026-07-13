@@ -68,7 +68,7 @@ func (r *XUserFollowResource) Create(ctx context.Context, req resource.CreateReq
 	res := new(http.Response)
 	_, err = r.client.X.Users.Follow.New(
 		ctx,
-		data.UserID.ValueString(),
+		data.ID.ValueString(),
 		xtwitterscraper.XUserFollowNewParams{},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),

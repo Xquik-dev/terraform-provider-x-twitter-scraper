@@ -60,7 +60,7 @@ func (d *XTweetDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	res := new(http.Response)
 	_, err := d.client.X.Tweets.Get(
 		ctx,
-		data.TweetID.ValueString(),
+		data.ID.ValueString(),
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)

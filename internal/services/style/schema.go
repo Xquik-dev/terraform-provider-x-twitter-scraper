@@ -16,11 +16,11 @@ var _ resource.ResourceWithConfigValidators = (*StyleResource)(nil)
 
 func ResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Tweet composition, drafts, writing styles & radar",
+		MarkdownDescription: "AI tweet composition, drafts, writing styles, and radar",
 		Attributes: map[string]schema.Attribute{
-			"username": schema.StringAttribute{
+			"id": schema.StringAttribute{
 				Required:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown(), stringplanmodifier.RequiresReplace()},
 			},
 			"label": schema.StringAttribute{
 				Description: "Display label for the style",

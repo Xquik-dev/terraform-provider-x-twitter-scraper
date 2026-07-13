@@ -19,7 +19,7 @@ var _ datasource.DataSourceWithConfigValidators = (*MonitorDataSource)(nil)
 
 func DataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Real-time X account monitoring",
+		MarkdownDescription: "Real-time X account monitoring",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Required: true,
@@ -31,6 +31,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 			"is_active": schema.BoolAttribute{
 				Computed: true,
 			},
+			"next_billing_at": schema.StringAttribute{
+				Description: "Next hourly credit charge time for this account monitor.",
+				Computed:    true,
+				CustomType:  timetypes.RFC3339Type{},
+			},
 			"username": schema.StringAttribute{
 				Computed: true,
 			},
@@ -38,7 +43,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed: true,
 			},
 			"event_types": schema.ListAttribute{
-				Computed: true,
+				Description: "Array of event types to subscribe to.",
+				Computed:    true,
 				Validators: []validator.List{
 					listvalidator.ValueStringsAre(
 						stringvalidator.OneOfCaseInsensitive(
@@ -46,8 +52,23 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 							"tweet.reply",
 							"tweet.retweet",
 							"tweet.quote",
-							"follower.gained",
-							"follower.lost",
+							"tweet.media",
+							"tweet.link",
+							"tweet.poll",
+							"tweet.mention",
+							"tweet.hashtag",
+							"tweet.longform",
+							"profile.avatar.changed",
+							"profile.banner.changed",
+							"profile.name.changed",
+							"profile.username.changed",
+							"profile.bio.changed",
+							"profile.location.changed",
+							"profile.url.changed",
+							"profile.verified.changed",
+							"profile.protected.changed",
+							"profile.pinned_tweet.changed",
+							"profile.unavailable.changed",
 						),
 					),
 				},

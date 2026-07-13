@@ -60,7 +60,7 @@ func (d *StyleDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	res := new(http.Response)
 	_, err := d.client.Styles.Get(
 		ctx,
-		data.Username.ValueString(),
+		data.ID.ValueString(),
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)

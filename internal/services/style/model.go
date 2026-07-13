@@ -9,7 +9,7 @@ import (
 )
 
 type StyleModel struct {
-	Username     types.String         `tfsdk:"username" path:"username,required"`
+	ID           types.String         `tfsdk:"id" path:"id,required"`
 	Label        types.String         `tfsdk:"label" json:"label,required,no_refresh"`
 	Tweets       *[]*StyleTweetsModel `tfsdk:"tweets" json:"tweets,required"`
 	FetchedAt    timetypes.RFC3339    `tfsdk:"fetched_at" json:"fetchedAt,computed" format:"date-time"`

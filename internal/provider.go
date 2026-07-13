@@ -13,7 +13,9 @@ import (
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/draw"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/event"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/extraction"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/guest_wallet"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/monitor"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/monitor_keyword"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/style"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/subscribe"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/support_ticket"
@@ -27,6 +29,7 @@ import (
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_tweet_retweet"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_user"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_user_follow"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_write_action"
 	"github.com/Xquik-dev/x-twitter-scraper-go"
 	"github.com/Xquik-dev/x-twitter-scraper-go/option"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -60,16 +63,19 @@ func (p *XTwitterScraperProvider) Metadata(ctx context.Context, req provider.Met
 
 func ProviderSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
+		Description: `Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.`,
 		Attributes: map[string]schema.Attribute{
 			"base_url": schema.StringAttribute{
 				Description: "Set the base url that the provider connects to.",
 				Optional:    true,
 			},
 			"api_key": schema.StringAttribute{
-				Optional: true,
+				Optional:  true,
+				Sensitive: true,
 			},
 			"bearer_token": schema.StringAttribute{
-				Optional: true,
+				Optional:  true,
+				Sensitive: true,
 			},
 		},
 	}
@@ -125,6 +131,7 @@ func (p *XTwitterScraperProvider) Resources(ctx context.Context) []func() resour
 		draft.NewResource,
 		style.NewResource,
 		monitor.NewResource,
+		monitor_keyword.NewResource,
 		webhook.NewResource,
 		x_tweet.NewResource,
 		x_tweet_like.NewResource,
@@ -135,6 +142,7 @@ func (p *XTwitterScraperProvider) Resources(ctx context.Context) []func() resour
 		x_community_join.NewResource,
 		x_account.NewResource,
 		support_ticket.NewResource,
+		guest_wallet.NewResource,
 	}
 }
 
@@ -146,7 +154,9 @@ func (p *XTwitterScraperProvider) DataSources(ctx context.Context) []func() data
 		monitor.NewMonitorDataSource,
 		event.NewEventDataSource,
 		extraction.NewExtractionDataSource,
+		monitor_keyword.NewMonitorKeywordDataSource,
 		draw.NewDrawDataSource,
+		x_write_action.NewXWriteActionDataSource,
 		x_tweet.NewXTweetDataSource,
 		x_user.NewXUserDataSource,
 		x_account.NewXAccountDataSource,

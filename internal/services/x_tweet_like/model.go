@@ -8,7 +8,7 @@ import (
 )
 
 type XTweetLikeModel struct {
-	TweetID types.String `tfsdk:"tweet_id" path:"tweetId,required"`
+	ID      types.String `tfsdk:"id" path:"id,required"`
 	Account types.String `tfsdk:"account" json:"account,required"`
 	Success types.Bool   `tfsdk:"success" json:"success,computed"`
 }

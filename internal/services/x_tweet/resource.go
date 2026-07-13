@@ -103,7 +103,7 @@ func (r *XTweetResource) Read(ctx context.Context, req resource.ReadRequest, res
 	res := new(http.Response)
 	_, err := r.client.X.Tweets.Get(
 		ctx,
-		data.TweetID.ValueString(),
+		data.ID.ValueString(),
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -137,7 +137,7 @@ func (r *XTweetResource) Delete(ctx context.Context, req resource.DeleteRequest,
 
 	_, err := r.client.X.Tweets.Delete(
 		ctx,
-		data.TweetID.ValueString(),
+		data.ID.ValueString(),
 		xtwitterscraper.XTweetDeleteParams{},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
