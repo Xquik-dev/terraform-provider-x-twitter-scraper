@@ -9,12 +9,6 @@ export GOPRIVATE="${GOPRIVATE:+$GOPRIVATE,}github.com/Xquik-dev/x-twitter-scrape
 
 echo "==> Generating Terraform provider documentation"
 
-EXEC='tfplugindocs'
-if ! command -v -- "$EXEC" &> /dev/null; then
-  go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
-  EXEC="$(go env -- GOPATH)/bin/$EXEC"
-fi
-
 case "$OSTYPE" in
 linux*)
   export -- TMPDIR=/var/tmp
@@ -23,4 +17,7 @@ linux*)
 esac
 
 go mod tidy -e
-exec -- "$EXEC" generate -rendered-provider-name "X Twitter Scraper" -provider-name="x-twitter-scraper"
+exec -- go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@v0.25.0 \
+  generate \
+  -rendered-provider-name "X Twitter Scraper" \
+  -provider-name="x-twitter-scraper"
