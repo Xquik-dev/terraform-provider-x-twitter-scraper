@@ -16,14 +16,9 @@ import (
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/support_ticket"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/webhook"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_account"
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_community"
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_community_join"
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_profile"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_tweet"
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_tweet_like"
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_tweet_retweet"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_user"
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_user_follow"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_write"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_write_action"
 	"github.com/Xquik-dev/x-twitter-scraper-go"
 	"github.com/Xquik-dev/x-twitter-scraper-go/option"
@@ -122,13 +117,24 @@ func (p *XTwitterScraperProvider) Resources(ctx context.Context) []func() resour
 		monitor.NewResource,
 		monitor_keyword.NewResource,
 		webhook.NewResource,
-		x_tweet.NewResource,
-		x_tweet_like.NewResource,
-		x_tweet_retweet.NewResource,
-		x_user_follow.NewResource,
-		x_profile.NewResource,
-		x_community.NewResource,
-		x_community_join.NewResource,
+		x_write.NewCreateTweetResource,
+		x_write.NewDeleteTweetResource,
+		x_write.NewLikeResource,
+		x_write.NewUnlikeResource,
+		x_write.NewRetweetResource,
+		x_write.NewUnretweetResource,
+		x_write.NewFollowResource,
+		x_write.NewUnfollowResource,
+		x_write.NewRemoveFollowerResource,
+		x_write.NewSendDMResource,
+		x_write.NewUploadMediaResource,
+		x_write.NewUpdateProfileResource,
+		x_write.NewUpdateAvatarResource,
+		x_write.NewUpdateBannerResource,
+		x_write.NewCreateCommunityResource,
+		x_write.NewDeleteCommunityResource,
+		x_write.NewJoinCommunityResource,
+		x_write.NewLeaveCommunityResource,
 		support_ticket.NewResource,
 		guest_wallet.NewResource,
 	}
