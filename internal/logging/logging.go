@@ -3,6 +3,7 @@ package logging
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -39,7 +40,7 @@ func LogRequest(ctx context.Context, req *http.Request) error {
 	// Log headers
 	for name, values := range req.Header {
 		for _, value := range values {
-			lines = append(lines, fmt.Sprintf("> %s: %s", strings.ToLower(name), value))
+			lines = append(lines, fmt.Sprintf("> %s: %s", strings.ToLower(name), redactHeader(name, value)))
 		}
 	}
 
@@ -54,7 +55,7 @@ func LogRequest(ctx context.Context, req *http.Request) error {
 		req.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 
 		// Log the body
-		lines = append(lines, ">\n", string(bodyBytes), "\n")
+		lines = append(lines, ">\n", redactJSONBody(bodyBytes), "\n")
 	}
 
 	tflog.Debug(ctx, strings.Join(lines, "\n"))
@@ -69,7 +70,7 @@ func LogResponse(ctx context.Context, resp *http.Response) error {
 	// Log headers
 	for name, values := range resp.Header {
 		for _, value := range values {
-			lines = append(lines, fmt.Sprintf("< %s: %s", strings.ToLower(name), value))
+			lines = append(lines, fmt.Sprintf("< %s: %s", strings.ToLower(name), redactHeader(name, value)))
 		}
 	}
 
@@ -82,10 +83,76 @@ func LogResponse(ctx context.Context, resp *http.Response) error {
 	// Restore the original body to the response so it can be read again
 	resp.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 
-	lines = append(lines, "<\n", string(bodyBytes), "\n")
+	lines = append(lines, "<\n", redactJSONBody(bodyBytes), "\n")
 
 	// Log the body
 	tflog.Debug(ctx, strings.Join(lines, "\n"))
 
 	return nil
+}
+
+var sensitiveHeaders = map[string]bool{
+	"authorization":       true,
+	"cookie":              true,
+	"idempotency-key":     true,
+	"proxy-authorization": true,
+	"set-cookie":          true,
+	"x-api-key":           true,
+	"x-auth-token":        true,
+	"xquik-api-key":       true,
+}
+
+var sensitiveJSONKeys = map[string]bool{
+	"accesstoken":    true,
+	"apikey":         true,
+	"authorization":  true,
+	"clientsecret":   true,
+	"credential":     true,
+	"idempotencykey": true,
+	"password":       true,
+	"privatekey":     true,
+	"refreshtoken":   true,
+	"secret":         true,
+	"sessiontoken":   true,
+	"token":          true,
+}
+
+func redactHeader(name string, value string) string {
+	if sensitiveHeaders[strings.ToLower(name)] {
+		return "[REDACTED]"
+	}
+	return value
+}
+
+func redactJSONBody(body []byte) string {
+	var decoded any
+	decoder := json.NewDecoder(bytes.NewReader(body))
+	decoder.UseNumber()
+	if err := decoder.Decode(&decoded); err != nil {
+		return string(body)
+	}
+	redactJSONValue(decoded)
+	redacted, err := json.Marshal(decoded)
+	if err != nil {
+		return string(body)
+	}
+	return string(redacted)
+}
+
+func redactJSONValue(value any) {
+	switch typed := value.(type) {
+	case map[string]any:
+		for key, child := range typed {
+			normalized := strings.NewReplacer("_", "", "-", "").Replace(strings.ToLower(key))
+			if sensitiveJSONKeys[normalized] {
+				typed[key] = "[REDACTED]"
+				continue
+			}
+			redactJSONValue(child)
+		}
+	case []any:
+		for _, child := range typed {
+			redactJSONValue(child)
+		}
+	}
 }
