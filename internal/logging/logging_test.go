@@ -30,9 +30,15 @@ func TestRedactJSONBodyRecursively(t *testing.T) {
 	}
 }
 
-func TestRedactJSONBodyPreservesNonJSON(t *testing.T) {
+func TestRedactJSONBodyOmitsNonJSON(t *testing.T) {
 	const body = "plain text"
-	if got := redactJSONBody([]byte(body)); got != body {
-		t.Errorf("redactJSONBody() = %q, want %q", got, body)
+	if got := redactJSONBody([]byte(body)); got != omittedBody {
+		t.Errorf("redactJSONBody() = %q, want %q", got, omittedBody)
+	}
+}
+
+func TestRedactJSONBodyOmitsEmptyBody(t *testing.T) {
+	if got := redactJSONBody(nil); got != omittedBody {
+		t.Errorf("redactJSONBody() = %q, want %q", got, omittedBody)
 	}
 }

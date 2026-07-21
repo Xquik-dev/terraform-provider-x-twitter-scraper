@@ -117,6 +117,8 @@ var sensitiveJSONKeys = map[string]bool{
 	"token":          true,
 }
 
+const omittedBody = "[OMITTED]"
+
 func redactHeader(name string, value string) string {
 	if sensitiveHeaders[strings.ToLower(name)] {
 		return "[REDACTED]"
@@ -129,12 +131,12 @@ func redactJSONBody(body []byte) string {
 	decoder := json.NewDecoder(bytes.NewReader(body))
 	decoder.UseNumber()
 	if err := decoder.Decode(&decoded); err != nil {
-		return string(body)
+		return omittedBody
 	}
 	redactJSONValue(decoded)
 	redacted, err := json.Marshal(decoded)
 	if err != nil {
-		return string(body)
+		return omittedBody
 	}
 	return string(redacted)
 }

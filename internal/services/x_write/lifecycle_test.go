@@ -14,6 +14,7 @@ import (
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/test_helpers"
 	"github.com/Xquik-dev/x-twitter-scraper-go"
 	"github.com/Xquik-dev/x-twitter-scraper-go/option"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -181,6 +182,48 @@ func TestAllWriteResourceSchemasMatchStableStateModel(t *testing.T) {
 			errs.Report(t)
 		})
 	}
+}
+
+func TestWritePayloadAttributesAreSensitive(t *testing.T) {
+	for _, op := range operations {
+		op := op
+		t.Run(op.action, func(t *testing.T) {
+			t.Parallel()
+			writeSchema := resourceSchema(context.Background(), op)
+			for _, name := range []string{"payload_json", "request_payload_json"} {
+				attribute, ok := writeSchema.Attributes[name].(schema.StringAttribute)
+				if !ok {
+					t.Fatalf("%s is not a string attribute", name)
+				}
+				if !attribute.Sensitive {
+					t.Errorf("%s must be sensitive", name)
+				}
+			}
+		})
+	}
+}
+
+func TestCanonicalPollPathPreservesSDKBasePath(t *testing.T) {
+	const writeActionID = "write-action-123"
+	var requestedPath string
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		requestedPath = request.URL.Path
+		writer.Header().Set("Content-Type", "application/json")
+		_, _ = writer.Write([]byte(`{"ok":true}`))
+	}))
+	defer server.Close()
+
+	path, err := canonicalPollPath(server.URL+"/api/v1/x/write-actions/"+writeActionID, writeActionID)
+	if err != nil {
+		t.Fatalf("canonicalPollPath: %v", err)
+	}
+	client := xtwitterscraper.NewClient(option.WithBaseURL(server.URL + "/api/v1/"))
+	var response map[string]any
+	if err := client.Get(context.Background(), path, nil, &response, option.WithMaxRetries(0)); err != nil {
+		t.Fatalf("Client.Get: %v", err)
+	}
+	assertEqual(t, "relative poll path", path, "x/write-actions/"+writeActionID)
+	assertEqual(t, "SDK request path", requestedPath, "/api/v1/x/write-actions/"+writeActionID)
 }
 
 func TestIdempotencyKeyValidationMatchesCanonicalContract(t *testing.T) {
