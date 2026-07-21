@@ -129,7 +129,6 @@ func (p *XTwitterScraperProvider) Resources(ctx context.Context) []func() resour
 		x_profile.NewResource,
 		x_community.NewResource,
 		x_community_join.NewResource,
-		x_account.NewResource,
 		support_ticket.NewResource,
 		guest_wallet.NewResource,
 	}

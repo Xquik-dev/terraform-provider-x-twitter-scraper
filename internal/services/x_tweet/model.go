@@ -10,21 +10,21 @@ import (
 )
 
 type XTweetModel struct {
-	ID             types.String                                `tfsdk:"id" path:"id,optional"`
-	Account        types.String                                `tfsdk:"account" json:"account,required,no_refresh"`
-	AttachmentURL  types.String                                `tfsdk:"attachment_url" json:"attachment_url,optional,no_refresh"`
-	CommunityID    types.String                                `tfsdk:"community_id" json:"community_id,optional,no_refresh"`
-	IsNoteTweet    types.Bool                                  `tfsdk:"is_note_tweet" json:"is_note_tweet,optional,no_refresh"`
-	ReplyToTweetID types.String                                `tfsdk:"reply_to_tweet_id" json:"reply_to_tweet_id,optional,no_refresh"`
-	Text           types.String                                `tfsdk:"text" json:"text,optional,no_refresh"`
-	Media          *[]types.String                             `tfsdk:"media" json:"media,optional,no_refresh"`
-	Charged        types.Bool                                  `tfsdk:"charged" json:"charged,computed,no_refresh"`
-	ChargedCredits types.String                                `tfsdk:"charged_credits" json:"chargedCredits,computed,no_refresh"`
-	Success        types.Bool                                  `tfsdk:"success" json:"success,computed,no_refresh"`
-	TweetID        types.String                                `tfsdk:"tweet_id" json:"tweetId,computed,no_refresh"`
-	WriteActionID  types.String                                `tfsdk:"write_action_id" json:"writeActionId,computed,no_refresh"`
-	Author         customfield.NestedObject[XTweetAuthorModel] `tfsdk:"author" json:"author,computed"`
-	Tweet          customfield.NestedObject[XTweetTweetModel]  `tfsdk:"tweet" json:"tweet,computed"`
+	ID             types.String                               `tfsdk:"id" path:"id,optional"`
+	Account        types.String                               `tfsdk:"account" json:"account,required,no_refresh"`
+	AttachmentURL  types.String                               `tfsdk:"attachment_url" json:"attachment_url,optional,no_refresh"`
+	CommunityID    types.String                               `tfsdk:"community_id" json:"community_id,optional,no_refresh"`
+	IsNoteTweet    types.Bool                                 `tfsdk:"is_note_tweet" json:"is_note_tweet,optional,no_refresh"`
+	ReplyToTweetID types.String                               `tfsdk:"reply_to_tweet_id" json:"reply_to_tweet_id,optional,no_refresh"`
+	Text           types.String                               `tfsdk:"text" json:"text,optional,no_refresh"`
+	Media          *[]types.String                            `tfsdk:"media" json:"media,optional,no_refresh"`
+	Charged        types.Bool                                 `tfsdk:"charged" json:"charged,computed,no_refresh"`
+	ChargedCredits types.String                               `tfsdk:"charged_credits" json:"chargedCredits,computed,no_refresh"`
+	Success        types.Bool                                 `tfsdk:"success" json:"success,computed,no_refresh"`
+	TweetID        types.String                               `tfsdk:"tweet_id" json:"tweetId,computed,no_refresh"`
+	WriteActionID  types.String                               `tfsdk:"write_action_id" json:"writeActionId,computed,no_refresh"`
+	Tweet          customfield.NestedObject[XTweetTweetModel] `tfsdk:"tweet" json:"tweet,computed"`
+	Author         jsontypes.Normalized                       `tfsdk:"author" json:"author,computed"`
 }
 
 func (m XTweetModel) MarshalJSON() (data []byte, err error) {
@@ -33,45 +33,6 @@ func (m XTweetModel) MarshalJSON() (data []byte, err error) {
 
 func (m XTweetModel) MarshalJSONForUpdate(state XTweetModel) (data []byte, err error) {
 	return apijson.MarshalForUpdate(m, state)
-}
-
-type XTweetAuthorModel struct {
-	ID                  types.String                          `tfsdk:"id" json:"id,computed"`
-	Name                types.String                          `tfsdk:"name" json:"name,computed"`
-	Username            types.String                          `tfsdk:"username" json:"username,computed"`
-	AutomatedBy         types.String                          `tfsdk:"automated_by" json:"automatedBy,computed"`
-	CanDm               types.Bool                            `tfsdk:"can_dm" json:"canDm,computed"`
-	CommunityRole       types.String                          `tfsdk:"community_role" json:"communityRole,computed"`
-	CoverPicture        types.String                          `tfsdk:"cover_picture" json:"coverPicture,computed"`
-	CreatedAt           types.String                          `tfsdk:"created_at" json:"createdAt,computed"`
-	Description         types.String                          `tfsdk:"description" json:"description,computed"`
-	FavouritesCount     types.Int64                           `tfsdk:"favourites_count" json:"favouritesCount,computed"`
-	Followers           types.Int64                           `tfsdk:"followers" json:"followers,computed"`
-	Following           types.Int64                           `tfsdk:"following" json:"following,computed"`
-	HasCustomTimelines  types.Bool                            `tfsdk:"has_custom_timelines" json:"hasCustomTimelines,computed"`
-	IsAutomated         types.Bool                            `tfsdk:"is_automated" json:"isAutomated,computed"`
-	IsBlueVerified      types.Bool                            `tfsdk:"is_blue_verified" json:"isBlueVerified,computed"`
-	IsTranslator        types.Bool                            `tfsdk:"is_translator" json:"isTranslator,computed"`
-	IsVerified          types.Bool                            `tfsdk:"is_verified" json:"isVerified,computed"`
-	Location            types.String                          `tfsdk:"location" json:"location,computed"`
-	MediaCount          types.Int64                           `tfsdk:"media_count" json:"mediaCount,computed"`
-	PinnedTweetIDs      customfield.List[types.String]        `tfsdk:"pinned_tweet_ids" json:"pinnedTweetIds,computed"`
-	PossiblySensitive   types.Bool                            `tfsdk:"possibly_sensitive" json:"possiblySensitive,computed"`
-	ProfileBio          customfield.Map[jsontypes.Normalized] `tfsdk:"profile_bio" json:"profile_bio,computed"`
-	ProfileBannerURL    types.String                          `tfsdk:"profile_banner_url" json:"profileBannerUrl,computed"`
-	ProfilePicture      types.String                          `tfsdk:"profile_picture" json:"profilePicture,computed"`
-	Protected           types.Bool                            `tfsdk:"protected" json:"protected,computed"`
-	StatusesCount       types.Int64                           `tfsdk:"statuses_count" json:"statusesCount,computed"`
-	Unavailable         types.Bool                            `tfsdk:"unavailable" json:"unavailable,computed"`
-	UnavailableReason   types.String                          `tfsdk:"unavailable_reason" json:"unavailableReason,computed"`
-	URL                 types.String                          `tfsdk:"url" json:"url,computed"`
-	Verified            types.Bool                            `tfsdk:"verified" json:"verified,computed"`
-	VerifiedType        types.String                          `tfsdk:"verified_type" json:"verifiedType,computed"`
-	ViewerFollowedBy    types.Bool                            `tfsdk:"viewer_followed_by" json:"viewerFollowedBy,computed"`
-	ViewerFollowing     types.Bool                            `tfsdk:"viewer_following" json:"viewerFollowing,computed"`
-	WithheldInCountries customfield.List[types.String]        `tfsdk:"withheld_in_countries" json:"withheldInCountries,computed"`
-	Followers           types.Int64                           `tfsdk:"followers" json:"followers,computed"`
-	Verified            types.Bool                            `tfsdk:"verified" json:"verified,computed"`
 }
 
 type XTweetTweetModel struct {
@@ -83,7 +44,7 @@ type XTweetTweetModel struct {
 	RetweetCount      types.Int64                                                 `tfsdk:"retweet_count" json:"retweetCount,computed"`
 	Text              types.String                                                `tfsdk:"text" json:"text,computed"`
 	ViewCount         types.Int64                                                 `tfsdk:"view_count" json:"viewCount,computed"`
-	Author            customfield.NestedObject[XTweetTweetAuthorModel]            `tfsdk:"author" json:"author,computed"`
+	Author            jsontypes.Normalized                                        `tfsdk:"author" json:"author,computed"`
 	ContentDisclosure customfield.NestedObject[XTweetTweetContentDisclosureModel] `tfsdk:"content_disclosure" json:"contentDisclosure,computed"`
 	ConversationID    types.String                                                `tfsdk:"conversation_id" json:"conversationId,computed"`
 	CreatedAt         types.String                                                `tfsdk:"created_at" json:"createdAt,computed"`
@@ -103,45 +64,6 @@ type XTweetTweetModel struct {
 	Source            types.String                                                `tfsdk:"source" json:"source,computed"`
 	Type              types.String                                                `tfsdk:"type" json:"type,computed"`
 	URL               types.String                                                `tfsdk:"url" json:"url,computed"`
-}
-
-type XTweetTweetAuthorModel struct {
-	ID                  types.String                          `tfsdk:"id" json:"id,computed"`
-	Name                types.String                          `tfsdk:"name" json:"name,computed"`
-	Username            types.String                          `tfsdk:"username" json:"username,computed"`
-	AutomatedBy         types.String                          `tfsdk:"automated_by" json:"automatedBy,computed"`
-	CanDm               types.Bool                            `tfsdk:"can_dm" json:"canDm,computed"`
-	CommunityRole       types.String                          `tfsdk:"community_role" json:"communityRole,computed"`
-	CoverPicture        types.String                          `tfsdk:"cover_picture" json:"coverPicture,computed"`
-	CreatedAt           types.String                          `tfsdk:"created_at" json:"createdAt,computed"`
-	Description         types.String                          `tfsdk:"description" json:"description,computed"`
-	FavouritesCount     types.Int64                           `tfsdk:"favourites_count" json:"favouritesCount,computed"`
-	Followers           types.Int64                           `tfsdk:"followers" json:"followers,computed"`
-	Following           types.Int64                           `tfsdk:"following" json:"following,computed"`
-	HasCustomTimelines  types.Bool                            `tfsdk:"has_custom_timelines" json:"hasCustomTimelines,computed"`
-	IsAutomated         types.Bool                            `tfsdk:"is_automated" json:"isAutomated,computed"`
-	IsBlueVerified      types.Bool                            `tfsdk:"is_blue_verified" json:"isBlueVerified,computed"`
-	IsTranslator        types.Bool                            `tfsdk:"is_translator" json:"isTranslator,computed"`
-	IsVerified          types.Bool                            `tfsdk:"is_verified" json:"isVerified,computed"`
-	Location            types.String                          `tfsdk:"location" json:"location,computed"`
-	MediaCount          types.Int64                           `tfsdk:"media_count" json:"mediaCount,computed"`
-	PinnedTweetIDs      customfield.List[types.String]        `tfsdk:"pinned_tweet_ids" json:"pinnedTweetIds,computed"`
-	PossiblySensitive   types.Bool                            `tfsdk:"possibly_sensitive" json:"possiblySensitive,computed"`
-	ProfileBio          customfield.Map[jsontypes.Normalized] `tfsdk:"profile_bio" json:"profile_bio,computed"`
-	ProfileBannerURL    types.String                          `tfsdk:"profile_banner_url" json:"profileBannerUrl,computed"`
-	ProfilePicture      types.String                          `tfsdk:"profile_picture" json:"profilePicture,computed"`
-	Protected           types.Bool                            `tfsdk:"protected" json:"protected,computed"`
-	StatusesCount       types.Int64                           `tfsdk:"statuses_count" json:"statusesCount,computed"`
-	Unavailable         types.Bool                            `tfsdk:"unavailable" json:"unavailable,computed"`
-	UnavailableReason   types.String                          `tfsdk:"unavailable_reason" json:"unavailableReason,computed"`
-	URL                 types.String                          `tfsdk:"url" json:"url,computed"`
-	Verified            types.Bool                            `tfsdk:"verified" json:"verified,computed"`
-	VerifiedType        types.String                          `tfsdk:"verified_type" json:"verifiedType,computed"`
-	ViewerFollowedBy    types.Bool                            `tfsdk:"viewer_followed_by" json:"viewerFollowedBy,computed"`
-	ViewerFollowing     types.Bool                            `tfsdk:"viewer_following" json:"viewerFollowing,computed"`
-	WithheldInCountries customfield.List[types.String]        `tfsdk:"withheld_in_countries" json:"withheldInCountries,computed"`
-	Followers           types.Int64                           `tfsdk:"followers" json:"followers,computed"`
-	Verified            types.Bool                            `tfsdk:"verified" json:"verified,computed"`
 }
 
 type XTweetTweetContentDisclosureModel struct {

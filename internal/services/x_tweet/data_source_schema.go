@@ -22,135 +22,6 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 			"id": schema.StringAttribute{
 				Required: true,
 			},
-			"author": schema.SingleNestedAttribute{
-				Description: "Tweet author profile. The lookup route always includes follower count and verification state. Other profile fields appear when available.",
-				Computed:    true,
-				CustomType:  customfield.NewNestedObjectType[XTweetAuthorDataSourceModel](ctx),
-				Attributes: map[string]schema.Attribute{
-					"id": schema.StringAttribute{
-						Computed: true,
-					},
-					"name": schema.StringAttribute{
-						Computed: true,
-					},
-					"username": schema.StringAttribute{
-						Computed: true,
-					},
-					"automated_by": schema.StringAttribute{
-						Computed: true,
-					},
-					"can_dm": schema.BoolAttribute{
-						Computed: true,
-					},
-					"community_role": schema.StringAttribute{
-						Description: "Community role when returned by community member reads",
-						Computed:    true,
-					},
-					"cover_picture": schema.StringAttribute{
-						Computed: true,
-					},
-					"created_at": schema.StringAttribute{
-						Computed: true,
-					},
-					"description": schema.StringAttribute{
-						Computed: true,
-					},
-					"favourites_count": schema.Int64Attribute{
-						Computed: true,
-					},
-					"followers": schema.Int64Attribute{
-						Computed: true,
-					},
-					"following": schema.Int64Attribute{
-						Computed: true,
-					},
-					"has_custom_timelines": schema.BoolAttribute{
-						Computed: true,
-					},
-					"is_automated": schema.BoolAttribute{
-						Computed: true,
-					},
-					"is_blue_verified": schema.BoolAttribute{
-						Description: "Whether X shows a blue verification badge",
-						Computed:    true,
-					},
-					"is_translator": schema.BoolAttribute{
-						Computed: true,
-					},
-					"is_verified": schema.BoolAttribute{
-						Description: "Whether X marks the profile as verified",
-						Computed:    true,
-					},
-					"location": schema.StringAttribute{
-						Computed: true,
-					},
-					"media_count": schema.Int64Attribute{
-						Computed: true,
-					},
-					"pinned_tweet_ids": schema.ListAttribute{
-						Computed:    true,
-						CustomType:  customfield.NewListType[types.String](ctx),
-						ElementType: types.StringType,
-					},
-					"possibly_sensitive": schema.BoolAttribute{
-						Computed: true,
-					},
-					"profile_bio": schema.MapAttribute{
-						Description: "Structured profile bio with entity annotations",
-						Computed:    true,
-						CustomType:  customfield.NewMapType[jsontypes.Normalized](ctx),
-						ElementType: jsontypes.NormalizedType{},
-					},
-					"profile_banner_url": schema.StringAttribute{
-						Description: "Original X profile banner field when available",
-						Computed:    true,
-					},
-					"profile_picture": schema.StringAttribute{
-						Computed: true,
-					},
-					"protected": schema.BoolAttribute{
-						Description: "Whether the profile protects its posts",
-						Computed:    true,
-					},
-					"statuses_count": schema.Int64Attribute{
-						Computed: true,
-					},
-					"unavailable": schema.BoolAttribute{
-						Computed: true,
-					},
-					"unavailable_reason": schema.StringAttribute{
-						Computed: true,
-					},
-					"url": schema.StringAttribute{
-						Computed: true,
-					},
-					"verified": schema.BoolAttribute{
-						Computed: true,
-					},
-					"verified_type": schema.StringAttribute{
-						Computed: true,
-					},
-					"viewer_followed_by": schema.BoolAttribute{
-						Description: "Whether this profile follows the authenticated viewer",
-						Computed:    true,
-					},
-					"viewer_following": schema.BoolAttribute{
-						Description: "Whether the authenticated viewer follows this profile",
-						Computed:    true,
-					},
-					"withheld_in_countries": schema.ListAttribute{
-						Computed:    true,
-						CustomType:  customfield.NewListType[types.String](ctx),
-						ElementType: types.StringType,
-					},
-					"followers": schema.Int64Attribute{
-						Computed: true,
-					},
-					"verified": schema.BoolAttribute{
-						Computed: true,
-					},
-				},
-			},
 			"tweet": schema.SingleNestedAttribute{
 				Description: "Full tweet with text, engagement metrics, media, and metadata. A zero metric can mean X did not report the count.",
 				Computed:    true,
@@ -180,134 +51,10 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 					"view_count": schema.Int64Attribute{
 						Computed: true,
 					},
-					"author": schema.SingleNestedAttribute{
+					"author": schema.StringAttribute{
 						Description: "Tweet author profile. The lookup route always includes follower count and verification state. Other profile fields appear when available.",
 						Computed:    true,
-						CustomType:  customfield.NewNestedObjectType[XTweetTweetAuthorDataSourceModel](ctx),
-						Attributes: map[string]schema.Attribute{
-							"id": schema.StringAttribute{
-								Computed: true,
-							},
-							"name": schema.StringAttribute{
-								Computed: true,
-							},
-							"username": schema.StringAttribute{
-								Computed: true,
-							},
-							"automated_by": schema.StringAttribute{
-								Computed: true,
-							},
-							"can_dm": schema.BoolAttribute{
-								Computed: true,
-							},
-							"community_role": schema.StringAttribute{
-								Description: "Community role when returned by community member reads",
-								Computed:    true,
-							},
-							"cover_picture": schema.StringAttribute{
-								Computed: true,
-							},
-							"created_at": schema.StringAttribute{
-								Computed: true,
-							},
-							"description": schema.StringAttribute{
-								Computed: true,
-							},
-							"favourites_count": schema.Int64Attribute{
-								Computed: true,
-							},
-							"followers": schema.Int64Attribute{
-								Computed: true,
-							},
-							"following": schema.Int64Attribute{
-								Computed: true,
-							},
-							"has_custom_timelines": schema.BoolAttribute{
-								Computed: true,
-							},
-							"is_automated": schema.BoolAttribute{
-								Computed: true,
-							},
-							"is_blue_verified": schema.BoolAttribute{
-								Description: "Whether X shows a blue verification badge",
-								Computed:    true,
-							},
-							"is_translator": schema.BoolAttribute{
-								Computed: true,
-							},
-							"is_verified": schema.BoolAttribute{
-								Description: "Whether X marks the profile as verified",
-								Computed:    true,
-							},
-							"location": schema.StringAttribute{
-								Computed: true,
-							},
-							"media_count": schema.Int64Attribute{
-								Computed: true,
-							},
-							"pinned_tweet_ids": schema.ListAttribute{
-								Computed:    true,
-								CustomType:  customfield.NewListType[types.String](ctx),
-								ElementType: types.StringType,
-							},
-							"possibly_sensitive": schema.BoolAttribute{
-								Computed: true,
-							},
-							"profile_bio": schema.MapAttribute{
-								Description: "Structured profile bio with entity annotations",
-								Computed:    true,
-								CustomType:  customfield.NewMapType[jsontypes.Normalized](ctx),
-								ElementType: jsontypes.NormalizedType{},
-							},
-							"profile_banner_url": schema.StringAttribute{
-								Description: "Original X profile banner field when available",
-								Computed:    true,
-							},
-							"profile_picture": schema.StringAttribute{
-								Computed: true,
-							},
-							"protected": schema.BoolAttribute{
-								Description: "Whether the profile protects its posts",
-								Computed:    true,
-							},
-							"statuses_count": schema.Int64Attribute{
-								Computed: true,
-							},
-							"unavailable": schema.BoolAttribute{
-								Computed: true,
-							},
-							"unavailable_reason": schema.StringAttribute{
-								Computed: true,
-							},
-							"url": schema.StringAttribute{
-								Computed: true,
-							},
-							"verified": schema.BoolAttribute{
-								Computed: true,
-							},
-							"verified_type": schema.StringAttribute{
-								Computed: true,
-							},
-							"viewer_followed_by": schema.BoolAttribute{
-								Description: "Whether this profile follows the authenticated viewer",
-								Computed:    true,
-							},
-							"viewer_following": schema.BoolAttribute{
-								Description: "Whether the authenticated viewer follows this profile",
-								Computed:    true,
-							},
-							"withheld_in_countries": schema.ListAttribute{
-								Computed:    true,
-								CustomType:  customfield.NewListType[types.String](ctx),
-								ElementType: types.StringType,
-							},
-							"followers": schema.Int64Attribute{
-								Computed: true,
-							},
-							"verified": schema.BoolAttribute{
-								Computed: true,
-							},
-						},
+						CustomType:  jsontypes.NormalizedType{},
 					},
 					"content_disclosure": schema.SingleNestedAttribute{
 						Description: "Content disclosure metadata shown by X when a tweet is labeled as paid partnership content or AI-generated media.",
@@ -1020,6 +767,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						Computed:    true,
 					},
 				},
+			},
+			"author": schema.StringAttribute{
+				Description: "Tweet author profile. The lookup route always includes follower count and verification state. Other profile fields appear when available.",
+				Computed:    true,
+				CustomType:  jsontypes.NormalizedType{},
 			},
 		},
 	}
