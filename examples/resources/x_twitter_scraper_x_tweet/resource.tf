@@ -1,6 +1,5 @@
 resource "x-twitter-scraper_x_tweet" "example_x_tweet" {
   account = "@elonmusk"
-  attachment_url = "https://x.com/elonmusk/status/1234567890"
   community_id = "1500000000000000000"
   is_note_tweet = false
   media = ["https://example.com/video.mp4"]
