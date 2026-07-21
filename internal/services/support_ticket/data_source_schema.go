@@ -7,8 +7,10 @@ import (
 
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
 var _ datasource.DataSourceWithConfigValidators = (*SupportTicketDataSource)(nil)
@@ -42,6 +44,59 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				CustomType: customfield.NewNestedObjectListType[SupportTicketMessagesDataSourceModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
+						"attachments": schema.ListNestedAttribute{
+							Computed:   true,
+							CustomType: customfield.NewNestedObjectListType[SupportTicketMessagesAttachmentsDataSourceModel](ctx),
+							NestedObject: schema.NestedAttributeObject{
+								Attributes: map[string]schema.Attribute{
+									"content_type": schema.StringAttribute{
+										Description: `Available values: "image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4", "video/quicktime", "video/webm".`,
+										Computed:    true,
+										Validators: []validator.String{
+											stringvalidator.OneOfCaseInsensitive(
+												"image/jpeg",
+												"image/png",
+												"image/gif",
+												"image/webp",
+												"video/mp4",
+												"video/quicktime",
+												"video/webm",
+											),
+										},
+									},
+									"filename": schema.StringAttribute{
+										Computed: true,
+									},
+									"kind": schema.StringAttribute{
+										Description: `Available values: "image", "video".`,
+										Computed:    true,
+										Validators: []validator.String{
+											stringvalidator.OneOfCaseInsensitive("image", "video"),
+										},
+									},
+									"public_id": schema.StringAttribute{
+										Computed: true,
+									},
+									"size_bytes": schema.Int64Attribute{
+										Computed: true,
+									},
+									"status": schema.StringAttribute{
+										Description: `Available values: "pending", "ready", "failed".`,
+										Computed:    true,
+										Validators: []validator.String{
+											stringvalidator.OneOfCaseInsensitive(
+												"pending",
+												"ready",
+												"failed",
+											),
+										},
+									},
+									"url": schema.StringAttribute{
+										Computed: true,
+									},
+								},
+							},
+						},
 						"body": schema.StringAttribute{
 							Computed: true,
 						},

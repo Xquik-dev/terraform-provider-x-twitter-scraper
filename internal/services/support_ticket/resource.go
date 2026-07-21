@@ -60,16 +60,16 @@ func (r *SupportTicketResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	dataBytes, err := data.MarshalJSON()
+	dataBytes, contentType, err := data.MarshalMultipart()
 	if err != nil {
-		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
+		resp.Diagnostics.AddError("failed to serialize multipart http request", err.Error())
 		return
 	}
 	res := new(http.Response)
 	_, err = r.client.Support.Tickets.New(
 		ctx,
 		xtwitterscraper.SupportTicketNewParams{},
-		option.WithRequestBody("application/json", dataBytes),
+		option.WithRequestBody(contentType, dataBytes),
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -104,9 +104,9 @@ func (r *SupportTicketResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	dataBytes, err := data.MarshalJSONForUpdate(*state)
+	dataBytes, contentType, err := data.MarshalMultipart()
 	if err != nil {
-		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
+		resp.Diagnostics.AddError("failed to serialize multipart http request", err.Error())
 		return
 	}
 	res := new(http.Response)
@@ -114,7 +114,7 @@ func (r *SupportTicketResource) Update(ctx context.Context, req resource.UpdateR
 		ctx,
 		data.ID.ValueString(),
 		xtwitterscraper.SupportTicketUpdateParams{},
-		option.WithRequestBody("application/json", dataBytes),
+		option.WithRequestBody(contentType, dataBytes),
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)

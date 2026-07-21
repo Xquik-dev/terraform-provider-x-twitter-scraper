@@ -19,7 +19,18 @@ type SupportTicketDataSourceModel struct {
 }
 
 type SupportTicketMessagesDataSourceModel struct {
-	Body      types.String      `tfsdk:"body" json:"body,computed"`
-	CreatedAt timetypes.RFC3339 `tfsdk:"created_at" json:"createdAt,computed" format:"date-time"`
-	Sender    types.String      `tfsdk:"sender" json:"sender,computed"`
+	Attachments customfield.NestedObjectList[SupportTicketMessagesAttachmentsDataSourceModel] `tfsdk:"attachments" json:"attachments,computed"`
+	Body        types.String                                                                  `tfsdk:"body" json:"body,computed"`
+	CreatedAt   timetypes.RFC3339                                                             `tfsdk:"created_at" json:"createdAt,computed" format:"date-time"`
+	Sender      types.String                                                                  `tfsdk:"sender" json:"sender,computed"`
+}
+
+type SupportTicketMessagesAttachmentsDataSourceModel struct {
+	ContentType types.String `tfsdk:"content_type" json:"contentType,computed"`
+	Filename    types.String `tfsdk:"filename" json:"filename,computed"`
+	Kind        types.String `tfsdk:"kind" json:"kind,computed"`
+	PublicID    types.String `tfsdk:"public_id" json:"publicId,computed"`
+	SizeBytes   types.Int64  `tfsdk:"size_bytes" json:"sizeBytes,computed"`
+	Status      types.String `tfsdk:"status" json:"status,computed"`
+	URL         types.String `tfsdk:"url" json:"url,computed"`
 }
