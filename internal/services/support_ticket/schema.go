@@ -88,7 +88,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
 									"content_type": schema.StringAttribute{
-										Description: `Available values: "image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4", "video/quicktime", "video/webm".`,
+										Description: "Validated media type.\nAvailable values: \"image/jpeg\", \"image/png\", \"image/gif\", \"image/webp\", \"video/mp4\", \"video/quicktime\", \"video/webm\".",
 										Computed:    true,
 										Validators: []validator.String{
 											stringvalidator.OneOfCaseInsensitive(
@@ -106,7 +106,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 										Computed: true,
 									},
 									"kind": schema.StringAttribute{
-										Description: `Available values: "image", "video".`,
+										Description: "Attachment media class.\nAvailable values: \"image\", \"video\".",
 										Computed:    true,
 										Validators: []validator.String{
 											stringvalidator.OneOfCaseInsensitive("image", "video"),
@@ -119,7 +119,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 										Computed: true,
 									},
 									"status": schema.StringAttribute{
-										Description: `Available values: "pending", "ready", "failed".`,
+										Description: "Storage processing state.\nAvailable values: \"pending\", \"ready\", \"failed\".",
 										Computed:    true,
 										Validators: []validator.String{
 											stringvalidator.OneOfCaseInsensitive(
