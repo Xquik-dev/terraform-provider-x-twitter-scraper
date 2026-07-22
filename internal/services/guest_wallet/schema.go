@@ -24,7 +24,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 		MarkdownDescription: "Accountless prepaid access for paid read endpoints",
 		Attributes: map[string]schema.Attribute{
 			"amount_minor": schema.Int64Attribute{
-				Description: "Confirmed USD amount in cents.",
+				Description: "USD cents accepted for this checkout.",
 				Required:    true,
 				Validators: []validator.Int64{
 					int64validator.Between(1000, 25000),
