@@ -20,7 +20,7 @@ var _ resource.ResourceWithConfigValidators = (*MonitorKeywordResource)(nil)
 
 func ResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		MarkdownDescription: "Real-time X account monitoring",
+		MarkdownDescription: "X account monitoring with 1-second checks",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:      true,

@@ -79,11 +79,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						Computed:    true,
 					},
 					"credits_per_active_monitor_day": schema.StringAttribute{
-						Description: "Estimated daily credits for 1 active instant monitor.",
+						Description: "Rounded daily estimate for 1 active monitor.",
 						Computed:    true,
 					},
 					"credits_per_active_monitor_hour": schema.StringAttribute{
-						Description: "Hourly credits charged for 1 active instant monitor.",
+						Description: "Hourly credits charged for 1 active monitor.",
 						Computed:    true,
 					},
 					"events_included": schema.BoolAttribute{
