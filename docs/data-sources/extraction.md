@@ -17,13 +17,13 @@ Bulk data extraction (20 tool types)
 
 ### Optional
 
-- `after` (String) Cursor for pagination
-- `limit` (Number)
+- `after` (String) Cursor for keyset pagination
+- `limit` (Number) Maximum number of results to return (1-1000, default 100)
 
 ### Read-Only
 
 - `has_more` (Boolean)
 - `id` (String) The ID of this resource.
-- `job` (Map of String)
+- `job` (Map of String) Extraction job metadata — shape varies by tool type (JSON)
 - `next_cursor` (String)
 - `results` (List of Map of String)

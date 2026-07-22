@@ -22,6 +22,6 @@ API key management (session auth only)
 ### Read-Only
 
 - `created_at` (String)
-- `full_key` (String, Sensitive)
+- `full_key` (String)
 - `id` (String) The ID of this resource.
 - `prefix` (String)

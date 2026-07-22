@@ -31,7 +31,7 @@ terraform {
   required_providers {
     x-twitter-scraper = {
       source  = "Xquik-dev/x-twitter-scraper"
-      version = "~> 0.2.3"
+      version = "~> 0.3.0"
     }
   }
 }

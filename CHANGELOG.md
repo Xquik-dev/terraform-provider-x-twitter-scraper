@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.0 (2026-07-22)
+
+Full Changelog: [v0.2.3...v0.3.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.2.3...v0.3.0)
+
+### Features
+
+* **api:** propagate durable write actions ([2594085](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/259408527c83bc6d2c864947abc1f153d7b5dba2))
+* **api:** propagate production write-action contract ([69b9125](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/69b91258cbfe5cfae7a6811ffa19cdadc378ef91))
+* **stlc:** configurable CI runner and private-production-repo support in workflow templates ([e6ab555](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/e6ab555bf9f3ef27c1f30423dde530f4b52326d5))
+
+
+### Chores
+
+* **internal:** codegen related update ([e145803](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/e1458031ea157c0706c3e04b480d36e4390ee0db))
+
 ## 0.2.1 (2026-07-13)
 
 Full Changelog: [v0.2.0...v0.2.1](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.2.0...v0.2.1)
