@@ -15,6 +15,21 @@ Use it when Terraform should own Xquik API resources for social media automation
 
 It is generated with [Stainless](https://www.stainless.com/).
 
+## Common Terraform Workflows
+
+Choose a resource for managed state. Choose a data source for existing state.
+
+| Customer Question | Terraform Block |
+| --- | --- |
+| How do I monitor an X account? | `x-twitter-scraper_monitor` resource |
+| How do I monitor search keywords? | `x-twitter-scraper_monitor_keyword` resource |
+| How do I deliver signed events? | `x-twitter-scraper_webhook` resource |
+| How do I publish or reply? | `x-twitter-scraper_x_tweet` resource |
+| How do I like or repost? | `x-twitter-scraper_x_tweet_like` or `x-twitter-scraper_x_tweet_retweet` resource |
+| How do I follow an account? | `x-twitter-scraper_x_user_follow` resource |
+| How do I inspect posts or profiles? | `x-twitter-scraper_x_tweet` or `x-twitter-scraper_x_user` data source |
+| How do I read an export job? | `x-twitter-scraper_extraction` data source |
+
 ## Requirements
 
 This provider requires Terraform CLI 1.0 or later. You can [install it for your system](https://developer.hashicorp.com/terraform/install)
