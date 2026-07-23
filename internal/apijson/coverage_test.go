@@ -10,7 +10,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/tidwall/gjson"
 )
 
@@ -24,6 +26,30 @@ func (value *coverageUnmarshaler) UnmarshalJSON(data []byte) error {
 type unknownString string
 
 func (unknownString) IsKnown() bool {
+	return false
+}
+
+type unknownBool bool
+
+func (unknownBool) IsKnown() bool {
+	return false
+}
+
+type unknownInt int
+
+func (unknownInt) IsKnown() bool {
+	return false
+}
+
+type unknownUint uint
+
+func (unknownUint) IsKnown() bool {
+	return false
+}
+
+type unknownFloat float64
+
+func (unknownFloat) IsKnown() bool {
 	return false
 }
 
@@ -146,6 +172,146 @@ func TestDecoderPrimitiveFailuresAndSpecialTypes(t *testing.T) {
 	}
 }
 
+func TestDecoderLooseAndUnknownPrimitiveFailures(t *testing.T) {
+	t.Parallel()
+
+	builder := &decoderBuilder{}
+	looseFailures := []struct {
+		name  string
+		value any
+		json  string
+	}{
+		{name: "string object", value: new(string), json: `{}`},
+		{name: "bool string", value: new(bool), json: `"invalid"`},
+		{name: "int string", value: new(int), json: `"invalid"`},
+		{name: "uint string", value: new(uint), json: `"invalid"`},
+		{name: "float string", value: new(float64), json: `"invalid"`},
+	}
+	for _, testCase := range looseFailures {
+		t.Run(testCase.name, func(t *testing.T) {
+			value := reflect.ValueOf(testCase.value).Elem()
+			if err := builder.newPrimitiveTypeDecoder(value.Type())(
+				gjson.Parse(testCase.json),
+				value,
+				&decoderState{},
+			); err == nil {
+				t.Fatal("loose decoder accepted an invalid value")
+			}
+		})
+	}
+
+	unknownFailures := []struct {
+		name  string
+		value any
+		json  string
+	}{
+		{name: "bool enum", value: new(unknownBool), json: `true`},
+		{name: "int enum", value: new(unknownInt), json: `1`},
+		{name: "uint enum", value: new(unknownUint), json: `1`},
+		{name: "float enum", value: new(unknownFloat), json: `1.5`},
+	}
+	for _, testCase := range unknownFailures {
+		t.Run(testCase.name, func(t *testing.T) {
+			value := reflect.ValueOf(testCase.value).Elem()
+			if err := builder.newPrimitiveTypeDecoder(value.Type())(
+				gjson.Parse(testCase.json),
+				value,
+				&decoderState{strict: true, exactness: exact},
+			); err == nil {
+				t.Fatal("decoder accepted an unknown enum value")
+			}
+		})
+	}
+
+	if _, err := decodeTime(
+		"2006-01-02",
+		"invalid",
+		&decoderState{strict: true, exactness: exact},
+	); err == nil {
+		t.Fatal("strict time decoder accepted an invalid value")
+	}
+}
+
+func TestEncoderPatchAndArrayErrorBranches(t *testing.T) {
+	t.Parallel()
+
+	patchEncoder := &encoder{patch: true}
+	for name, value := range map[string]any{
+		"string":  "same",
+		"int":     int64(1),
+		"uint":    uint64(1),
+		"float32": float32(1.5),
+		"float64": float64(1.5),
+	} {
+		t.Run(name, func(t *testing.T) {
+			reflected := reflect.ValueOf(value)
+			encoded, err := patchEncoder.newPrimitiveTypeEncoder(
+				reflected.Type(),
+			)(reflected, reflected)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if encoded != nil {
+				t.Fatalf("equal patch value encoded as %q", encoded)
+			}
+		})
+	}
+
+	stringArrayEncoder := (&encoder{patch: true}).newArrayTypeEncoder(
+		reflect.TypeOf([]string{}),
+	)
+	encoded, err := stringArrayEncoder(
+		reflect.Value{},
+		reflect.ValueOf([]string{"state"}),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(encoded) != "null" {
+		t.Fatalf("nil plan encoded as %q", encoded)
+	}
+
+	unsupportedArrayEncoder := (&encoder{}).newArrayTypeEncoder(
+		reflect.TypeOf([]complex64{}),
+	)
+	if _, err := unsupportedArrayEncoder(
+		reflect.ValueOf([]complex64{1}),
+		reflect.Value{},
+	); err == nil {
+		t.Fatal("array encoder accepted an unsupported item")
+	}
+
+	marshalEncoder := &encoder{}
+	if encoded, err := marshalEncoder.marshal(nil, "state"); err != nil || encoded != nil {
+		t.Fatalf("nil plan result = %q, %v", encoded, err)
+	}
+	if encoded, err := marshalEncoder.marshal("plan", nil); err != nil || encoded != nil {
+		t.Fatalf("nil state result = %q, %v", encoded, err)
+	}
+
+	_ = marshalEncoder.newTerraformTypeEncoder(
+		reflect.TypeOf(timetypes.RFC3339{}),
+	)
+	_ = marshalEncoder.newTerraformTypeEncoder(
+		reflect.TypeOf(basetypes.SetValue{}),
+	)
+}
+
+func TestUnknownUpdateBehaviorsUseDefaults(t *testing.T) {
+	t.Parallel()
+
+	behavior := TerraformUpdateBehavior(255)
+	if !shouldUpdateNested(reflect.ValueOf("value"), behavior) {
+		t.Fatal("unknown nested behavior did not update")
+	}
+	if !shouldUpdatePrimitive(reflect.ValueOf("value"), behavior) {
+		t.Fatal("unknown primitive behavior did not update")
+	}
+	if shouldUpdatePrimitive(reflect.ValueOf("value"), OnlyNested) {
+		t.Fatal("OnlyNested updated a primitive")
+	}
+}
+
 func TestDecoderTerraformInferenceAndInternalGuards(t *testing.T) {
 	t.Parallel()
 
@@ -235,5 +401,21 @@ func TestUnionRegistrationAndDiagnosticFormatting(t *testing.T) {
 	err := errorFromDiagnostics(diagnostics)
 	if err == nil || !strings.Contains(err.Error(), "summary detail") {
 		t.Fatalf("diagnostic error = %v", err)
+	}
+}
+
+func TestJSONTagParsesInlineAndMetadataFields(t *testing.T) {
+	t.Parallel()
+
+	type tagged struct {
+		Value string `json:"value,extras,metadata,inline"`
+	}
+	field, ok := reflect.TypeOf(tagged{}).FieldByName("Value")
+	if !ok {
+		t.Fatal("tagged field is missing")
+	}
+	tag, ok := parseJSONStructTag(field)
+	if !ok || !tag.extras || !tag.metadata || !tag.inline {
+		t.Fatalf("parsed tag = %#v, present = %t", tag, ok)
 	}
 }

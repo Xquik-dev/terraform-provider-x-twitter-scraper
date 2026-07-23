@@ -119,7 +119,9 @@ Changing the request replaces the resource and requires a new key.
 
 CI enforces formatting, module integrity, race detection, and Windows compilation.
 
-It also enforces 90% statement coverage and scans reachable vulnerabilities.
+It enforces 90% statement coverage and 80% branch coverage.
+
+It also scans reachable vulnerabilities.
 
 Release builds use pinned actions, signed checksums, and GitHub attestations.
 

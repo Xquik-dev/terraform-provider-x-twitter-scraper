@@ -49,9 +49,17 @@ Run every required check:
 ./scripts/test
 ```
 
-The test command runs race detection and enforces 90% statement coverage.
+The test command runs race detection.
+
+It enforces 90% statement coverage and 80% branch coverage.
 
 It also verifies Windows compilation.
+
+Run the branch gate independently:
+
+```sh
+./scripts/branch-coverage
+```
 
 Add regression tests for every corrected defect.
 
