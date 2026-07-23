@@ -8,11 +8,12 @@ concurrency:
 on:
   push:
     tags:
-      - "v*"
+      - "v*.*.*"
 jobs:
   goreleaser:
     name: Build, Sign & Publish
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
     environment: release
     permissions:
       attestations: write # Store signed provenance for release artifacts.
@@ -29,6 +30,16 @@ jobs:
       with:
         go-version-file: "go.mod"
         cache: false
+    - name: Verify release tag
+      run: git describe --tags --exact-match
+    - name: Check licensing
+      uses: fsfe/reuse-action@676e2d560c9a403aa252096d99fcab3e1132b0f5 # v6.0.0
+    - name: Run release checks
+      run: |
+        ./scripts/lint
+        ./scripts/test
+    - name: Scan reachable vulnerabilities
+      run: go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
     - name: Import GPG key
       id: import_gpg
       uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0

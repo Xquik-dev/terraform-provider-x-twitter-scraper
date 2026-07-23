@@ -3,12 +3,12 @@
 page_title: "x-twitter-scraper_monitor_keyword Resource - X Twitter Scraper"
 subcategory: ""
 description: |-
-  Real-time X account monitoring
+  X account monitoring with 1-second checks
 ---
 
 # x-twitter-scraper_monitor_keyword (Resource)
 
-Real-time X account monitoring
+X account monitoring with 1-second checks
 
 
 

@@ -1,4 +1,5 @@
 resource "x-twitter-scraper_x_tweet_like" "example_x_tweet_like" {
-  id      = "id"
-  account = "@elonmusk"
+  account         = "@example"
+  idempotency_key = "terraform-like-tweet-v1"
+  target_id       = "1234567890"
 }

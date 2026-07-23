@@ -1,4 +1,5 @@
 resource "x-twitter-scraper_x_community_join" "example_x_community_join" {
-  id      = "id"
-  account = "@elonmusk"
+  account         = "@example"
+  idempotency_key = "terraform-join-community-v1"
+  target_id       = "1500000000000000000"
 }

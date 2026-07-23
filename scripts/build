@@ -2,7 +2,9 @@
 
 set -euo pipefail
 
-# Mark the necessary Go modules as private to avoid Go's proxy
-export GOPRIVATE="${GOPRIVATE:+$GOPRIVATE,}github.com/Xquik-dev/x-twitter-scraper-go,github.com/stainless-sdks/x-twitter-scraper-go"
+cd "$(dirname "$0")/.."
+
+# Mark the generated staging module as private.
+export GOPRIVATE="${GOPRIVATE:+$GOPRIVATE,}github.com/stainless-sdks/x-twitter-scraper-go"
 
 go build -o terraform-provider-x-twitter-scraper

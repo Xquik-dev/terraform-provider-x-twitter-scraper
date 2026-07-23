@@ -20,7 +20,7 @@ runs:
         repo: stainless-sdks/x-twitter-scraper-go
         stainless-api-key: ${{ inputs.stainless-api-key }}
 
-    - name: Configure Git for to access Go SDK's staging repo
+    - name: Configure Git to access the Go SDK staging repository
       if: github.repository == 'stainless-sdks/x-twitter-scraper-terraform'
       shell: bash
       env:

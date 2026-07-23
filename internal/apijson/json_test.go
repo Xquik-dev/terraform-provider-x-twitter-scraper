@@ -417,7 +417,7 @@ var decode_only_tests = map[string]struct {
 	val any
 }{
 	"tfsdk_struct_decode": {
-		`{"result":{"c":"7887590e1967befa70f48ffe9f61ce80","a":"88281d6015751d6172e7313b0c665b5e","extra":"property","another":2,"b":"http://example.com/example.html\t20"}`,
+		`{"result":{"c":"7887590e1967befa70f48ffe9f61ce80","a":"88281d6015751d6172e7313b0c665b5e","extra":"property","another":2,"b":"http://example.com/example.html\t20"}}`,
 		ResultEnvelope{RecordsModel{
 			A: types.StringValue("88281d6015751d6172e7313b0c665b5e"),
 			B: types.StringValue("http://example.com/example.html\t20"),
@@ -460,7 +460,7 @@ var decode_only_tests = map[string]struct {
 	"json_struct_nil3": {`{"nil":null}`, JsonModel{}},
 
 	"nested_object_list_missing_nested_field": {
-		`{"a":[{"b":"foo"}}]}`,
+		`{"a":[{"b":"foo"}]}`,
 		ListWithNestedObj{
 			A: customfield.NewObjectListMust(ctx, []Embedded2{
 				{

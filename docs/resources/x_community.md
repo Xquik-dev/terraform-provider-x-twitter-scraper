@@ -3,12 +3,12 @@
 page_title: "x-twitter-scraper_x_community Resource - X Twitter Scraper"
 subcategory: ""
 description: |-
-  X community creation and management
+  Executes one create_community write and stores only its durable canonical write-action record.
 ---
 
 # x-twitter-scraper_x_community (Resource)
 
-X community creation and management
+Executes one create_community write and stores only its durable canonical write-action record.
 
 
 
@@ -17,16 +17,48 @@ X community creation and management
 
 ### Required
 
-- `account` (String) X account (@username or ID) creating the community
-- `name` (String) Community name
+- `account` (String) X account used for the request. This is preserved separately from response_account_*.
+- `idempotency_key` (String, Sensitive) Visible ASCII key unique to this intended write. Reuse only for an exact replay.
 
 ### Optional
 
-- `description` (String) Community description
+- `payload_json` (String, Sensitive) Operation-specific JSON object. Do not include account.
+- `target_id` (String) Target Tweet, user, or community ID for targeted writes.
 
 ### Read-Only
 
-- `community_id` (String)
-- `community_name` (String)
-- `id` (String) The ID of this resource.
+- `action` (String)
+- `billing_charged` (Boolean)
+- `billing_charged_credits` (String)
+- `billing_planned_credits` (String)
+- `billing_status` (String)
+- `charged` (Boolean)
+- `charged_credits` (String)
+- `error` (String)
+- `id` (String) Stable canonical write-action ID.
+- `message` (String)
+- `next_action_after_ms` (Number)
+- `next_action_requires_new_idempotency_key` (Boolean)
+- `next_action_type` (String)
+- `next_action_url` (String)
+- `object` (String)
+- `poll_after_ms` (Number)
+- `request_hash` (String)
+- `request_id` (String)
+- `request_payload_json` (String, Sensitive) Sanitized payload recorded by the canonical write action.
+- `response_account_id` (String)
+- `response_account_username` (String)
+- `response_target_id` (String)
+- `response_target_type` (String)
+- `result_id` (String)
+- `result_state` (String)
+- `result_type` (String)
+- `retryable` (Boolean)
+- `safe_to_retry` (Boolean)
+- `send_dispatched` (Boolean)
+- `status` (String)
+- `status_url` (String)
 - `success` (Boolean)
+- `target_id_response` (String)
+- `terminal` (Boolean)
+- `write_action_id` (String)

@@ -17,32 +17,104 @@ X write actions (tweets, likes, follows, DMs)
 
 ### Read-Only
 
-- `action` (String)
+- `account` (Attributes) Connected account selected for the write. (see [below for nested schema](#nestedatt--account))
+- `action` (String) Available values: "create_tweet", "delete_tweet", "like", "unlike", "retweet", "unretweet", "follow", "unfollow", "remove_follower", "send_dm", "upload_media", "update_profile", "update_avatar", "update_banner", "create_community", "delete_community", "join_community", "leave_community".
+- `billing` (Attributes) plannedCredits is the approved maximum. chargedCredits comes from the settled credit ledger. Pending or failed writes are not charged. (see [below for nested schema](#nestedatt--billing))
 - `charged` (Boolean)
 - `charged_credits` (String)
+- `community_id` (String) Compatibility field for a confirmed community ID.
+- `community_name` (String) Confirmed community name when available.
+- `completed_at` (String)
 - `confirmation_attempts` (Number)
 - `confirmation_checked_at` (String)
-- `confirmation_source` (String)
 - `confirmed_at` (String)
 - `created_at` (String)
+- `details` (Map of String) Structured recovery context for a failed write.
+- `error` (String)
+- `expires_at` (String) Deadline for resolving a non-terminal write. This is not the Idempotency-Key retention deadline.
 - `id` (String) The ID of this resource.
-- `media` (Attributes) (see [below for nested schema](#nestedatt--media))
+- `idempotent` (Boolean)
+- `media` (Map of String) Media count, kind, size, and billing details when used.
+- `media_id` (String) Compatibility field for a confirmed media upload ID.
+- `media_url` (String) Public media URL when the upload creates one.
 - `message` (String)
-- `message_id` (String)
-- `retryable` (Boolean)
+- `message_id` (String) Compatibility field for a confirmed direct message ID.
+- `next_action` (Attributes) Exact follow-up an API client or agent should perform. (see [below for nested schema](#nestedatt--next_action))
+- `object` (String) Available values: "x_write_action".
+- `poll_after_ms` (Number)
+- `request` (Attributes) Stable fingerprint and sanitized payload for replay checks. (see [below for nested schema](#nestedatt--request))
+- `request_hash` (String)
+- `request_id` (String)
+- `result` (Attributes) Confirmed result produced by the write, when available. (see [below for nested schema](#nestedatt--result))
+- `result_id` (String) Compatibility result ID for other write actions.
+- `retryable` (Boolean) True only when a new attempt can reasonably succeed.
+- `safe_to_retry` (Boolean) True only when no write was dispatched and a new idempotency key may be used.
 - `send_dispatched` (Boolean)
-- `send_dispatched_at` (String)
-- `status` (String) Available values: "success", "failed", "pending_confirmation".
+- `send_dispatched_at` (String) Dispatch timestamp when the write reached execution.
+- `status` (String) Available values: "accepted", "dispatching", "pending_confirmation", "success", "failed", "expired".
+- `status_url` (String)
+- `success` (Boolean)
+- `target` (Attributes) Existing X resource targeted by the write, when applicable. (see [below for nested schema](#nestedatt--target))
 - `target_id` (String)
-- `tweet_id` (String)
+- `terminal` (Boolean)
+- `tweet_id` (String) Compatibility field for a confirmed tweet result ID.
+- `updated_at` (String)
 - `write_action_id` (String)
 
-<a id="nestedatt--media"></a>
-### Nested Schema for `media`
+<a id="nestedatt--account"></a>
+### Nested Schema for `account`
 
 Read-Only:
 
-- `credits` (String)
-- `kind` (String) Available values: "none", "image", "video".
-- `total_bytes` (String)
-- `x_write_action_count` (Number)
+- `id` (String)
+- `username` (String)
+
+
+<a id="nestedatt--billing"></a>
+### Nested Schema for `billing`
+
+Read-Only:
+
+- `charged` (Boolean)
+- `charged_credits` (String)
+- `planned_credits` (String)
+- `status` (String) Available values: "not_charged", "pending", "charged", "charge_failed", "refunded".
+
+
+<a id="nestedatt--next_action"></a>
+### Nested Schema for `next_action`
+
+Read-Only:
+
+- `after_ms` (Number)
+- `requires_new_idempotency_key` (Boolean)
+- `type` (String) Available values: "poll", "retry", "verify_result", "fix_request".
+- `url` (String)
+
+
+<a id="nestedatt--request"></a>
+### Nested Schema for `request`
+
+Read-Only:
+
+- `hash` (String) Stable hash of account, action, target, and payload.
+- `payload` (Map of String) Exact sanitized payload dispatched for this action.
+
+
+<a id="nestedatt--result"></a>
+### Nested Schema for `result`
+
+Read-Only:
+
+- `id` (String)
+- `state` (String)
+- `type` (String) Available values: "tweet", "direct_message", "media", "community", "state_change".
+
+
+<a id="nestedatt--target"></a>
+### Nested Schema for `target`
+
+Read-Only:
+
+- `id` (String)
+- `type` (String) Available values: "tweet", "user", "community".
