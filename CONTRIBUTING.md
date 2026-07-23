@@ -1,62 +1,78 @@
-## Setting up the environment
+# Contributing
 
-To set up the repository, run:
+Thanks for improving the Xquik Terraform provider.
 
-```sh
-$ ./scripts/bootstrap
-$ ./scripts/build
-```
+Read the organization [contribution policy](https://github.com/Xquik-dev/.github/blob/main/CONTRIBUTING.md).
 
-This will install all the required dependencies and build the Provider binary into the root directory.
+Report vulnerabilities through [SECURITY.md](SECURITY.md).
 
-You can also [install go 1.22+ manually](https://go.dev/doc/install).
+## Set Up
 
-## Running the Provider locally
+Install the Go version declared in `go.mod`.
 
-You can build the provider locally and have your `.tf` files refer to the local build instead of the one in the Hashicorp registry.
-
-First, build the provider binary:
+Then run:
 
 ```sh
-$ ./scripts/build
+./scripts/bootstrap
+./scripts/build
 ```
 
-Then edit (or create) your `~/.terraformrc` to look something like this:
+The bootstrap script downloads pinned modules and verifies their checksums.
 
-```hcl
-  provider_installation {
-    dev_overrides {
-      "Xquik-dev/x-twitter-scraper" = "/local/path/to/this/repo"
-    }
-    direct {}
-  }
-```
+## Make Changes
 
-## Running tests
+Keep each pull request focused.
 
-To execute the schema and unit tests, run:
+Preserve public contracts defined by the provider schemas and API SDK.
+
+Most generated files identify Stainless in their opening comment.
+
+Prefer generator changes when a generated contract needs correction.
+
+Hand-maintained provider logic lives under `internal/services/x_write`.
+
+Regenerate Registry documentation after changing schemas:
 
 ```sh
-$ ./scripts/test
+./scripts/generate-docs
 ```
 
-Note that this does not run [acceptance tests](https://developer.hashicorp.com/terraform/plugin/framework/acctests) by default, because
-those tests interact with real resources in the cloud and could incur fees.
+Never include API keys, tokens, Terraform state, or private account data.
 
-To enable the running of acceptance tests, use the `TF_ACC` environment variable:
+## Verify Changes
+
+Run every required check:
 
 ```sh
-$ TF_ACC=1 ./scripts/test
+./scripts/bootstrap
+./scripts/lint
+./scripts/test
 ```
 
-## Formatting
+The test command runs race detection and enforces 90% statement coverage.
 
-This library uses the standard gofmt code formatter:
+It also verifies Windows compilation.
+
+Add regression tests for every corrected defect.
+
+Acceptance tests can create remote resources and incur charges.
+
+Run them only with an isolated account:
 
 ```sh
-$ ./scripts/format
+TF_ACC=1 ./scripts/test
 ```
 
-## Running Tests
+## Submit Changes
 
-To run schema tests,
+Sign each non-trivial commit under the DCO:
+
+```sh
+git commit -s
+```
+
+Open a pull request and resolve every blocking comment.
+
+A person other than the author must approve non-trivial changes.
+
+Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.

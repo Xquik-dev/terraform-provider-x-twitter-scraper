@@ -1,6 +1,7 @@
 package apijson
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -120,11 +121,15 @@ type decoderEntry struct {
 }
 
 func (d *decoderBuilder) unmarshal(raw []byte, to any) error {
-	value := reflect.ValueOf(to).Elem()
-	result := gjson.ParseBytes(raw)
-	if !value.IsValid() {
-		return fmt.Errorf("apijson: cannot marshal into invalid value")
+	target := reflect.ValueOf(to)
+	if !target.IsValid() || target.Kind() != reflect.Pointer || target.IsNil() {
+		return fmt.Errorf("apijson: destination must be a non-nil pointer")
 	}
+	value := target.Elem()
+	if len(bytes.TrimSpace(raw)) > 0 && !json.Valid(raw) {
+		return fmt.Errorf("apijson: invalid JSON")
+	}
+	result := gjson.ParseBytes(raw)
 	return d.typeDecoder(value.Type())(result, value, &decoderState{strict: false, exactness: exact})
 }
 
@@ -249,7 +254,7 @@ func (d *decoderBuilder) newBigFloatDecoder(_ reflect.Type) decoderFunc {
 		if err != nil {
 			return fmt.Errorf("apijson: failed to parse big.Float: %v", err)
 		}
-		value.Set(reflect.ValueOf(f))
+		value.Set(reflect.ValueOf(*f))
 		return nil
 	}
 }

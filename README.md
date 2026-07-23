@@ -1,45 +1,72 @@
-# X (Twitter) Scraper Terraform Provider: Monitors, Webhooks, Tweet Actions & Automation
+# Xquik Terraform Provider for X (Twitter) Automation
 
-> **Xquik is an independent third-party service.** Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.
-
+[![CI](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/actions/workflows/ci.yml/badge.svg)](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/actions/workflows/codeql.yml/badge.svg)](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/actions/workflows/codeql.yml)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13729/badge)](https://www.bestpractices.dev/projects/13729)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg?url=https%3A%2F%2Fgithub.com%2FXquik-dev%2Fterraform-provider-x-twitter-scraper)](https://deepwiki.com/Xquik-dev/terraform-provider-x-twitter-scraper)
-[![Skills.sh x-twitter-scraper Skill](https://skills.sh/b/xquik-dev/x-twitter-scraper)](https://skills.sh/xquik-dev/x-twitter-scraper)
-<a href="https://nothumansearch.ai/site/xquik.com" target="_blank" rel="noopener"><img src="https://nothumansearch.ai/badge/xquik.com.svg" alt="NHS Agentic Readiness Score" height="28"></a>
 
-Xquik Terraform Provider for the X (Twitter) Scraper API manages Twitter automation and X data workflows as infrastructure: monitors, HMAC webhooks, API keys, compose and draft resources, tweet actions, user data, giveaway draws, follower exports, and extraction jobs.
+Manage Xquik monitors, signed webhooks, content workflows, and X write actions through Terraform.
 
-Use it when Terraform should own Xquik API resources for social media automation, account monitoring, webhook delivery, tweet search workflows, profile tweet collection, follower export jobs, and repeatable posting infrastructure. Start with the [Terraform quickstart](docs/guides/quickstart.md), [Context7 guide](docs/CONTEXT7.md), generated [provider docs](docs/index.md), [examples](examples), or the [REST API docs](https://docs.xquik.com/api-reference/overview).
+This provider turns supported Xquik API objects into reviewable infrastructure.
 
-[Terraform Quickstart](docs/guides/quickstart.md) | [Context7 Guide](docs/CONTEXT7.md) | [Provider Docs](docs/index.md) | [Examples](examples) | [REST API Docs](https://docs.xquik.com/api-reference/overview) | [OpenAPI Spec](https://xquik.com/openapi.json) | [Webhooks](https://docs.xquik.com/api-reference/webhooks/create)
+[Quickstart](docs/guides/quickstart.md) | [Provider Docs](docs/index.md) | [Examples](examples) | [REST API](https://docs.xquik.com/api-reference/overview) | [OpenAPI](https://xquik.com/openapi.json) | [Security](SECURITY.md)
 
-It is generated with [Stainless](https://www.stainless.com/).
+## What Does This Provider Manage?
 
-## Common Terraform Workflows
+Use resources for desired state and durable write records.
 
-Choose a resource for managed state. Choose a data source for existing state.
-
-| Customer Question | Terraform Block |
+| Workflow | Resources |
 | --- | --- |
-| How do I monitor an X account? | `x-twitter-scraper_monitor` resource |
-| How do I monitor search keywords? | `x-twitter-scraper_monitor_keyword` resource |
-| How do I deliver signed events? | `x-twitter-scraper_webhook` resource |
-| How do I publish or reply? | `x-twitter-scraper_x_tweet` resource |
-| How do I like or repost? | `x-twitter-scraper_x_tweet_like` or `x-twitter-scraper_x_tweet_retweet` resource |
-| How do I follow an account? | `x-twitter-scraper_x_user_follow` resource |
-| How do I inspect posts or profiles? | `x-twitter-scraper_x_tweet` or `x-twitter-scraper_x_user` data source |
-| How do I read an export job? | `x-twitter-scraper_extraction` data source |
+| Compose and refine posts | `compose`, `draft`, `style` |
+| Monitor accounts and keywords | `monitor`, `monitor_keyword` |
+| Deliver signed events | `webhook` |
+| Publish and delete posts | `x_tweet`, `x_tweet_delete` |
+| Like, unlike, repost, and undo reposts | `x_tweet_like`, `x_tweet_unlike`, `x_tweet_retweet`, `x_tweet_unretweet` |
+| Follow, unfollow, and remove followers | `x_user_follow`, `x_user_unfollow`, `x_user_remove_follower` |
+| Send direct messages and upload media | `x_dm`, `x_media` |
+| Update profiles, avatars, and banners | `x_profile`, `x_profile_avatar`, `x_profile_banner` |
+| Create, delete, join, and leave communities | `x_community`, `x_community_delete`, `x_community_join`, `x_community_leave` |
+| Request support and guest checkout | `support_ticket`, `guest_wallet` |
 
-## Requirements
+Every X write resource stores the canonical write-action response.
 
-This provider requires Terraform CLI 1.0 or later. You can [install it for your system](https://developer.hashicorp.com/terraform/install)
-on HashiCorp's website.
+It never retries an uncertain dispatch with a different idempotency key.
 
-## Usage
+## What Can Terraform Read?
 
-Add the provider to your Terraform project:
+The provider exposes these data sources:
 
-<!-- x-release-please-start-version -->
+- Account usage and limits: `account`
+- Drafts and writing styles: `draft`, `style`
+- Account and keyword monitors: `monitor`, `monitor_keyword`
+- Events and giveaway draws: `event`, `draw`
+- Tweet, user, and account lookups: `x_tweet`, `x_user`, `x_account`
+- Durable write status: `x_write_action`
+- Support requests: `support_ticket`
+
+See the [generated documentation](docs/index.md) for every field.
+
+## Is This a Tweet Search or Timeline Scraper?
+
+No. Terraform manages durable infrastructure and write records.
+
+Use the [Xquik REST API](https://docs.xquik.com/api-reference/overview) for read jobs.
+
+Those APIs cover tweet search, timeline extraction, and follower exports.
+
+They fit questions such as:
+
+- How can I search tweets without the official Twitter API?
+- Which X API alternative returns structured tweet data?
+- How do I extract an X or Twitter timeline?
+- How do I export X followers or followings?
+
+Use an Xquik SDK when application code needs a search tweets API.
+
+Use this provider when Terraform should manage the surrounding automation.
+
+## Install
+
+This provider requires Terraform CLI 1.0 or newer.
 
 ```hcl
 terraform {
@@ -51,39 +78,65 @@ terraform {
   }
 }
 
-provider "x-twitter-scraper" {
-  # Prefer X_TWITTER_SCRAPER_API_KEY or X_TWITTER_SCRAPER_BEARER_TOKEN.
+provider "x-twitter-scraper" {}
+```
+
+Then run:
+
+```sh
+terraform init
+```
+
+## Authenticate
+
+Prefer environment variables:
+
+```sh
+export X_TWITTER_SCRAPER_API_KEY="your-api-key"
+```
+
+Bearer authentication uses `X_TWITTER_SCRAPER_BEARER_TOKEN`.
+
+Never commit credentials or Terraform state.
+
+## Publish a Tweet Safely
+
+Use one stable idempotency key per intended write.
+
+```hcl
+resource "x-twitter-scraper_x_tweet" "announcement" {
+  account         = "@example"
+  idempotency_key = "terraform-announcement-v1"
+  payload_json = jsonencode({
+    text = "Published through the Xquik Terraform provider."
+  })
 }
 ```
 
-<!-- x-release-please-end -->
+Changing the request replaces the resource and requires a new key.
 
-Initialize your project by running `terraform init` in the directory.
+## Reliability and Security
 
-Additional examples can be found in the [./examples](./examples) folder within this repository, and you can
-refer to the full documentation on [the Terraform Registry](https://registry.terraform.io/providers/Xquik-dev/x-twitter-scraper/latest/docs).
+CI enforces formatting, module integrity, race detection, and Windows compilation.
 
-### Provider Options
+It also enforces 90% statement coverage and scans reachable vulnerabilities.
 
-When you initialize the provider, the following options are supported. It is recommended to use environment variables for sensitive values like access tokens.
-If an environment variable is provided, then the option does not need to be set in the terraform source.
+Release builds use pinned actions, signed checksums, and GitHub attestations.
 
-| Property     | Environment variable             | Required | Default value |
-| ------------ | -------------------------------- | -------- | ------------- |
-| bearer_token | `X_TWITTER_SCRAPER_BEARER_TOKEN` | false    | None          |
-| api_key      | `X_TWITTER_SCRAPER_API_KEY`      | false    | None          |
+See [OpenSSF evidence](OPENSSF.md) for the current criteria assessment.
 
-## Semantic versioning
+Treat plans and state as sensitive because API responses can contain private data.
 
-This package generally follows [SemVer](https://semver.org/spec/v2.0.0.html) conventions, though certain backwards-incompatible changes may be released as minor versions:
+Report vulnerabilities through [GitHub private reporting](SECURITY.md).
 
-1. Changes to library internals which are technically public but not intended or documented for external use. _(Please open a GitHub issue to let us know if you are relying on such internals.)_
-2. Changes that we do not expect to impact the vast majority of users in practice.
+## Development
 
-We take backwards-compatibility seriously and work hard to ensure you can rely on a smooth upgrade experience.
+```sh
+./scripts/bootstrap
+./scripts/lint
+./scripts/test
+```
 
-We are keen for your feedback; please open an [issue](https://www.github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues) with questions, bugs, or suggestions.
+See [CONTRIBUTING.md](CONTRIBUTING.md) before changing generated code.
 
-## Contributing
-
-See [the contributing documentation](./CONTRIBUTING.md).
+Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.

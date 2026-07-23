@@ -17,57 +17,16 @@ X post data lookup
 
 ### Read-Only
 
-- `author` (Attributes) Tweet author profile. The lookup route always includes follower count and verification state. Other profile fields appear when available. (see [below for nested schema](#nestedatt--author))
+- `author` (String) Tweet author profile. The lookup route always includes follower count and verification state. Other profile fields appear when available.
 - `id` (String) The ID of this resource.
 - `tweet` (Attributes) Full tweet with text, engagement metrics, media, and metadata. A zero metric can mean X did not report the count. (see [below for nested schema](#nestedatt--tweet))
-
-<a id="nestedatt--author"></a>
-### Nested Schema for `author`
-
-Read-Only:
-
-- `automated_by` (String)
-- `can_dm` (Boolean)
-- `community_role` (String) Community role when returned by community member reads
-- `cover_picture` (String)
-- `created_at` (String)
-- `description` (String)
-- `favourites_count` (Number)
-- `followers` (Number)
-- `following` (Number)
-- `has_custom_timelines` (Boolean)
-- `id` (String)
-- `is_automated` (Boolean)
-- `is_blue_verified` (Boolean) Whether X shows a blue verification badge
-- `is_translator` (Boolean)
-- `is_verified` (Boolean) Whether X marks the profile as verified
-- `location` (String)
-- `media_count` (Number)
-- `name` (String)
-- `pinned_tweet_ids` (List of String)
-- `possibly_sensitive` (Boolean)
-- `profile_banner_url` (String) Original X profile banner field when available
-- `profile_bio` (Map of String) Structured profile bio with entity annotations
-- `profile_picture` (String)
-- `protected` (Boolean) Whether the profile protects its posts
-- `statuses_count` (Number)
-- `unavailable` (Boolean)
-- `unavailable_reason` (String)
-- `url` (String)
-- `username` (String)
-- `verified` (Boolean)
-- `verified_type` (String)
-- `viewer_followed_by` (Boolean) Whether this profile follows the authenticated viewer
-- `viewer_following` (Boolean) Whether the authenticated viewer follows this profile
-- `withheld_in_countries` (List of String)
-
 
 <a id="nestedatt--tweet"></a>
 ### Nested Schema for `tweet`
 
 Read-Only:
 
-- `author` (Attributes) Tweet author profile. The lookup route always includes follower count and verification state. Other profile fields appear when available. (see [below for nested schema](#nestedatt--tweet--author))
+- `author` (String) Tweet author profile. The lookup route always includes follower count and verification state. Other profile fields appear when available.
 - `bookmark_count` (Number)
 - `content_disclosure` (Attributes) Content disclosure metadata shown by X when a tweet is labeled as paid partnership content or AI-generated media. (see [below for nested schema](#nestedatt--tweet--content_disclosure))
 - `conversation_id` (String) ID of the root tweet in the conversation thread
@@ -95,47 +54,6 @@ Read-Only:
 - `type` (String) Tweet result type
 - `url` (String) Tweet permalink URL
 - `view_count` (Number)
-
-<a id="nestedatt--tweet--author"></a>
-### Nested Schema for `tweet.author`
-
-Read-Only:
-
-- `automated_by` (String)
-- `can_dm` (Boolean)
-- `community_role` (String) Community role when returned by community member reads
-- `cover_picture` (String)
-- `created_at` (String)
-- `description` (String)
-- `favourites_count` (Number)
-- `followers` (Number)
-- `following` (Number)
-- `has_custom_timelines` (Boolean)
-- `id` (String)
-- `is_automated` (Boolean)
-- `is_blue_verified` (Boolean) Whether X shows a blue verification badge
-- `is_translator` (Boolean)
-- `is_verified` (Boolean) Whether X marks the profile as verified
-- `location` (String)
-- `media_count` (Number)
-- `name` (String)
-- `pinned_tweet_ids` (List of String)
-- `possibly_sensitive` (Boolean)
-- `profile_banner_url` (String) Original X profile banner field when available
-- `profile_bio` (Map of String) Structured profile bio with entity annotations
-- `profile_picture` (String)
-- `protected` (Boolean) Whether the profile protects its posts
-- `statuses_count` (Number)
-- `unavailable` (Boolean)
-- `unavailable_reason` (String)
-- `url` (String)
-- `username` (String)
-- `verified` (Boolean)
-- `verified_type` (String)
-- `viewer_followed_by` (Boolean) Whether this profile follows the authenticated viewer
-- `viewer_following` (Boolean) Whether the authenticated viewer follows this profile
-- `withheld_in_countries` (List of String)
-
 
 <a id="nestedatt--tweet--content_disclosure"></a>
 ### Nested Schema for `tweet.content_disclosure`

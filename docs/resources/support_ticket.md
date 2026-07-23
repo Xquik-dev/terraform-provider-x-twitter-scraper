@@ -26,17 +26,44 @@ Support ticket management
 
 ### Read-Only
 
+- `attachments` (Attributes List) (see [below for nested schema](#nestedatt--attachments))
 - `created_at` (String)
 - `id` (String) The ID of this resource.
 - `messages` (Attributes List) (see [below for nested schema](#nestedatt--messages))
 - `public_id` (String)
 - `updated_at` (String)
 
+<a id="nestedatt--attachments"></a>
+### Nested Schema for `attachments`
+
+Read-Only:
+
+- `public_id` (String)
+- `status` (String) Available values: "pending", "ready", "failed".
+
+
 <a id="nestedatt--messages"></a>
 ### Nested Schema for `messages`
 
 Read-Only:
 
+- `attachments` (Attributes List) (see [below for nested schema](#nestedatt--messages--attachments))
 - `body` (String)
 - `created_at` (String)
 - `sender` (String)
+
+<a id="nestedatt--messages--attachments"></a>
+### Nested Schema for `messages.attachments`
+
+Read-Only:
+
+- `content_type` (String) Validated media type.
+Available values: "image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4", "video/quicktime", "video/webm".
+- `filename` (String)
+- `kind` (String) Attachment media class.
+Available values: "image", "video".
+- `public_id` (String)
+- `size_bytes` (Number)
+- `status` (String) Storage processing state.
+Available values: "pending", "ready", "failed".
+- `url` (String)

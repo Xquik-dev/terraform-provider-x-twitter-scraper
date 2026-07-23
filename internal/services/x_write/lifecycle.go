@@ -148,17 +148,19 @@ func pollUntilTerminal(ctx context.Context, client *xtwitterscraper.Client, op o
 		if err := waitForPoll(ctx, action.PollAfterMs); err != nil {
 			return action, fmt.Errorf("write %s is still non-terminal; poll %s before retrying: %w", action.WriteActionID, action.StatusURL, err)
 		}
+		var nextAction writeAction
 		if err := client.Get(
 			ctx,
 			path,
 			nil,
-			&action,
+			&nextAction,
 		); err != nil {
 			return action, fmt.Errorf("failed to poll write %s; do not redispatch while dispatch state is unknown: %w", action.WriteActionID, err)
 		}
-		if err := validateAction(op, action); err != nil {
+		if err := validateAction(op, nextAction); err != nil {
 			return action, err
 		}
+		action = nextAction
 	}
 	return action, nil
 }

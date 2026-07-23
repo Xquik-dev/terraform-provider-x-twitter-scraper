@@ -44,8 +44,8 @@ Read-Only:
 
 - `active_daily_estimate` (String) Estimated daily credits for currently active monitors.
 - `active_hourly_burn` (String) Credits charged each hour for currently active monitors.
-- `credits_per_active_monitor_day` (String) Estimated daily credits for 1 active instant monitor.
-- `credits_per_active_monitor_hour` (String) Hourly credits charged for 1 active instant monitor.
+- `credits_per_active_monitor_day` (String) Rounded daily estimate for 1 active monitor.
+- `credits_per_active_monitor_hour` (String) Hourly credits charged for 1 active monitor.
 - `events_included` (Boolean) Webhook and event deliveries are included in monitor billing.
 - `instant_check_interval_seconds` (Number) Active monitors check every 1 second.
 - `unlimited_slots` (Boolean) Monitor slot count is unlimited.

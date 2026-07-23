@@ -3,12 +3,12 @@
 page_title: "x-twitter-scraper_monitor Data Source - X Twitter Scraper"
 subcategory: ""
 description: |-
-  Real-time X account monitoring
+  X account monitoring with 1-second checks
 ---
 
 # x-twitter-scraper_monitor (Data Source)
 
-Real-time X account monitoring
+X account monitoring with 1-second checks
 
 
 

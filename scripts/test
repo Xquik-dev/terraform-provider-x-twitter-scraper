@@ -4,8 +4,19 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-# Mark the necessary Go modules as private to avoid Go's proxy
-export GOPRIVATE="${GOPRIVATE:+$GOPRIVATE,}github.com/Xquik-dev/x-twitter-scraper-go,github.com/stainless-sdks/x-twitter-scraper-go"
+# Mark the generated staging module as private.
+export GOPRIVATE="${GOPRIVATE:+$GOPRIVATE,}github.com/stainless-sdks/x-twitter-scraper-go"
 
-echo "==> Running tests"
-go test ./... "$@"
+echo "==> Verifying module integrity"
+go mod verify
+
+echo "==> Running race-enabled tests"
+go test -race ./... "$@"
+
+if [[ "$#" -eq 0 ]]; then
+  echo "==> Enforcing statement coverage"
+  ./scripts/coverage
+fi
+
+echo "==> Checking Windows compilation"
+CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go test -exec=true ./...

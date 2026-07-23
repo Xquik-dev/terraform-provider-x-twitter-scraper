@@ -17,7 +17,7 @@ Accountless prepaid access for paid read endpoints
 
 ### Required
 
-- `amount_minor` (Number) Confirmed USD amount in cents.
+- `amount_minor` (Number) USD cents accepted for this checkout.
 - `currency` (String) Available values: "usd".
 - `idempotency_key` (String, Sensitive) Cryptographically random UUID v4. Reuse it only to retry the same wallet and amount request.
 

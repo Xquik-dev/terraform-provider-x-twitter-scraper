@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/test_helpers"
 	"github.com/Xquik-dev/x-twitter-scraper-go"
@@ -153,6 +154,21 @@ func TestOperationValidationRejectsAccountCollisionAndInvalidFields(t *testing.T
 	if err == nil || !strings.Contains(err.Error(), "at least one") {
 		t.Fatalf("expected missing content error, got %v", err)
 	}
+
+	_, err = operations[0].requestBody("@account", `{`)
+	if err == nil || !strings.Contains(err.Error(), "JSON object") {
+		t.Fatalf("expected malformed JSON error, got %v", err)
+	}
+	_, err = operations[0].requestBody("@account", `null`)
+	if err == nil || !strings.Contains(err.Error(), "at least one") {
+		t.Fatalf("expected null payload error, got %v", err)
+	}
+	if present([]any{}) {
+		t.Fatal("empty list is present")
+	}
+	if !present(true) {
+		t.Fatal("boolean value is not present")
+	}
 }
 
 func TestOperationRegistryIsCompleteAndUnique(t *testing.T) {
@@ -287,6 +303,205 @@ func TestCanonicalResponseRejectsUnsafeRetryGuidance(t *testing.T) {
 	if err == nil || !strings.Contains(err.Error(), "dispatched write safe to retry") {
 		t.Fatalf("expected unsafe retry guidance error, got %v", err)
 	}
+}
+
+func TestCanonicalResponseValidationRejectsContractViolations(t *testing.T) {
+	t.Parallel()
+
+	valid := validCanonicalAction()
+	cases := []struct {
+		name      string
+		mutate    func(*writeAction)
+		wantError string
+	}{
+		{name: "object", mutate: func(action *writeAction) { action.Object = "other" }, wantError: "unexpected object"},
+		{name: "missing ID", mutate: func(action *writeAction) { action.ID = "" }, wantError: "omitted id"},
+		{name: "different IDs", mutate: func(action *writeAction) { action.ID = "other" }, wantError: "differ"},
+		{name: "action", mutate: func(action *writeAction) { action.Action = "other" }, wantError: "does not match"},
+		{name: "status", mutate: func(action *writeAction) { action.Status = "other" }, wantError: "unknown status"},
+		{name: "terminal", mutate: func(action *writeAction) { action.Terminal = false }, wantError: "terminal=false disagree"},
+		{name: "billing status", mutate: func(action *writeAction) { action.Billing.Status = "other" }, wantError: "unknown billing status"},
+		{name: "billing fields", mutate: func(action *writeAction) { action.Charged = false }, wantError: "billing compatibility"},
+		{name: "target fields", mutate: func(action *writeAction) { action.TargetID = "other" }, wantError: "target compatibility"},
+		{name: "retry guidance", mutate: func(action *writeAction) { action.SafeToRetry = true }, wantError: "dispatched write safe to retry"},
+		{name: "new key guidance", mutate: func(action *writeAction) {
+			action.NextAction.RequiresNewIdempotencyKey = true
+		}, wantError: "new Idempotency-Key"},
+		{name: "success", mutate: func(action *writeAction) { action.Success = false }, wantError: "success=false disagree"},
+		{name: "status URL", mutate: func(action *writeAction) { action.StatusURL = "" }, wantError: "omitted statusUrl"},
+	}
+
+	for _, testCase := range cases {
+		testCase := testCase
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+			action := valid
+			testCase.mutate(&action)
+			err := validateAction(operations[0], action)
+			if err == nil || !strings.Contains(err.Error(), testCase.wantError) {
+				t.Fatalf("validateAction() error = %v, want text %q", err, testCase.wantError)
+			}
+		})
+	}
+}
+
+func TestExecuteWriteRejectsInvalidRequests(t *testing.T) {
+	t.Parallel()
+
+	client := xtwitterscraper.NewClient(option.WithBaseURL("https://example.invalid/"))
+	cases := []struct {
+		name      string
+		operation operation
+		request   writeRequest
+		wantError string
+	}{
+		{
+			name:      "empty account",
+			operation: operations[0],
+			request:   writeRequest{idempotencyKey: "test-key", payloadJSON: `{"text":"hello"}`},
+			wantError: "account must not be empty",
+		},
+		{
+			name:      "invalid idempotency key",
+			operation: operations[0],
+			request:   writeRequest{account: "@account", idempotencyKey: "not valid", payloadJSON: `{"text":"hello"}`},
+			wantError: "visible ASCII",
+		},
+		{
+			name:      "missing target",
+			operation: operations[1],
+			request:   writeRequest{account: "@account", idempotencyKey: "test-key"},
+			wantError: "target_id is required",
+		},
+	}
+	for _, testCase := range cases {
+		testCase := testCase
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+			_, err := executeWrite(context.Background(), &client, testCase.operation, testCase.request)
+			if err == nil || !strings.Contains(err.Error(), testCase.wantError) {
+				t.Fatalf("executeWrite() error = %v, want text %q", err, testCase.wantError)
+			}
+		})
+	}
+}
+
+func TestPollingFailuresPreserveSafeRecoveryGuidance(t *testing.T) {
+	t.Parallel()
+
+	valid := validCanonicalAction()
+	valid.Status = "accepted"
+	valid.Terminal = false
+	valid.Success = false
+	valid.Billing.Status = "pending"
+	valid.PollAfterMs = 1_000
+
+	cancelledContext, cancel := context.WithCancel(context.Background())
+	cancel()
+	client := xtwitterscraper.NewClient(option.WithBaseURL("https://example.invalid/"))
+	_, err := pollUntilTerminal(cancelledContext, &client, operations[0], valid)
+	if err == nil || !strings.Contains(err.Error(), "still non-terminal") {
+		t.Fatalf("cancelled poll error = %v", err)
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+		http.Error(writer, `{"error":"unavailable"}`, http.StatusServiceUnavailable)
+	}))
+	t.Cleanup(server.Close)
+	valid.StatusURL = server.URL + "/x/write-actions/" + valid.WriteActionID
+	valid.PollAfterMs = 0
+	client = xtwitterscraper.NewClient(
+		option.WithBaseURL(server.URL+"/"),
+		option.WithMaxRetries(0),
+	)
+	_, err = pollUntilTerminal(context.Background(), &client, operations[0], valid)
+	if err == nil || !strings.Contains(err.Error(), "do not redispatch") {
+		t.Fatalf("failed poll error = %v", err)
+	}
+}
+
+func TestPollRejectsInvalidCanonicalResponse(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
+		writer.Header().Set("Content-Type", "application/json")
+		_, _ = writer.Write([]byte(`{}`))
+	}))
+	t.Cleanup(server.Close)
+	action := validCanonicalAction()
+	action.Status = "accepted"
+	action.Terminal = false
+	action.Success = false
+	action.Billing.Status = "pending"
+	action.StatusURL = server.URL + "/x/write-actions/" + action.WriteActionID
+	client := xtwitterscraper.NewClient(
+		option.WithBaseURL(server.URL+"/"),
+		option.WithMaxRetries(0),
+	)
+	_, err := pollUntilTerminal(context.Background(), &client, operations[0], action)
+	if err == nil || !strings.Contains(err.Error(), "unexpected object") {
+		t.Fatalf("invalid canonical poll error = %v", err)
+	}
+}
+
+func TestCanonicalPollPathRejectsMalformedURL(t *testing.T) {
+	t.Parallel()
+
+	_, err := canonicalPollPath("https://example.com/%", "write-action-123")
+	if err == nil || !strings.Contains(err.Error(), "invalid statusUrl") {
+		t.Fatalf("canonicalPollPath() error = %v", err)
+	}
+}
+
+func TestPollingRejectsMalformedStatusURL(t *testing.T) {
+	t.Parallel()
+
+	action := validCanonicalAction()
+	action.Status = "accepted"
+	action.Terminal = false
+	action.Success = false
+	action.Billing.Status = "pending"
+	action.StatusURL = "https://example.com/%"
+	client := xtwitterscraper.NewClient(option.WithBaseURL("https://example.invalid/"))
+	_, err := pollUntilTerminal(context.Background(), &client, operations[0], action)
+	if err == nil || !strings.Contains(err.Error(), "invalid statusUrl") {
+		t.Fatalf("pollUntilTerminal() error = %v", err)
+	}
+}
+
+func TestWaitForPollNormalizesDelayAndHonorsCancellation(t *testing.T) {
+	t.Parallel()
+
+	if err := waitForPoll(context.Background(), -1); err != nil {
+		t.Fatalf("negative polling delay: %v", err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if err := waitForPoll(ctx, int64(maxPollDuration/time.Millisecond)+1); err == nil {
+		t.Fatal("cancelled maximum polling delay returned no error")
+	}
+}
+
+func validCanonicalAction() writeAction {
+	action := writeAction{
+		Object:         "x_write_action",
+		ID:             "write-action-123",
+		WriteActionID:  "write-action-123",
+		Action:         operations[0].action,
+		Status:         "success",
+		Terminal:       true,
+		StatusURL:      "https://example.com/x/write-actions/write-action-123",
+		Charged:        true,
+		ChargedCredits: "10",
+		TargetID:       "target-123",
+		SendDispatched: true,
+		Success:        true,
+	}
+	action.Billing.Status = "charged"
+	action.Billing.Charged = true
+	action.Billing.ChargedCredits = "10"
+	action.Target.ID = "target-123"
+	return action
 }
 
 func writeCanonicalAction(writer http.ResponseWriter, action string, statusURL string, terminal bool) {

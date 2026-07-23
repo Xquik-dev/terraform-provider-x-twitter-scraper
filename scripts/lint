@@ -1,14 +1,28 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-# Mark the necessary Go modules as private to avoid Go's proxy
-export GOPRIVATE="${GOPRIVATE:+$GOPRIVATE,}github.com/Xquik-dev/x-twitter-scraper-go,github.com/stainless-sdks/x-twitter-scraper-go"
+# Mark the generated staging module as private.
+export GOPRIVATE="${GOPRIVATE:+$GOPRIVATE,}github.com/stainless-sdks/x-twitter-scraper-go"
+
+echo "==> Checking formatting"
+unformatted="$(gofmt -s -l .)"
+if [[ -n "$unformatted" ]]; then
+  echo "The following files need gofmt -s:" >&2
+  echo "$unformatted" >&2
+  exit 1
+fi
+
+echo "==> Checking module metadata"
+go mod tidy -diff
+
+echo "==> Running Go vet"
+go vet ./...
 
 echo "==> Running Go build"
 go build ./...
 
 echo "==> Checking tests compile"
-go test -run=^$ ./...
+go test -run='^$' ./...

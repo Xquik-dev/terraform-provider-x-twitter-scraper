@@ -279,8 +279,8 @@ func StructFromAttributesGeneric(ctx context.Context, val reflect.Value) (map[st
 		if ok {
 			attributeTypes[tag] = attr.Type(ctx)
 		} else {
-			ty, diags := structFromValue(ctx, v)
-			diags.Append(diags...)
+			ty, fieldDiags := structFromValue(ctx, v)
+			diags.Append(fieldDiags...)
 			if diags.HasError() {
 				return nil, diags
 			}

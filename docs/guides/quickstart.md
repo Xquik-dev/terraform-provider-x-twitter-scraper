@@ -1,8 +1,8 @@
 # Xquik Terraform Provider Quickstart
 
-Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.
+Manage X monitors, signed webhooks, and durable write actions through Terraform.
 
-Use the Xquik Terraform Provider to manage X (Twitter) automation resources from Terraform. The provider covers Xquik API objects such as monitors, HMAC webhooks, API keys, drafts, compose workflows, tweet actions, user data, draws, and extraction jobs.
+Use the [REST API](https://docs.xquik.com/api-reference/overview) for tweet search and timeline extraction.
 
 ## Install
 
@@ -11,23 +11,25 @@ terraform {
   required_providers {
     x-twitter-scraper = {
       source  = "Xquik-dev/x-twitter-scraper"
-      version = "~> 0.2.3"
+      version = "~> 0.3.1"
     }
   }
 }
 ```
 
-Run `terraform init` from your Terraform project directory.
+Run `terraform init` inside your Terraform project.
 
 ## Authenticate
 
-Prefer environment variables for credentials:
+Prefer an environment variable:
 
 ```sh
-export X_TWITTER_SCRAPER_API_KEY="xqk_your_key"
+export X_TWITTER_SCRAPER_API_KEY="your-api-key"
 ```
 
-The provider also supports `X_TWITTER_SCRAPER_BEARER_TOKEN` for bearer token authentication. Do not commit API keys, bearer tokens, Terraform state files, local plugin binaries, or machine-specific `.terraformrc` paths.
+Bearer authentication uses `X_TWITTER_SCRAPER_BEARER_TOKEN`.
+
+Never commit credentials, Terraform state, or local plugin configuration.
 
 ## Configure
 
@@ -37,38 +39,48 @@ provider "x-twitter-scraper" {}
 
 Run `terraform validate` before applying changes.
 
-## First Resources
-
-Create a monitor for new account activity:
+## Monitor an X Account
 
 ```hcl
 resource "x-twitter-scraper_monitor" "product_updates" {
-  username = "xquik"
+  username    = "xquik"
   event_types = ["tweet.new"]
 }
 ```
 
-Register a webhook endpoint for monitor events:
+## Register a Signed Webhook
 
 ```hcl
 resource "x-twitter-scraper_webhook" "events" {
-  url = "https://example.com/xquik/webhook"
+  url         = "https://example.com/xquik/webhook"
   event_types = ["tweet.new"]
 }
 ```
 
-Create an API key for automation workloads:
+Store the returned HMAC secret securely.
+
+## Publish a Tweet
+
+Every write needs a stable key for that exact intended request.
 
 ```hcl
-resource "x-twitter-scraper_api_key" "automation" {
-  name = "terraform-automation"
+resource "x-twitter-scraper_x_tweet" "announcement" {
+  account         = "@example"
+  idempotency_key = "terraform-announcement-v1"
+  payload_json = jsonencode({
+    text = "Published through the Xquik Terraform provider."
+  })
 }
 ```
 
-## Documentation
+Changing a write creates a new action and requires a new key.
 
-- Generated provider docs: [docs/index.md](../index.md)
-- Resource examples: [examples](../../examples)
-- REST API docs: https://docs.xquik.com/api-reference/overview
-- Webhook docs: https://docs.xquik.com/api-reference/webhooks/create
-- OpenAPI spec: https://xquik.com/openapi.json
+## Continue
+
+- [Provider documentation](../index.md)
+- [Resource examples](../../examples)
+- [REST API documentation](https://docs.xquik.com/api-reference/overview)
+- [OpenAPI specification](https://xquik.com/openapi.json)
+- [Security policy](../../SECURITY.md)
+
+Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.

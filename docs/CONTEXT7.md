@@ -1,8 +1,10 @@
 # Context7 Guide
 
-Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.
+Use this guide when an agent needs the provider contract quickly.
 
-This guide gives coding agents a compact path through the Xquik Terraform Provider for X (Twitter) Scraper API. Use it before generated resource pages when you need install, authentication, resource naming, and first-use examples in one place.
+The provider manages monitors, webhooks, content workflows, and X write actions.
+
+Use the REST API for tweet search, timelines, followers, and export jobs.
 
 ## Install
 
@@ -11,23 +13,25 @@ terraform {
   required_providers {
     x-twitter-scraper = {
       source  = "Xquik-dev/x-twitter-scraper"
-      version = "~> 0.2.3"
+      version = "~> 0.3.1"
     }
   }
 }
 ```
 
-Run `terraform init` from your Terraform project directory.
+Run `terraform init`.
 
 ## Authenticate
 
-Prefer environment variables so credentials stay out of Terraform files and shell history:
+Prefer environment variables:
 
 ```sh
-export X_TWITTER_SCRAPER_API_KEY="xqk_your_key"
+export X_TWITTER_SCRAPER_API_KEY="your-api-key"
 ```
 
-Bearer token authentication is also supported through `X_TWITTER_SCRAPER_BEARER_TOKEN`. Do not commit API keys, bearer tokens, Terraform state files, local plugin binaries, or machine-specific `.terraformrc` paths.
+Bearer authentication uses `X_TWITTER_SCRAPER_BEARER_TOKEN`.
+
+Never commit credentials, Terraform state, logs, or local plugin configuration.
 
 ## Configure
 
@@ -35,90 +39,90 @@ Bearer token authentication is also supported through `X_TWITTER_SCRAPER_BEARER_
 provider "x-twitter-scraper" {}
 ```
 
-Validate the configuration before adding resources:
+Run `terraform validate` before applying changes.
 
-```sh
-terraform providers
-terraform validate
-```
-
-## First Resources
-
-Create a monitor for account activity:
+## Monitor and Deliver Events
 
 ```hcl
 resource "x-twitter-scraper_monitor" "product_updates" {
-  username = "xquik"
+  username    = "xquik"
   event_types = ["tweet.new"]
 }
-```
 
-Register a webhook endpoint for monitor events:
-
-```hcl
 resource "x-twitter-scraper_webhook" "events" {
-  url = "https://example.com/xquik/webhook"
+  url         = "https://example.com/xquik/webhook"
   event_types = ["tweet.new"]
 }
 ```
 
-Create an API key for automation workloads:
+Treat the returned webhook HMAC secret as sensitive.
+
+## Create a Durable Write
 
 ```hcl
-resource "x-twitter-scraper_api_key" "automation" {
-  name = "terraform-automation"
+resource "x-twitter-scraper_x_tweet" "announcement" {
+  account         = "@example"
+  idempotency_key = "terraform-announcement-v1"
+  payload_json = jsonencode({
+    text = "Published through the Xquik Terraform provider."
+  })
 }
 ```
 
-Read the current account state with a data source:
+Use one stable idempotency key for each exact intended request.
 
-```hcl
-data "x-twitter-scraper_account" "current" {}
+Changing a write replaces the resource and requires a new key.
 
-output "xquik_plan" {
-  value = data.x-twitter-scraper_account.current.plan
-}
-```
+The provider waits for a verified terminal write state.
 
-## Common Resources
+It never blindly retries an uncertain dispatch.
 
-- `x-twitter-scraper_monitor`: monitor an X username for events.
-- `x-twitter-scraper_webhook`: deliver monitor and workflow events to an HTTPS endpoint.
-- `x-twitter-scraper_api_key`: create an API key for automation.
-- `x-twitter-scraper_draft`: manage reusable draft content.
-- `x-twitter-scraper_style`: manage tweet style presets.
-- `x-twitter-scraper_x_tweet`: create or manage tweet workflows.
-- `x-twitter-scraper_x_tweet_like`: manage tweet like actions.
-- `x-twitter-scraper_x_tweet_retweet`: manage tweet retweet actions.
-- `x-twitter-scraper_x_user_follow`: manage user follow actions.
+## Resource Map
 
-Use [docs/resources](resources) for generated schema details and [examples/resources](../examples/resources) for copyable resource blocks.
+- Content: `compose`, `draft`, `style`
+- Monitoring: `monitor`, `monitor_keyword`, `webhook`
+- Posts: `x_tweet`, `x_tweet_delete`
+- Engagement: `x_tweet_like`, `x_tweet_unlike`, `x_tweet_retweet`, `x_tweet_unretweet`
+- Relationships: `x_user_follow`, `x_user_unfollow`, `x_user_remove_follower`
+- Messaging and media: `x_dm`, `x_media`
+- Profiles: `x_profile`, `x_profile_avatar`, `x_profile_banner`
+- Communities: `x_community`, `x_community_delete`, `x_community_join`, `x_community_leave`
+- Support and checkout: `support_ticket`, `guest_wallet`
 
-## Data Sources
+Prefix each name with `x-twitter-scraper_` inside Terraform blocks.
 
-Use data sources when Terraform needs to read existing Xquik API state:
+## Data Source Map
 
-- `x-twitter-scraper_account`: account profile and plan state.
-- `x-twitter-scraper_monitor`: existing monitor metadata.
-- `x-twitter-scraper_webhook`: webhook endpoint metadata.
-- `x-twitter-scraper_x_tweet`: tweet data.
-- `x-twitter-scraper_x_user`: user profile data.
-- `x-twitter-scraper_extraction`: extraction job data.
-- `x-twitter-scraper_draw`: giveaway draw data.
+- Usage: `account`
+- Content: `draft`, `style`
+- Monitoring: `monitor`, `monitor_keyword`, `event`
+- Draws: `draw`
+- X lookups: `x_tweet`, `x_user`, `x_account`
+- Write status: `x_write_action`
+- Support: `support_ticket`
 
-Use [docs/data-sources](data-sources) for generated schema details and [examples/data-sources](../examples/data-sources) for data-source blocks.
+Data sources read existing state.
 
-## External Docs
+They do not provide tweet search or timeline scraping.
 
-- REST API docs: https://docs.xquik.com/api-reference/overview
-- Webhooks: https://docs.xquik.com/api-reference/webhooks/create
-- OpenAPI spec: https://xquik.com/openapi.json
-- GitHub repo: https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper
+## Public References
+
+- [Quickstart](guides/quickstart.md)
+- [Generated resources](resources)
+- [Generated data sources](data-sources)
+- [Examples](../examples)
+- [REST API](https://docs.xquik.com/api-reference/overview)
+- [OpenAPI](https://xquik.com/openapi.json)
+- [Security policy](../SECURITY.md)
 
 ## Agent Rules
 
-- Use `docs/guides/quickstart.md` and this file before generated schema pages.
-- Use source `Xquik-dev/x-twitter-scraper` in `required_providers`.
-- Prefer `X_TWITTER_SCRAPER_API_KEY` or `X_TWITTER_SCRAPER_BEARER_TOKEN`.
-- Keep credentials in environment variables or approved secret stores.
-- Never commit Terraform state, local plugin binaries, `.terraformrc`, API keys, bearer tokens, or logs.
+- Read generated schema pages before writing Terraform.
+- Never invent fields from REST request bodies.
+- Preserve `payload_json` as an operation-specific JSON object.
+- Never place `account` inside `payload_json`.
+- Never replace idempotency keys during uncertain retries.
+- Treat plans, state, credentials, and webhook secrets as sensitive.
+- Use only documented resource and data source names.
+
+Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.
