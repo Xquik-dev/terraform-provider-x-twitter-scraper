@@ -18,12 +18,13 @@ No OpenSSF-defined ineligibility applies.
 
 | Area | Evidence |
 | --- | --- |
-| License | Apache-2.0 `LICENSE` and REUSE 3.3 metadata |
+| License | Apache-2.0, REUSE 3.3 metadata, and bundled BSD-3-Clause terms |
 | Contribution process | `CONTRIBUTING.md`, DCO sign-off, and independent review policy |
 | Security reporting | Private GitHub reporting, response targets, and safe harbor in `SECURITY.md` |
 | Build | Pinned Go modules, checksum verification, and `./scripts/build` |
 | Tests | Race-enabled unit tests and regression tests through `./scripts/test` |
-| Statement coverage | `./scripts/coverage` enforces 90%; current result is 90.04% |
+| Statement coverage | `./scripts/coverage` enforces 90%; latest full result is 93.6% |
+| Branch coverage | `./scripts/branch-coverage` enforces 80%; current result is 791/961 (82.31%) |
 | Static analysis | `go vet` and CodeQL security-extended queries |
 | Dynamic analysis | Scheduled native Go fuzzing and race detection |
 | Dependency review | Dependabot, `go mod verify`, and `govulncheck` |
@@ -41,20 +42,24 @@ Run the local evidence commands:
 ./scripts/lint
 ./scripts/test
 uvx --from reuse==5.1.1 reuse lint
-go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
+go run golang.org/x/vuln/cmd/govulncheck@v1.6.0 ./...
 ```
 
-## Branch Coverage Rationale
+## Branch Coverage Evidence
 
-Go's maintained coverage tooling measures executed statement blocks.
+The branch gate pins a reproducible FLOSS gocove version.
 
-It does not report control-flow branch coverage.
+It rebuilds all packages and instruments control-flow targets.
 
-The audit found no suitable maintained FLOSS branch instrumenter for this module.
+Native Go coverage confirms which target ranges executed.
 
-Record the Gold branch criterion as not applicable with this rationale.
+The local verifier corrects the beta reporter's nested-block associations.
 
-Do not represent statement coverage as branch coverage.
+It excludes only test support and the verifier itself.
+
+Those packages are not part of the shipped provider.
+
+The current result is 791 of 961 branches, or 82.31%.
 
 ## Outstanding Gold Blockers
 

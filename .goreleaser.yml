@@ -36,6 +36,12 @@ archives:
       - src: LICENSE
         info:
           mtime: "{{ .CommitDate }}"
+      - src: LICENSES/BSD-3-Clause.txt
+        info:
+          mtime: "{{ .CommitDate }}"
+      - src: THIRD_PARTY_NOTICES.md
+        info:
+          mtime: "{{ .CommitDate }}"
 checksum:
   name_template: "{{ .ProjectName }}_{{ .Version }}_SHA256SUMS"
   extra_files:
