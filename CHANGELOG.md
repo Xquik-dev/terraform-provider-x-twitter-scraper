@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.1 (2026-07-23)
+
+Full Changelog: [v0.3.0...v0.3.1](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.3.0...v0.3.1)
+
+### Chores
+
+* sync generated SDK contracts ([d882c64](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/d882c64902d51cfc5e405ce0c285fdf47a015c7c))
+
+
+### Documentation
+
+* map common Terraform workflows ([#9](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/9)) ([746b306](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/746b3069736a93d53ed86162cf4cb0c1018b4240))
+
 ## 0.3.0 (2026-07-22)
 
 Full Changelog: [v0.2.3...v0.3.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.2.3...v0.3.0)
