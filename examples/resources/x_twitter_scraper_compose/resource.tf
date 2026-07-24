@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Xquik contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
 resource "x-twitter-scraper_compose" "example_compose" {
   step               = "compose"
   additional_context = "additionalContext"
