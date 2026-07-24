@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.3.2 (2026-07-24)
+
+Full Changelog: [v0.3.1...v0.3.2](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.3.1...v0.3.2)
+
+### Bug Fixes
+
+* make JSON encoder cache concurrency-safe ([7b3e09a](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/7b3e09a8e87fe5a380a0809b8bf97e0495b6adfe))
+
+
+### Chores
+
+* add per-file license evidence ([67d833d](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/67d833d47eb6edaeb4ebee870494539e17afc175))
+* enforce OpenSSF Gold quality gates ([02e56c2](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/02e56c2f421da6bc704f5d5985a7a74176da59d6))
+
+
+### Documentation
+
+* clarify repository discovery ([cbded21](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/cbded216b7cb33aeaa85ebaa3d29a25fb0804eee))
+* remove generator vendor disclosure ([961a0c6](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/961a0c6a9ad167569f21b013c4e1ccdbeb4af1ed))
+
 ## 0.3.1 (2026-07-23)
 
 Full Changelog: [v0.3.0...v0.3.1](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.3.0...v0.3.1)
