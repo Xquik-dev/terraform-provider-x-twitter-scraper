@@ -25,7 +25,7 @@ Keep each pull request focused.
 
 Preserve public contracts defined by the provider schemas and API SDK.
 
-Most generated files identify Stainless in their opening comment.
+Most generated files identify the generator in their opening comment.
 
 Prefer generator changes when a generated contract needs correction.
 
