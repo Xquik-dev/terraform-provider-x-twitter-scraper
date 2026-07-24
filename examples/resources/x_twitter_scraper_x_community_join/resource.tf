@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Xquik contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
 resource "x-twitter-scraper_x_community_join" "example_x_community_join" {
   account         = "@example"
   idempotency_key = "terraform-join-community-v1"
