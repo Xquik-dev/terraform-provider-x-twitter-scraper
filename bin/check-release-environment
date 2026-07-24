@@ -4,7 +4,7 @@ set -euo pipefail
 
 cd -- "$(dirname -- "$0")/.."
 
-for file in .goreleaser.yml terraform-registry-manifest.json .github/workflows/publish-release.yml; do
+for file in .goreleaser.yml terraform-registry-manifest.json .github/workflows/publish-release.yml bin/check-release-debug-info; do
   if [[ ! -f "$file" ]]; then
     echo "Missing required release file: $file" >&2
     exit 1
