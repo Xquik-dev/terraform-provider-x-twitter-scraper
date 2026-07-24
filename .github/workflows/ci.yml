@@ -68,6 +68,30 @@ jobs:
       - name: Run tests
         run: ./scripts/test
 
+  release-debug-information:
+    name: Release Debug Information
+    runs-on: ubuntu-24.04
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.fork
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-go
+        with:
+          stainless-api-key: ${{ secrets.STAINLESS_API_KEY }}
+
+      - name: Build release binary
+        uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
+        with:
+          distribution: goreleaser
+          version: "v2.17.0"
+          args: build --snapshot --clean --single-target
+
+      - name: Verify debug information
+        run: ./bin/check-release-debug-info
+
   security:
     name: Dependency Security
     runs-on: ubuntu-24.04
