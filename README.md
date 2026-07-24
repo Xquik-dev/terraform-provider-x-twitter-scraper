@@ -7,6 +7,7 @@
 Manage Xquik monitors, signed webhooks, content workflows, and X write actions through Terraform.
 
 This provider turns supported Xquik API objects into reviewable infrastructure.
+Use it only for objects Terraform should own across runs.
 
 [Quickstart](docs/guides/quickstart.md) | [Provider Docs](docs/index.md) | [Examples](examples) | [REST API](https://docs.xquik.com/api-reference/overview) | [OpenAPI](https://xquik.com/openapi.json) | [Security](SECURITY.md)
 
