@@ -4,19 +4,32 @@ set -euo pipefail
 
 cd -- "$(dirname -- "$0")/.."
 
-for file in .goreleaser.yml terraform-registry-manifest.json .github/workflows/publish-release.yml bin/check-release-debug-info; do
+for file in .goreleaser.yml release-please-config.json terraform-registry-manifest.json .github/workflows/publish-release.yml; do
   if [[ ! -f "$file" ]]; then
     echo "Missing required release file: $file" >&2
     exit 1
   fi
 done
 
+if [[ ! -x bin/check-release-debug-info ]]; then
+  echo "bin/check-release-debug-info must be executable" >&2
+  exit 1
+fi
+
 go run github.com/goreleaser/goreleaser/v2@v2.17.0 check
 
 jq -e '.version == 1 and (.metadata.protocol_versions | index("6.0") != null)' terraform-registry-manifest.json >/dev/null
+jq -e '.draft == true' release-please-config.json >/dev/null
 grep -Fq 'artifacts: checksum' .goreleaser.yml
+grep -Fq 'draft: true' .goreleaser.yml
 grep -Fq '{{ .Env.GPG_FINGERPRINT }}' .goreleaser.yml
 grep -Fq 'environment: release' .github/workflows/publish-release.yml
+grep -Fq '".release-please-manifest.json"' .github/workflows/publish-release.yml
+grep -Fq 'Prepare immutable draft' .github/workflows/publish-release.yml
+grep -Fq 'workflow_dispatch:' .github/workflows/publish-release.yml
+grep -Fq 'gh workflow run publish-release.yml' .github/workflows/publish-release.yml
+grep -Fq "[[ \"\$version\" =~ ^[0-9]+\\.[0-9]+\\.[0-9]+" .github/workflows/publish-release.yml
+grep -Fq "test \"\$release_target\" = \"\$GITHUB_SHA\"" .github/workflows/publish-release.yml
 grep -Fq 'secrets.X_TWITTER_SCRAPER_GPG_SIGNING_KEY' .github/workflows/publish-release.yml
 grep -Fq 'secrets.X_TWITTER_SCRAPER_GPG_SIGNING_PASSWORD' .github/workflows/publish-release.yml
 
