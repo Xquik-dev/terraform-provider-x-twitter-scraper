@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.3 (2026-07-25)
+
+Full Changelog: [v0.3.2...v0.3.3](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.3.2...v0.3.3)
+
+### Bug Fixes
+
+* publish assets before immutable release ([#17](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/17)) ([216c7bb](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/216c7bbbc0f4d504a5731af9072f6930393de13c))
+* update grpc-go for security advisory ([#15](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/15)) ([a181f76](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/a181f76e190f1cf61cd3efc8abcf931b6e3a65a0))
+
 ## 0.3.2 (2026-07-24)
 
 Full Changelog: [v0.3.1...v0.3.2](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.3.1...v0.3.2)
