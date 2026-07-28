@@ -45,16 +45,22 @@ jobs:
         release_json=""
 
         for _ in {1..30}; do
-          if release_json="$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${release_tag}" 2>/dev/null)"; then
+          if release_json="$(
+            gh release view "$release_tag" \
+              --repo "$GITHUB_REPOSITORY" \
+              --json isDraft,tagName,targetCommitish \
+              2>/dev/null
+          )"; then
             break
           fi
           sleep 10
         done
 
         test -n "$release_json"
-        release_target="$(jq -r '.target_commitish' <<<"$release_json")"
+        release_target="$(jq -r '.targetCommitish' <<<"$release_json")"
 
-        test "$(jq -r '.draft' <<<"$release_json")" = "true"
+        test "$(jq -r '.isDraft' <<<"$release_json")" = "true"
+        test "$(jq -r '.tagName' <<<"$release_json")" = "$release_tag"
         test "$release_target" = "$GITHUB_SHA"
 
         if remote_sha="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${release_tag}" --jq '.object.sha' 2>/dev/null)"; then
@@ -100,10 +106,15 @@ jobs:
         test "$GITHUB_REF_NAME" = "$RELEASE_TAG"
         version="$(jq -er '."."' .release-please-manifest.json)"
         test "$RELEASE_TAG" = "v${version}"
-        release_json="$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_TAG}")"
-        release_target="$(jq -r '.target_commitish' <<<"$release_json")"
+        release_json="$(
+          gh release view "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --json isDraft,tagName,targetCommitish
+        )"
+        release_target="$(jq -r '.targetCommitish' <<<"$release_json")"
 
-        test "$(jq -r '.draft' <<<"$release_json")" = "true"
+        test "$(jq -r '.isDraft' <<<"$release_json")" = "true"
+        test "$(jq -r '.tagName' <<<"$release_json")" = "$RELEASE_TAG"
         test "$release_target" = "$GITHUB_SHA"
         test "$(git rev-list -n 1 "$RELEASE_TAG")" = "$GITHUB_SHA"
         git merge-base --is-ancestor "$GITHUB_SHA" origin/main

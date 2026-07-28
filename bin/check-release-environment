@@ -29,6 +29,10 @@ grep -Fq 'Prepare immutable draft' .github/workflows/publish-release.yml
 grep -Fq 'workflow_dispatch:' .github/workflows/publish-release.yml
 grep -Fq 'gh workflow run publish-release.yml' .github/workflows/publish-release.yml
 grep -Fq "[[ \"\$version\" =~ ^[0-9]+\\.[0-9]+\\.[0-9]+" .github/workflows/publish-release.yml
+grep -Fq "gh release view \"\$release_tag\"" .github/workflows/publish-release.yml
+grep -Fq -- '--json isDraft,tagName,targetCommitish' .github/workflows/publish-release.yml
+grep -Fq "test \"\$(jq -r '.isDraft' <<<\"\$release_json\")\" = \"true\"" .github/workflows/publish-release.yml
+grep -Fq "test \"\$(jq -r '.tagName' <<<\"\$release_json\")\" = \"\$release_tag\"" .github/workflows/publish-release.yml
 grep -Fq "test \"\$release_target\" = \"\$GITHUB_SHA\"" .github/workflows/publish-release.yml
 grep -Fq 'secrets.X_TWITTER_SCRAPER_GPG_SIGNING_KEY' .github/workflows/publish-release.yml
 grep -Fq 'secrets.X_TWITTER_SCRAPER_GPG_SIGNING_PASSWORD' .github/workflows/publish-release.yml
