@@ -143,7 +143,15 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							CustomType: timetypes.RFC3339Type{},
 						},
 						"sender": schema.StringAttribute{
-							Computed: true,
+							Description: `Available values: "user", "support", "system".`,
+							Computed:    true,
+							Validators: []validator.String{
+								stringvalidator.OneOfCaseInsensitive(
+									"user",
+									"support",
+									"system",
+								),
+							},
 						},
 					},
 				},
