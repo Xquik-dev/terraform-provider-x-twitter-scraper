@@ -21,7 +21,7 @@ Support ticket management
 - `id` (String) The ID of this resource.
 - `messages` (Attributes List) (see [below for nested schema](#nestedatt--messages))
 - `public_id` (String)
-- `status` (String)
+- `status` (String) Available values: "open", "in_progress", "resolved", "closed".
 - `subject` (String)
 - `updated_at` (String)
 
@@ -33,7 +33,7 @@ Read-Only:
 - `attachments` (Attributes List) (see [below for nested schema](#nestedatt--messages--attachments))
 - `body` (String)
 - `created_at` (String)
-- `sender` (String)
+- `sender` (String) Available values: "user", "support", "system".
 
 <a id="nestedatt--messages--attachments"></a>
 ### Nested Schema for `messages.attachments`
