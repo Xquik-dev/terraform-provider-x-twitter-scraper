@@ -17,37 +17,80 @@ X profile data lookup
 
 ### Read-Only
 
+- `affiliates_highlighted_label` (Attributes) Organization affiliation label shown on an X profile. (see [below for nested schema](#nestedatt--affiliates_highlighted_label))
 - `automated_by` (String)
-- `can_dm` (Boolean)
+- `business_account_affiliates_count` (Number)
 - `community_role` (String) Community role when returned by community member reads
 - `cover_picture` (String)
 - `created_at` (String)
+- `creator_subscriptions_count` (Number)
 - `description` (String)
 - `favourites_count` (Number)
 - `followers` (Number)
 - `following` (Number)
 - `has_custom_timelines` (Boolean)
+- `has_graduated_access` (Boolean)
+- `has_hidden_subscriptions_on_profile` (Boolean)
+- `highlights_info` (Attributes) Profile highlight availability and count metadata. (see [below for nested schema](#nestedatt--highlights_info))
 - `id` (String) The ID of this resource.
+- `identity_verification` (Attributes) Identity verification metadata displayed by X. (see [below for nested schema](#nestedatt--identity_verification))
 - `is_automated` (Boolean)
 - `is_blue_verified` (Boolean) Whether X shows a blue verification badge
+- `is_profile_translatable` (Boolean)
 - `is_translator` (Boolean)
 - `is_verified` (Boolean) Whether X marks the profile as verified
 - `location` (String)
 - `media_count` (Number)
 - `name` (String)
+- `parody_commentary_fan_label` (String)
 - `pinned_tweet_ids` (List of String)
 - `possibly_sensitive` (Boolean)
 - `profile_banner_url` (String) Original X profile banner field when available
 - `profile_bio` (Map of String) Structured profile bio with entity annotations
+- `profile_description_language` (String)
+- `profile_image_shape` (String)
+- `profile_interstitial_type` (String)
 - `profile_picture` (String)
+- `profile_sort_enabled` (Boolean)
+- `profile_translator_type` (String)
 - `protected` (Boolean) Whether the profile protects its posts
 - `statuses_count` (Number)
+- `super_follow_eligible` (Boolean)
 - `unavailable` (Boolean)
 - `unavailable_reason` (String)
 - `url` (String)
 - `username` (String)
 - `verified` (Boolean)
 - `verified_type` (String)
-- `viewer_followed_by` (Boolean) Whether this profile follows the authenticated viewer
-- `viewer_following` (Boolean) Whether the authenticated viewer follows this profile
 - `withheld_in_countries` (List of String)
+
+<a id="nestedatt--affiliates_highlighted_label"></a>
+### Nested Schema for `affiliates_highlighted_label`
+
+Read-Only:
+
+- `badge_url` (String)
+- `description` (String)
+- `url` (String)
+- `url_type` (String)
+- `user_label_display_type` (String)
+- `user_label_type` (String)
+
+
+<a id="nestedatt--highlights_info"></a>
+### Nested Schema for `highlights_info`
+
+Read-Only:
+
+- `can_highlight_tweets` (Boolean)
+- `highlighted_tweets` (String)
+
+
+<a id="nestedatt--identity_verification"></a>
+### Nested Schema for `identity_verification`
+
+Read-Only:
+
+- `description` (String)
+- `is_identity_verified` (Boolean)
+- `verified_since_msec` (String)
