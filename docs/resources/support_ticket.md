@@ -50,7 +50,7 @@ Read-Only:
 - `attachments` (Attributes List) (see [below for nested schema](#nestedatt--messages--attachments))
 - `body` (String)
 - `created_at` (String)
-- `sender` (String)
+- `sender` (String) Available values: "user", "support", "system".
 
 <a id="nestedatt--messages--attachments"></a>
 ### Nested Schema for `messages.attachments`

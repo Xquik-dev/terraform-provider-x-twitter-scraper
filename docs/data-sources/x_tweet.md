@@ -17,21 +17,110 @@ X post data lookup
 
 ### Read-Only
 
-- `author` (String) Tweet author profile. The lookup route always includes follower count and verification state. Other profile fields appear when available.
+- `author` (Attributes) Tweet author profile. The lookup route always includes follower count and verification state. Other profile fields appear when available. (see [below for nested schema](#nestedatt--author))
 - `id` (String) The ID of this resource.
 - `tweet` (Attributes) Full tweet with text, engagement metrics, media, and metadata. A zero metric can mean X did not report the count. (see [below for nested schema](#nestedatt--tweet))
+
+<a id="nestedatt--author"></a>
+### Nested Schema for `author`
+
+Read-Only:
+
+- `affiliates_highlighted_label` (Attributes) Organization affiliation label shown on an X profile. (see [below for nested schema](#nestedatt--author--affiliates_highlighted_label))
+- `automated_by` (String)
+- `business_account_affiliates_count` (Number)
+- `community_role` (String) Community role when returned by community member reads
+- `cover_picture` (String)
+- `created_at` (String)
+- `creator_subscriptions_count` (Number)
+- `description` (String)
+- `favourites_count` (Number)
+- `followers` (Number)
+- `following` (Number)
+- `has_custom_timelines` (Boolean)
+- `has_graduated_access` (Boolean)
+- `has_hidden_subscriptions_on_profile` (Boolean)
+- `highlights_info` (Attributes) Profile highlight availability and count metadata. (see [below for nested schema](#nestedatt--author--highlights_info))
+- `id` (String)
+- `identity_verification` (Attributes) Identity verification metadata displayed by X. (see [below for nested schema](#nestedatt--author--identity_verification))
+- `is_automated` (Boolean)
+- `is_blue_verified` (Boolean) Whether X shows a blue verification badge
+- `is_profile_translatable` (Boolean)
+- `is_translator` (Boolean)
+- `is_verified` (Boolean) Whether X marks the profile as verified
+- `location` (String)
+- `media_count` (Number)
+- `name` (String)
+- `parody_commentary_fan_label` (String)
+- `pinned_tweet_ids` (List of String)
+- `possibly_sensitive` (Boolean)
+- `profile_banner_url` (String) Original X profile banner field when available
+- `profile_bio` (Map of String) Structured profile bio with entity annotations
+- `profile_description_language` (String)
+- `profile_image_shape` (String)
+- `profile_interstitial_type` (String)
+- `profile_picture` (String)
+- `profile_sort_enabled` (Boolean)
+- `profile_translator_type` (String)
+- `protected` (Boolean) Whether the profile protects its posts
+- `statuses_count` (Number)
+- `super_follow_eligible` (Boolean)
+- `unavailable` (Boolean)
+- `unavailable_reason` (String)
+- `url` (String)
+- `username` (String)
+- `verified` (Boolean)
+- `verified_type` (String)
+- `withheld_in_countries` (List of String)
+
+<a id="nestedatt--author--affiliates_highlighted_label"></a>
+### Nested Schema for `author.affiliates_highlighted_label`
+
+Read-Only:
+
+- `badge_url` (String)
+- `description` (String)
+- `url` (String)
+- `url_type` (String)
+- `user_label_display_type` (String)
+- `user_label_type` (String)
+
+
+<a id="nestedatt--author--highlights_info"></a>
+### Nested Schema for `author.highlights_info`
+
+Read-Only:
+
+- `can_highlight_tweets` (Boolean)
+- `highlighted_tweets` (String)
+
+
+<a id="nestedatt--author--identity_verification"></a>
+### Nested Schema for `author.identity_verification`
+
+Read-Only:
+
+- `description` (String)
+- `is_identity_verified` (Boolean)
+- `verified_since_msec` (String)
+
+
 
 <a id="nestedatt--tweet"></a>
 ### Nested Schema for `tweet`
 
 Read-Only:
 
-- `author` (String) Tweet author profile. The lookup route always includes follower count and verification state. Other profile fields appear when available.
+- `article` (Attributes) Article metadata attached to a tweet. (see [below for nested schema](#nestedatt--tweet--article))
+- `author` (Attributes) Tweet author profile. The lookup route always includes follower count and verification state. Other profile fields appear when available. (see [below for nested schema](#nestedatt--tweet--author))
 - `bookmark_count` (Number)
+- `card` (Attributes) Public card metadata attached to a tweet. (see [below for nested schema](#nestedatt--tweet--card))
+- `community_note` (Attributes) Community Note presentation metadata returned by X. (see [below for nested schema](#nestedatt--tweet--community_note))
 - `content_disclosure` (Attributes) Content disclosure metadata shown by X when a tweet is labeled as paid partnership content or AI-generated media. (see [below for nested schema](#nestedatt--tweet--content_disclosure))
 - `conversation_id` (String) ID of the root tweet in the conversation thread
 - `created_at` (String)
 - `display_text_range` (List of Number) Start and end offsets for rendered tweet text
+- `edit` (Attributes) Edit history metadata returned by X. (see [below for nested schema](#nestedatt--tweet--edit))
 - `entities` (Map of String) Parsed entities from the tweet text (URLs, mentions, hashtags, media)
 - `id` (String)
 - `in_reply_to_id` (String) Tweet ID being replied to
@@ -41,9 +130,14 @@ Read-Only:
 - `is_note_tweet` (Boolean) Whether this is a Note Tweet (long-form post, up to 25,000 characters)
 - `is_quote_status` (Boolean) Whether this tweet quotes another tweet
 - `is_reply` (Boolean) Whether this tweet is a reply to another tweet
+- `is_translatable` (Boolean)
 - `lang` (String) Tweet language code
 - `like_count` (Number)
 - `media` (Attributes List) Attached media items, omitted when the tweet has no media (see [below for nested schema](#nestedatt--tweet--media))
+- `note_tweet` (Attributes) Complete Note Tweet content and rich-text metadata. (see [below for nested schema](#nestedatt--tweet--note_tweet))
+- `place` (Attributes) Public place metadata attached to a tweet. (see [below for nested schema](#nestedatt--tweet--place))
+- `possibly_sensitive` (Boolean)
+- `previous_counts` (Attributes) Engagement counts retained from a prior tweet edit. (see [below for nested schema](#nestedatt--tweet--previous_counts))
 - `quote_count` (Number)
 - `quoted_tweet` (Attributes) Quoted or retweeted tweet context. Every object includes id, text, and engagement metrics. A zero metric can mean X did not report the count. Author, media, and conversation fields appear when available. (see [below for nested schema](#nestedatt--tweet--quoted_tweet))
 - `reply_count` (Number)
@@ -54,6 +148,128 @@ Read-Only:
 - `type` (String) Tweet result type
 - `url` (String) Tweet permalink URL
 - `view_count` (Number)
+- `view_state` (String)
+
+<a id="nestedatt--tweet--article"></a>
+### Nested Schema for `tweet.article`
+
+Read-Only:
+
+- `cover_media_url` (String)
+- `id` (String)
+- `preview_text` (String)
+- `title` (String)
+
+
+<a id="nestedatt--tweet--author"></a>
+### Nested Schema for `tweet.author`
+
+Read-Only:
+
+- `affiliates_highlighted_label` (Attributes) Organization affiliation label shown on an X profile. (see [below for nested schema](#nestedatt--tweet--author--affiliates_highlighted_label))
+- `automated_by` (String)
+- `business_account_affiliates_count` (Number)
+- `community_role` (String) Community role when returned by community member reads
+- `cover_picture` (String)
+- `created_at` (String)
+- `creator_subscriptions_count` (Number)
+- `description` (String)
+- `favourites_count` (Number)
+- `followers` (Number)
+- `following` (Number)
+- `has_custom_timelines` (Boolean)
+- `has_graduated_access` (Boolean)
+- `has_hidden_subscriptions_on_profile` (Boolean)
+- `highlights_info` (Attributes) Profile highlight availability and count metadata. (see [below for nested schema](#nestedatt--tweet--author--highlights_info))
+- `id` (String)
+- `identity_verification` (Attributes) Identity verification metadata displayed by X. (see [below for nested schema](#nestedatt--tweet--author--identity_verification))
+- `is_automated` (Boolean)
+- `is_blue_verified` (Boolean) Whether X shows a blue verification badge
+- `is_profile_translatable` (Boolean)
+- `is_translator` (Boolean)
+- `is_verified` (Boolean) Whether X marks the profile as verified
+- `location` (String)
+- `media_count` (Number)
+- `name` (String)
+- `parody_commentary_fan_label` (String)
+- `pinned_tweet_ids` (List of String)
+- `possibly_sensitive` (Boolean)
+- `profile_banner_url` (String) Original X profile banner field when available
+- `profile_bio` (Map of String) Structured profile bio with entity annotations
+- `profile_description_language` (String)
+- `profile_image_shape` (String)
+- `profile_interstitial_type` (String)
+- `profile_picture` (String)
+- `profile_sort_enabled` (Boolean)
+- `profile_translator_type` (String)
+- `protected` (Boolean) Whether the profile protects its posts
+- `statuses_count` (Number)
+- `super_follow_eligible` (Boolean)
+- `unavailable` (Boolean)
+- `unavailable_reason` (String)
+- `url` (String)
+- `username` (String)
+- `verified` (Boolean)
+- `verified_type` (String)
+- `withheld_in_countries` (List of String)
+
+<a id="nestedatt--tweet--author--affiliates_highlighted_label"></a>
+### Nested Schema for `tweet.author.affiliates_highlighted_label`
+
+Read-Only:
+
+- `badge_url` (String)
+- `description` (String)
+- `url` (String)
+- `url_type` (String)
+- `user_label_display_type` (String)
+- `user_label_type` (String)
+
+
+<a id="nestedatt--tweet--author--highlights_info"></a>
+### Nested Schema for `tweet.author.highlights_info`
+
+Read-Only:
+
+- `can_highlight_tweets` (Boolean)
+- `highlighted_tweets` (String)
+
+
+<a id="nestedatt--tweet--author--identity_verification"></a>
+### Nested Schema for `tweet.author.identity_verification`
+
+Read-Only:
+
+- `description` (String)
+- `is_identity_verified` (Boolean)
+- `verified_since_msec` (String)
+
+
+
+<a id="nestedatt--tweet--card"></a>
+### Nested Schema for `tweet.card`
+
+Read-Only:
+
+- `binding_values` (Map of String)
+- `id` (String)
+- `name` (String)
+- `url` (String)
+
+
+<a id="nestedatt--tweet--community_note"></a>
+### Nested Schema for `tweet.community_note`
+
+Read-Only:
+
+- `destination_url` (String)
+- `footer` (String)
+- `id` (String)
+- `short_title` (String)
+- `subtitle` (String)
+- `title` (String)
+- `visual_style` (String)
+
 
 <a id="nestedatt--tweet--content_disclosure"></a>
 ### Nested Schema for `tweet.content_disclosure`
@@ -76,10 +292,18 @@ Read-Only:
 
 Read-Only:
 
-- `can_edit` (Boolean) Whether the disclosure can be edited on X.
 - `detection_source` (String) Source of the AI-generated media disclosure.
 - `has_ai_generated_media` (Boolean) True when X labels the tweet as containing AI-generated media.
 
+
+
+<a id="nestedatt--tweet--edit"></a>
+### Nested Schema for `tweet.edit`
+
+Read-Only:
+
+- `edit_tweet_ids` (List of String)
+- `editable_until_msecs` (String)
 
 
 <a id="nestedatt--tweet--media"></a>
@@ -87,10 +311,47 @@ Read-Only:
 
 Read-Only:
 
+- `allow_download` (Boolean) Whether X permits direct media download.
+- `alt_text` (String) Accessibility text supplied for the media.
+- `aspect_ratio` (List of Number) Video aspect ratio as width and height.
+- `availability_status` (String) Media availability state reported by X.
+- `display_url` (String) Display-friendly media URL reported by X.
+- `duration_millis` (Number) Video duration in milliseconds.
+- `expanded_url` (String) Expanded X media URL.
+- `face_rects` (Map of List of Object) Face-aware crop rectangles grouped by media size.
+- `focus_rects` (Attributes List) Suggested image crops reported by X. (see [below for nested schema](#nestedatt--tweet--media--focus_rects))
+- `height` (Number) Original media height.
+- `id` (String) X media entity ID.
+- `indices` (List of Number) Media entity offsets in the tweet text.
+- `media_key` (String) Stable X media key.
 - `media_url` (String) Media preview URL
+- `monetizable` (Boolean) Whether X reports the media as monetizable.
+- `sizes` (Attributes Map) Named media renditions and resize modes. (see [below for nested schema](#nestedatt--tweet--media--sizes))
 - `type` (String) Available values: "photo", "video", "animated_gif".
 - `url` (String) X media link from the tweet
 - `video_variants` (Attributes List) Available video encodings, ordered as returned (see [below for nested schema](#nestedatt--tweet--media--video_variants))
+- `width` (Number) Original media width.
+
+<a id="nestedatt--tweet--media--focus_rects"></a>
+### Nested Schema for `tweet.media.focus_rects`
+
+Read-Only:
+
+- `h` (Number)
+- `w` (Number)
+- `x` (Number)
+- `y` (Number)
+
+
+<a id="nestedatt--tweet--media--sizes"></a>
+### Nested Schema for `tweet.media.sizes`
+
+Read-Only:
+
+- `h` (Number)
+- `resize` (String)
+- `w` (Number)
+
 
 <a id="nestedatt--tweet--media--video_variants"></a>
 ### Nested Schema for `tweet.media.video_variants`
@@ -103,17 +364,70 @@ Read-Only:
 
 
 
+<a id="nestedatt--tweet--note_tweet"></a>
+### Nested Schema for `tweet.note_tweet`
+
+Read-Only:
+
+- `entities` (Map of String)
+- `id` (String)
+- `is_expandable` (Boolean)
+- `richtext_tags` (Attributes List) (see [below for nested schema](#nestedatt--tweet--note_tweet--richtext_tags))
+- `text` (String)
+
+<a id="nestedatt--tweet--note_tweet--richtext_tags"></a>
+### Nested Schema for `tweet.note_tweet.richtext_tags`
+
+Read-Only:
+
+- `from_index` (Number)
+- `to_index` (Number)
+- `types` (List of String)
+
+
+
+<a id="nestedatt--tweet--place"></a>
+### Nested Schema for `tweet.place`
+
+Read-Only:
+
+- `bounding_box` (Map of String)
+- `country` (String)
+- `country_code` (String)
+- `full_name` (String)
+- `id` (String)
+- `name` (String)
+- `place_type` (String)
+- `url` (String)
+
+
+<a id="nestedatt--tweet--previous_counts"></a>
+### Nested Schema for `tweet.previous_counts`
+
+Read-Only:
+
+- `bookmark_count` (Number)
+- `like_count` (Number)
+- `quote_count` (Number)
+- `reply_count` (Number)
+- `retweet_count` (Number)
+
+
 <a id="nestedatt--tweet--quoted_tweet"></a>
 ### Nested Schema for `tweet.quoted_tweet`
 
 Read-Only:
 
+- `article` (Attributes) Article metadata attached to a tweet. (see [below for nested schema](#nestedatt--tweet--quoted_tweet--article))
 - `author` (Attributes) X user profile with bio, follower counts, and verification status. (see [below for nested schema](#nestedatt--tweet--quoted_tweet--author))
 - `bookmark_count` (Number)
+- `card` (Attributes) Public card metadata attached to a tweet. (see [below for nested schema](#nestedatt--tweet--quoted_tweet--card))
+- `community_note` (Attributes) Community Note presentation metadata returned by X. (see [below for nested schema](#nestedatt--tweet--quoted_tweet--community_note))
 - `content_disclosure` (Attributes) Content disclosure metadata shown by X when a tweet is labeled as paid partnership content or AI-generated media. (see [below for nested schema](#nestedatt--tweet--quoted_tweet--content_disclosure))
 - `conversation_id` (String)
 - `created_at` (String)
 - `display_text_range` (List of Number)
+- `edit` (Attributes) Edit history metadata returned by X. (see [below for nested schema](#nestedatt--tweet--quoted_tweet--edit))
 - `entities` (Map of String)
 - `id` (String)
 - `in_reply_to_id` (String)
@@ -123,57 +437,145 @@ Read-Only:
 - `is_note_tweet` (Boolean)
 - `is_quote_status` (Boolean)
 - `is_reply` (Boolean)
+- `is_translatable` (Boolean)
 - `lang` (String)
 - `like_count` (Number)
 - `media` (Attributes List) (see [below for nested schema](#nestedatt--tweet--quoted_tweet--media))
+- `note_tweet` (Attributes) Complete Note Tweet content and rich-text metadata. (see [below for nested schema](#nestedatt--tweet--quoted_tweet--note_tweet))
+- `place` (Attributes) Public place metadata attached to a tweet. (see [below for nested schema](#nestedatt--tweet--quoted_tweet--place))
+- `possibly_sensitive` (Boolean)
+- `previous_counts` (Attributes) Engagement counts retained from a prior tweet edit. (see [below for nested schema](#nestedatt--tweet--quoted_tweet--previous_counts))
 - `quote_count` (Number)
+- `quoted_tweet` (Dynamic) Quoted or retweeted tweet context. Every object includes id, text, and engagement metrics. A zero metric can mean X did not report the count. Author, media, and conversation fields appear when available.
 - `reply_count` (Number)
 - `retweet_count` (Number)
+- `retweeted_tweet` (Dynamic) Quoted or retweeted tweet context. Every object includes id, text, and engagement metrics. A zero metric can mean X did not report the count. Author, media, and conversation fields appear when available.
 - `source` (String)
 - `text` (String)
 - `type` (String)
 - `url` (String)
 - `view_count` (Number)
+- `view_state` (String)
+
+<a id="nestedatt--tweet--quoted_tweet--article"></a>
+### Nested Schema for `tweet.quoted_tweet.article`
+
+Read-Only:
+
+- `cover_media_url` (String)
+- `id` (String)
+- `preview_text` (String)
+- `title` (String)
+
 
 <a id="nestedatt--tweet--quoted_tweet--author"></a>
 ### Nested Schema for `tweet.quoted_tweet.author`
 
 Read-Only:
 
+- `affiliates_highlighted_label` (Attributes) Organization affiliation label shown on an X profile. (see [below for nested schema](#nestedatt--tweet--quoted_tweet--author--affiliates_highlighted_label))
 - `automated_by` (String)
-- `can_dm` (Boolean)
+- `business_account_affiliates_count` (Number)
 - `community_role` (String) Community role when returned by community member reads
 - `cover_picture` (String)
 - `created_at` (String)
+- `creator_subscriptions_count` (Number)
 - `description` (String)
 - `favourites_count` (Number)
 - `followers` (Number)
 - `following` (Number)
 - `has_custom_timelines` (Boolean)
+- `has_graduated_access` (Boolean)
+- `has_hidden_subscriptions_on_profile` (Boolean)
+- `highlights_info` (Attributes) Profile highlight availability and count metadata. (see [below for nested schema](#nestedatt--tweet--quoted_tweet--author--highlights_info))
 - `id` (String)
+- `identity_verification` (Attributes) Identity verification metadata displayed by X. (see [below for nested schema](#nestedatt--tweet--quoted_tweet--author--identity_verification))
 - `is_automated` (Boolean)
 - `is_blue_verified` (Boolean) Whether X shows a blue verification badge
+- `is_profile_translatable` (Boolean)
 - `is_translator` (Boolean)
 - `is_verified` (Boolean) Whether X marks the profile as verified
 - `location` (String)
 - `media_count` (Number)
 - `name` (String)
+- `parody_commentary_fan_label` (String)
 - `pinned_tweet_ids` (List of String)
 - `possibly_sensitive` (Boolean)
 - `profile_banner_url` (String) Original X profile banner field when available
 - `profile_bio` (Map of String) Structured profile bio with entity annotations
+- `profile_description_language` (String)
+- `profile_image_shape` (String)
+- `profile_interstitial_type` (String)
 - `profile_picture` (String)
+- `profile_sort_enabled` (Boolean)
+- `profile_translator_type` (String)
 - `protected` (Boolean) Whether the profile protects its posts
 - `statuses_count` (Number)
+- `super_follow_eligible` (Boolean)
 - `unavailable` (Boolean)
 - `unavailable_reason` (String)
 - `url` (String)
 - `username` (String)
 - `verified` (Boolean)
 - `verified_type` (String)
-- `viewer_followed_by` (Boolean) Whether this profile follows the authenticated viewer
-- `viewer_following` (Boolean) Whether the authenticated viewer follows this profile
 - `withheld_in_countries` (List of String)
+
+<a id="nestedatt--tweet--quoted_tweet--author--affiliates_highlighted_label"></a>
+### Nested Schema for `tweet.quoted_tweet.author.affiliates_highlighted_label`
+
+Read-Only:
+
+- `badge_url` (String)
+- `description` (String)
+- `url` (String)
+- `url_type` (String)
+- `user_label_display_type` (String)
+- `user_label_type` (String)
+
+
+<a id="nestedatt--tweet--quoted_tweet--author--highlights_info"></a>
+### Nested Schema for `tweet.quoted_tweet.author.highlights_info`
+
+Read-Only:
+
+- `can_highlight_tweets` (Boolean)
+- `highlighted_tweets` (String)
+
+
+<a id="nestedatt--tweet--quoted_tweet--author--identity_verification"></a>
+### Nested Schema for `tweet.quoted_tweet.author.identity_verification`
+
+Read-Only:
+
+- `description` (String)
+- `is_identity_verified` (Boolean)
+- `verified_since_msec` (String)
+
+
+
+<a id="nestedatt--tweet--quoted_tweet--card"></a>
+### Nested Schema for `tweet.quoted_tweet.card`
+
+Read-Only:
+
+- `binding_values` (Map of String)
+- `id` (String)
+- `name` (String)
+- `url` (String)
+
+
+<a id="nestedatt--tweet--quoted_tweet--community_note"></a>
+### Nested Schema for `tweet.quoted_tweet.community_note`
+
+Read-Only:
+
+- `destination_url` (String)
+- `footer` (String)
+- `id` (String)
+- `short_title` (String)
+- `subtitle` (String)
+- `title` (String)
+- `visual_style` (String)
 
 
 <a id="nestedatt--tweet--quoted_tweet--content_disclosure"></a>
@@ -197,10 +599,18 @@ Read-Only:
 
 Read-Only:
 
-- `can_edit` (Boolean) Whether the disclosure can be edited on X.
 - `detection_source` (String) Source of the AI-generated media disclosure.
 - `has_ai_generated_media` (Boolean) True when X labels the tweet as containing AI-generated media.
 
+
+
+<a id="nestedatt--tweet--quoted_tweet--edit"></a>
+### Nested Schema for `tweet.quoted_tweet.edit`
+
+Read-Only:
+
+- `edit_tweet_ids` (List of String)
+- `editable_until_msecs` (String)
 
 
 <a id="nestedatt--tweet--quoted_tweet--media"></a>
@@ -208,10 +618,47 @@ Read-Only:
 
 Read-Only:
 
+- `allow_download` (Boolean) Whether X permits direct media download.
+- `alt_text` (String) Accessibility text supplied for the media.
+- `aspect_ratio` (List of Number) Video aspect ratio as width and height.
+- `availability_status` (String) Media availability state reported by X.
+- `display_url` (String) Display-friendly media URL reported by X.
+- `duration_millis` (Number) Video duration in milliseconds.
+- `expanded_url` (String) Expanded X media URL.
+- `face_rects` (Map of List of Object) Face-aware crop rectangles grouped by media size.
+- `focus_rects` (Attributes List) Suggested image crops reported by X. (see [below for nested schema](#nestedatt--tweet--quoted_tweet--media--focus_rects))
+- `height` (Number) Original media height.
+- `id` (String) X media entity ID.
+- `indices` (List of Number) Media entity offsets in the tweet text.
+- `media_key` (String) Stable X media key.
 - `media_url` (String) Media preview URL
+- `monetizable` (Boolean) Whether X reports the media as monetizable.
+- `sizes` (Attributes Map) Named media renditions and resize modes. (see [below for nested schema](#nestedatt--tweet--quoted_tweet--media--sizes))
 - `type` (String) Available values: "photo", "video", "animated_gif".
 - `url` (String) X media link from the tweet
 - `video_variants` (Attributes List) Available video encodings, ordered as returned (see [below for nested schema](#nestedatt--tweet--quoted_tweet--media--video_variants))
+- `width` (Number) Original media width.
+
+<a id="nestedatt--tweet--quoted_tweet--media--focus_rects"></a>
+### Nested Schema for `tweet.quoted_tweet.media.focus_rects`
+
+Read-Only:
+
+- `h` (Number)
+- `w` (Number)
+- `x` (Number)
+- `y` (Number)
+
+
+<a id="nestedatt--tweet--quoted_tweet--media--sizes"></a>
+### Nested Schema for `tweet.quoted_tweet.media.sizes`
+
+Read-Only:
+
+- `h` (Number)
+- `resize` (String)
+- `w` (Number)
+
 
 <a id="nestedatt--tweet--quoted_tweet--media--video_variants"></a>
 ### Nested Schema for `tweet.quoted_tweet.media.video_variants`
@@ -224,18 +671,71 @@ Read-Only:
 
 
 
+<a id="nestedatt--tweet--quoted_tweet--note_tweet"></a>
+### Nested Schema for `tweet.quoted_tweet.note_tweet`
+
+Read-Only:
+
+- `entities` (Map of String)
+- `id` (String)
+- `is_expandable` (Boolean)
+- `richtext_tags` (Attributes List) (see [below for nested schema](#nestedatt--tweet--quoted_tweet--note_tweet--richtext_tags))
+- `text` (String)
+
+<a id="nestedatt--tweet--quoted_tweet--note_tweet--richtext_tags"></a>
+### Nested Schema for `tweet.quoted_tweet.note_tweet.richtext_tags`
+
+Read-Only:
+
+- `from_index` (Number)
+- `to_index` (Number)
+- `types` (List of String)
+
+
+
+<a id="nestedatt--tweet--quoted_tweet--place"></a>
+### Nested Schema for `tweet.quoted_tweet.place`
+
+Read-Only:
+
+- `bounding_box` (Map of String)
+- `country` (String)
+- `country_code` (String)
+- `full_name` (String)
+- `id` (String)
+- `name` (String)
+- `place_type` (String)
+- `url` (String)
+
+
+<a id="nestedatt--tweet--quoted_tweet--previous_counts"></a>
+### Nested Schema for `tweet.quoted_tweet.previous_counts`
+
+Read-Only:
+
+- `bookmark_count` (Number)
+- `like_count` (Number)
+- `quote_count` (Number)
+- `reply_count` (Number)
+- `retweet_count` (Number)
+
+
 
 <a id="nestedatt--tweet--retweeted_tweet"></a>
 ### Nested Schema for `tweet.retweeted_tweet`
 
 Read-Only:
 
+- `article` (Attributes) Article metadata attached to a tweet. (see [below for nested schema](#nestedatt--tweet--retweeted_tweet--article))
 - `author` (Attributes) X user profile with bio, follower counts, and verification status. (see [below for nested schema](#nestedatt--tweet--retweeted_tweet--author))
 - `bookmark_count` (Number)
+- `card` (Attributes) Public card metadata attached to a tweet. (see [below for nested schema](#nestedatt--tweet--retweeted_tweet--card))
+- `community_note` (Attributes) Community Note presentation metadata returned by X. (see [below for nested schema](#nestedatt--tweet--retweeted_tweet--community_note))
 - `content_disclosure` (Attributes) Content disclosure metadata shown by X when a tweet is labeled as paid partnership content or AI-generated media. (see [below for nested schema](#nestedatt--tweet--retweeted_tweet--content_disclosure))
 - `conversation_id` (String)
 - `created_at` (String)
 - `display_text_range` (List of Number)
+- `edit` (Attributes) Edit history metadata returned by X. (see [below for nested schema](#nestedatt--tweet--retweeted_tweet--edit))
 - `entities` (Map of String)
 - `id` (String)
 - `in_reply_to_id` (String)
@@ -245,57 +745,145 @@ Read-Only:
 - `is_note_tweet` (Boolean)
 - `is_quote_status` (Boolean)
 - `is_reply` (Boolean)
+- `is_translatable` (Boolean)
 - `lang` (String)
 - `like_count` (Number)
 - `media` (Attributes List) (see [below for nested schema](#nestedatt--tweet--retweeted_tweet--media))
+- `note_tweet` (Attributes) Complete Note Tweet content and rich-text metadata. (see [below for nested schema](#nestedatt--tweet--retweeted_tweet--note_tweet))
+- `place` (Attributes) Public place metadata attached to a tweet. (see [below for nested schema](#nestedatt--tweet--retweeted_tweet--place))
+- `possibly_sensitive` (Boolean)
+- `previous_counts` (Attributes) Engagement counts retained from a prior tweet edit. (see [below for nested schema](#nestedatt--tweet--retweeted_tweet--previous_counts))
 - `quote_count` (Number)
+- `quoted_tweet` (Dynamic) Quoted or retweeted tweet context. Every object includes id, text, and engagement metrics. A zero metric can mean X did not report the count. Author, media, and conversation fields appear when available.
 - `reply_count` (Number)
 - `retweet_count` (Number)
+- `retweeted_tweet` (Dynamic) Quoted or retweeted tweet context. Every object includes id, text, and engagement metrics. A zero metric can mean X did not report the count. Author, media, and conversation fields appear when available.
 - `source` (String)
 - `text` (String)
 - `type` (String)
 - `url` (String)
 - `view_count` (Number)
+- `view_state` (String)
+
+<a id="nestedatt--tweet--retweeted_tweet--article"></a>
+### Nested Schema for `tweet.retweeted_tweet.article`
+
+Read-Only:
+
+- `cover_media_url` (String)
+- `id` (String)
+- `preview_text` (String)
+- `title` (String)
+
 
 <a id="nestedatt--tweet--retweeted_tweet--author"></a>
 ### Nested Schema for `tweet.retweeted_tweet.author`
 
 Read-Only:
 
+- `affiliates_highlighted_label` (Attributes) Organization affiliation label shown on an X profile. (see [below for nested schema](#nestedatt--tweet--retweeted_tweet--author--affiliates_highlighted_label))
 - `automated_by` (String)
-- `can_dm` (Boolean)
+- `business_account_affiliates_count` (Number)
 - `community_role` (String) Community role when returned by community member reads
 - `cover_picture` (String)
 - `created_at` (String)
+- `creator_subscriptions_count` (Number)
 - `description` (String)
 - `favourites_count` (Number)
 - `followers` (Number)
 - `following` (Number)
 - `has_custom_timelines` (Boolean)
+- `has_graduated_access` (Boolean)
+- `has_hidden_subscriptions_on_profile` (Boolean)
+- `highlights_info` (Attributes) Profile highlight availability and count metadata. (see [below for nested schema](#nestedatt--tweet--retweeted_tweet--author--highlights_info))
 - `id` (String)
+- `identity_verification` (Attributes) Identity verification metadata displayed by X. (see [below for nested schema](#nestedatt--tweet--retweeted_tweet--author--identity_verification))
 - `is_automated` (Boolean)
 - `is_blue_verified` (Boolean) Whether X shows a blue verification badge
+- `is_profile_translatable` (Boolean)
 - `is_translator` (Boolean)
 - `is_verified` (Boolean) Whether X marks the profile as verified
 - `location` (String)
 - `media_count` (Number)
 - `name` (String)
+- `parody_commentary_fan_label` (String)
 - `pinned_tweet_ids` (List of String)
 - `possibly_sensitive` (Boolean)
 - `profile_banner_url` (String) Original X profile banner field when available
 - `profile_bio` (Map of String) Structured profile bio with entity annotations
+- `profile_description_language` (String)
+- `profile_image_shape` (String)
+- `profile_interstitial_type` (String)
 - `profile_picture` (String)
+- `profile_sort_enabled` (Boolean)
+- `profile_translator_type` (String)
 - `protected` (Boolean) Whether the profile protects its posts
 - `statuses_count` (Number)
+- `super_follow_eligible` (Boolean)
 - `unavailable` (Boolean)
 - `unavailable_reason` (String)
 - `url` (String)
 - `username` (String)
 - `verified` (Boolean)
 - `verified_type` (String)
-- `viewer_followed_by` (Boolean) Whether this profile follows the authenticated viewer
-- `viewer_following` (Boolean) Whether the authenticated viewer follows this profile
 - `withheld_in_countries` (List of String)
+
+<a id="nestedatt--tweet--retweeted_tweet--author--affiliates_highlighted_label"></a>
+### Nested Schema for `tweet.retweeted_tweet.author.affiliates_highlighted_label`
+
+Read-Only:
+
+- `badge_url` (String)
+- `description` (String)
+- `url` (String)
+- `url_type` (String)
+- `user_label_display_type` (String)
+- `user_label_type` (String)
+
+
+<a id="nestedatt--tweet--retweeted_tweet--author--highlights_info"></a>
+### Nested Schema for `tweet.retweeted_tweet.author.highlights_info`
+
+Read-Only:
+
+- `can_highlight_tweets` (Boolean)
+- `highlighted_tweets` (String)
+
+
+<a id="nestedatt--tweet--retweeted_tweet--author--identity_verification"></a>
+### Nested Schema for `tweet.retweeted_tweet.author.identity_verification`
+
+Read-Only:
+
+- `description` (String)
+- `is_identity_verified` (Boolean)
+- `verified_since_msec` (String)
+
+
+
+<a id="nestedatt--tweet--retweeted_tweet--card"></a>
+### Nested Schema for `tweet.retweeted_tweet.card`
+
+Read-Only:
+
+- `binding_values` (Map of String)
+- `id` (String)
+- `name` (String)
+- `url` (String)
+
+
+<a id="nestedatt--tweet--retweeted_tweet--community_note"></a>
+### Nested Schema for `tweet.retweeted_tweet.community_note`
+
+Read-Only:
+
+- `destination_url` (String)
+- `footer` (String)
+- `id` (String)
+- `short_title` (String)
+- `subtitle` (String)
+- `title` (String)
+- `visual_style` (String)
 
 
 <a id="nestedatt--tweet--retweeted_tweet--content_disclosure"></a>
@@ -319,10 +907,18 @@ Read-Only:
 
 Read-Only:
 
-- `can_edit` (Boolean) Whether the disclosure can be edited on X.
 - `detection_source` (String) Source of the AI-generated media disclosure.
 - `has_ai_generated_media` (Boolean) True when X labels the tweet as containing AI-generated media.
 
+
+
+<a id="nestedatt--tweet--retweeted_tweet--edit"></a>
+### Nested Schema for `tweet.retweeted_tweet.edit`
+
+Read-Only:
+
+- `edit_tweet_ids` (List of String)
+- `editable_until_msecs` (String)
 
 
 <a id="nestedatt--tweet--retweeted_tweet--media"></a>
@@ -330,10 +926,47 @@ Read-Only:
 
 Read-Only:
 
+- `allow_download` (Boolean) Whether X permits direct media download.
+- `alt_text` (String) Accessibility text supplied for the media.
+- `aspect_ratio` (List of Number) Video aspect ratio as width and height.
+- `availability_status` (String) Media availability state reported by X.
+- `display_url` (String) Display-friendly media URL reported by X.
+- `duration_millis` (Number) Video duration in milliseconds.
+- `expanded_url` (String) Expanded X media URL.
+- `face_rects` (Map of List of Object) Face-aware crop rectangles grouped by media size.
+- `focus_rects` (Attributes List) Suggested image crops reported by X. (see [below for nested schema](#nestedatt--tweet--retweeted_tweet--media--focus_rects))
+- `height` (Number) Original media height.
+- `id` (String) X media entity ID.
+- `indices` (List of Number) Media entity offsets in the tweet text.
+- `media_key` (String) Stable X media key.
 - `media_url` (String) Media preview URL
+- `monetizable` (Boolean) Whether X reports the media as monetizable.
+- `sizes` (Attributes Map) Named media renditions and resize modes. (see [below for nested schema](#nestedatt--tweet--retweeted_tweet--media--sizes))
 - `type` (String) Available values: "photo", "video", "animated_gif".
 - `url` (String) X media link from the tweet
 - `video_variants` (Attributes List) Available video encodings, ordered as returned (see [below for nested schema](#nestedatt--tweet--retweeted_tweet--media--video_variants))
+- `width` (Number) Original media width.
+
+<a id="nestedatt--tweet--retweeted_tweet--media--focus_rects"></a>
+### Nested Schema for `tweet.retweeted_tweet.media.focus_rects`
+
+Read-Only:
+
+- `h` (Number)
+- `w` (Number)
+- `x` (Number)
+- `y` (Number)
+
+
+<a id="nestedatt--tweet--retweeted_tweet--media--sizes"></a>
+### Nested Schema for `tweet.retweeted_tweet.media.sizes`
+
+Read-Only:
+
+- `h` (Number)
+- `resize` (String)
+- `w` (Number)
+
 
 <a id="nestedatt--tweet--retweeted_tweet--media--video_variants"></a>
 ### Nested Schema for `tweet.retweeted_tweet.media.video_variants`
@@ -343,3 +976,53 @@ Read-Only:
 - `bitrate` (Number)
 - `content_type` (String)
 - `url` (String)
+
+
+
+<a id="nestedatt--tweet--retweeted_tweet--note_tweet"></a>
+### Nested Schema for `tweet.retweeted_tweet.note_tweet`
+
+Read-Only:
+
+- `entities` (Map of String)
+- `id` (String)
+- `is_expandable` (Boolean)
+- `richtext_tags` (Attributes List) (see [below for nested schema](#nestedatt--tweet--retweeted_tweet--note_tweet--richtext_tags))
+- `text` (String)
+
+<a id="nestedatt--tweet--retweeted_tweet--note_tweet--richtext_tags"></a>
+### Nested Schema for `tweet.retweeted_tweet.note_tweet.richtext_tags`
+
+Read-Only:
+
+- `from_index` (Number)
+- `to_index` (Number)
+- `types` (List of String)
+
+
+
+<a id="nestedatt--tweet--retweeted_tweet--place"></a>
+### Nested Schema for `tweet.retweeted_tweet.place`
+
+Read-Only:
+
+- `bounding_box` (Map of String)
+- `country` (String)
+- `country_code` (String)
+- `full_name` (String)
+- `id` (String)
+- `name` (String)
+- `place_type` (String)
+- `url` (String)
+
+
+<a id="nestedatt--tweet--retweeted_tweet--previous_counts"></a>
+### Nested Schema for `tweet.retweeted_tweet.previous_counts`
+
+Read-Only:
+
+- `bookmark_count` (Number)
+- `like_count` (Number)
+- `quote_count` (Number)
+- `reply_count` (Number)
+- `retweet_count` (Number)
