@@ -17,6 +17,8 @@ type MonitorDataSourceModel struct {
 	CreatedAt     timetypes.RFC3339              `tfsdk:"created_at" json:"createdAt,computed" format:"date-time"`
 	IsActive      types.Bool                     `tfsdk:"is_active" json:"isActive,computed"`
 	NextBillingAt timetypes.RFC3339              `tfsdk:"next_billing_at" json:"nextBillingAt,computed" format:"date-time"`
+	PausedAt      timetypes.RFC3339              `tfsdk:"paused_at" json:"pausedAt,computed" format:"date-time"`
+	PausedReason  types.String                   `tfsdk:"paused_reason" json:"pausedReason,computed"`
 	Username      types.String                   `tfsdk:"username" json:"username,computed"`
 	XUserID       types.String                   `tfsdk:"x_user_id" json:"xUserId,computed"`
 	EventTypes    customfield.List[types.String] `tfsdk:"event_types" json:"eventTypes,computed"`

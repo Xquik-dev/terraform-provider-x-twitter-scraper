@@ -19,6 +19,8 @@ type MonitorModel struct {
 	IsActive      types.Bool        `tfsdk:"is_active" json:"isActive,optional"`
 	CreatedAt     timetypes.RFC3339 `tfsdk:"created_at" json:"createdAt,computed" format:"date-time"`
 	NextBillingAt timetypes.RFC3339 `tfsdk:"next_billing_at" json:"nextBillingAt,computed" format:"date-time"`
+	PausedAt      timetypes.RFC3339 `tfsdk:"paused_at" json:"pausedAt,computed" format:"date-time"`
+	PausedReason  types.String      `tfsdk:"paused_reason" json:"pausedReason,computed"`
 	XUserID       types.String      `tfsdk:"x_user_id" json:"xUserId,computed"`
 }
 

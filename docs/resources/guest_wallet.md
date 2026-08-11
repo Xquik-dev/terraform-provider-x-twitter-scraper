@@ -27,11 +27,11 @@ Accountless prepaid access for paid read endpoints
 - `amount` (Attributes) Confirmed USD amount for a guest wallet purchase. (see [below for nested schema](#nestedatt--amount))
 - `api_key` (String, Sensitive) Paid-read bearer credential returned only by initial creation. Store it as a secret. Never place it in a URL or log.
 - `authorization` (Attributes) (see [below for nested schema](#nestedatt--authorization))
-- `checkout_url` (String) Raw Stripe-hosted checkout URL for user interaction.
+- `checkout_url` (String) Hosted checkout URL for user interaction.
 - `credential_notice` (String) Available values: "Store api_key and the Idempotency-Key securely before sharing checkout_url. No email recovery is available.".
 - `credits` (String) Credits granted after verified payment.
 - `expires_at` (String) Time when the pending checkout expires.
-- `instructions` (String) Available values: "Give checkout_url to the user. They must complete payment on Stripe. Never submit payment for them. After payment, poll status_url every poll_after_seconds until latest_purchase.status is no longer pending.".
+- `instructions` (String) Hosted checkout and status polling instructions.
 - `poll_after_seconds` (Number) Wait at least this long before polling status_url.
 Available values: 2.
 - `purchase_id` (String)
