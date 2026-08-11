@@ -29,4 +29,7 @@ X account monitoring with 1-second checks
 - `created_at` (String)
 - `id` (String) The ID of this resource.
 - `next_billing_at` (String) Next hourly credit charge time for this account monitor.
+- `paused_at` (String) When Xquik automatically paused this monitor.
+- `paused_reason` (String) Why Xquik automatically paused this monitor.
+Available values: "x_user_not_found".
 - `x_user_id` (String)
