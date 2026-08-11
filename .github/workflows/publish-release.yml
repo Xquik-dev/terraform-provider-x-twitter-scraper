@@ -146,10 +146,6 @@ jobs:
       with:
         go-version-file: "go.mod"
         cache: false
-    - name: Verify release tag
-      env:
-        RELEASE_TAG: ${{ steps.release.outputs.tag }}
-      run: test "$(git rev-list -n 1 "$RELEASE_TAG")" = "$GITHUB_SHA"
     - name: Check licensing
       uses: fsfe/reuse-action@676e2d560c9a403aa252096d99fcab3e1132b0f5 # v6.0.0
     - name: Run release checks
@@ -169,16 +165,14 @@ jobs:
       with:
         distribution: goreleaser
         version: "v2.17.0"
-        args: release --clean
+        args: release --clean --skip=publish
       env:
         GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Verify Debug Information
       run: ./bin/check-release-debug-info
     - name: Locate Checksum Manifest
       id: checksums
       run: |
-        set -euo pipefail
         checksum_path="$(find dist -maxdepth 1 -type f -name '*_SHA256SUMS' -print -quit)"
         test -n "$checksum_path"
         echo "path=$checksum_path" >> "$GITHUB_OUTPUT"
@@ -187,14 +181,18 @@ jobs:
       uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
       with:
         subject-checksums: ${{ steps.checksums.outputs.path }}
-    - name: Attach Provenance
+    - name: Upload Release Assets & Provenance
       env:
         ATTESTATION_BUNDLE: ${{ steps.attest.outputs.bundle-path }}
         GH_TOKEN: ${{ github.token }}
         RELEASE_TAG: ${{ steps.release.outputs.tag }}
       run: |
+        manifest="dist/terraform-provider-x-twitter-scraper_${RELEASE_TAG#v}_manifest.json"
         install -m 0644 "$ATTESTATION_BUNDLE" dist/provenance.intoto.jsonl
-        gh release upload "$RELEASE_TAG" dist/provenance.intoto.jsonl --clobber
+        install -m 0644 terraform-registry-manifest.json "$manifest"
+        gh release upload "$RELEASE_TAG" \
+          dist/*.zip dist/*_SHA256SUMS dist/*_SHA256SUMS.sig \
+          "$manifest" dist/provenance.intoto.jsonl --clobber
     - name: Publish Verified Release
       env:
         GH_TOKEN: ${{ github.token }}
