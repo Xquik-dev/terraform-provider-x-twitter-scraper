@@ -65,7 +65,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Sensitive:   true,
 			},
 			"checkout_url": schema.StringAttribute{
-				Description: "Raw Stripe-hosted checkout URL for user interaction.",
+				Description: "Hosted checkout URL for user interaction.",
 				Computed:    true,
 			},
 			"credential_notice": schema.StringAttribute{
@@ -85,11 +85,8 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  timetypes.RFC3339Type{},
 			},
 			"instructions": schema.StringAttribute{
-				Description: `Available values: "Give checkout_url to the user. They must complete payment on Stripe. Never submit payment for them. After payment, poll status_url every poll_after_seconds until latest_purchase.status is no longer pending.".`,
+				Description: "Hosted checkout and status polling instructions.",
 				Computed:    true,
-				Validators: []validator.String{
-					stringvalidator.OneOfCaseInsensitive("Give checkout_url to the user. They must complete payment on Stripe. Never submit payment for them. After payment, poll status_url every poll_after_seconds until latest_purchase.status is no longer pending."),
-				},
 			},
 			"poll_after_seconds": schema.Int64Attribute{
 				Description: "Wait at least this long before polling status_url.\nAvailable values: 2.",
