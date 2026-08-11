@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0 (2026-08-11)
+
+Full Changelog: [v0.5.1...v0.6.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.5.1...v0.6.0)
+
+### Features
+
+* **api:** align reply extraction contracts ([16d5952](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/16d5952b4c6a76317dee7d766b27ab004977c3a4))
+
 ## 0.5.1 (2026-08-11)
 
 Full Changelog: [v0.5.0...v0.5.1](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.5.0...v0.5.1)
