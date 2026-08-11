@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.7.0 (2026-08-11)
+
+Full Changelog: [v0.6.0...v0.7.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.6.0...v0.7.0)
+
+### Features
+
+* **api:** api update ([803242b](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/803242bc167c7bb6212ae2e1681d9f48ebef904e))
+* **api:** api update ([5f13a18](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/5f13a18d1537ddc5197370f3daea23e560d09bd3))
+
+
+### Chores
+
+* **internal:** version bump ([f7d991f](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/f7d991f0c878eba5e127594d7940ddc2193c5321))
+
+
+### Documentation
+
+* refresh generated provider reference ([874e053](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/874e053039bfa3d3318fd7fbf19e2c53216535ec))
+
 ## 0.6.0 (2026-08-11)
 
 Full Changelog: [v0.5.1...v0.6.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.5.1...v0.6.0)
