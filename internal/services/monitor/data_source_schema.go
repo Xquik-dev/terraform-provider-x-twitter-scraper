@@ -36,6 +36,18 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 				CustomType:  timetypes.RFC3339Type{},
 			},
+			"paused_at": schema.StringAttribute{
+				Description: "When Xquik automatically paused this monitor.",
+				Computed:    true,
+				CustomType:  timetypes.RFC3339Type{},
+			},
+			"paused_reason": schema.StringAttribute{
+				Description: "Why Xquik automatically paused this monitor.\nAvailable values: \"x_user_not_found\".",
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive("x_user_not_found"),
+				},
+			},
 			"username": schema.StringAttribute{
 				Computed: true,
 			},
