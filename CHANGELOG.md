@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.1 (2026-08-11)
+
+Full Changelog: [v0.7.0...v0.7.1](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.7.0...v0.7.1)
+
+### Bug Fixes
+
+* upload assets to the verified release ([52eeba1](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/52eeba102ca71003fe235e72c36094e87e09c779))
+
 ## 0.7.0 (2026-08-11)
 
 Full Changelog: [v0.6.0...v0.7.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.6.0...v0.7.0)
