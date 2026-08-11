@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.1 (2026-08-11)
+
+Full Changelog: [v0.5.0...v0.5.1](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.5.0...v0.5.1)
+
+### Chores
+
+* **deps:** bump actions/attest from 4.2.1 to 4.2.2 ([#34](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/34)) ([b395d09](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/b395d09baa293170ee652369a7d4d2c4fdc92c62))
+* **deps:** bump github/codeql-action/upload-sarif from 4.37.1 to 4.37.6 ([#27](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/27)) ([ea32ed0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/ea32ed0df0a4fefbaff4cbde2d692e81899db19b))
+* **deps:** bump ossf/scorecard-action from 2.4.3 to 2.4.4 ([#31](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/31)) ([9a3ee78](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/9a3ee78bd858904472ef4936e66994579ef58974))
+
 ## 0.5.0 (2026-08-01)
 
 Full Changelog: [v0.4.0...v0.5.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.4.0...v0.5.0)
