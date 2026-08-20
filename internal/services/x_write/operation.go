@@ -57,7 +57,7 @@ func (o operation) requestBody(account string, payloadJSON string) (map[string]a
 	payload := map[string]any{}
 	if strings.TrimSpace(payloadJSON) != "" {
 		if err := json.Unmarshal([]byte(payloadJSON), &payload); err != nil {
-			return nil, fmt.Errorf("payload_json must be a JSON object: %w", err)
+			return nil, fmt.Errorf("payload_json is invalid. Enter a JSON object: %w", err)
 		}
 		if payload == nil {
 			payload = map[string]any{}
@@ -65,7 +65,7 @@ func (o operation) requestBody(account string, payloadJSON string) (map[string]a
 	}
 
 	if _, exists := payload["account"]; exists {
-		return nil, fmt.Errorf("payload_json must not contain account; use the account attribute")
+		return nil, fmt.Errorf("payload_json contains account. Use the account attribute instead")
 	}
 
 	allowed := make(map[string]struct{}, len(o.allowedFields))
@@ -74,12 +74,12 @@ func (o operation) requestBody(account string, payloadJSON string) (map[string]a
 	}
 	for field := range payload {
 		if _, ok := allowed[field]; !ok {
-			return nil, fmt.Errorf("payload_json field %q is not valid for %s", field, o.action)
+			return nil, fmt.Errorf("payload_json contains unsupported field %q for %s. Remove it", field, o.action)
 		}
 	}
 	for _, field := range o.requiredFields {
 		if !present(payload[field]) {
-			return nil, fmt.Errorf("payload_json field %q is required for %s", field, o.action)
+			return nil, fmt.Errorf("payload_json is missing field %q for %s. Add it", field, o.action)
 		}
 	}
 	if len(o.anyOfFields) > 0 {
@@ -90,7 +90,7 @@ func (o operation) requestBody(account string, payloadJSON string) (map[string]a
 		if !found {
 			fields := append([]string(nil), o.anyOfFields...)
 			sort.Strings(fields)
-			return nil, fmt.Errorf("payload_json requires at least one of %s for %s", strings.Join(fields, ", "), o.action)
+			return nil, fmt.Errorf("payload_json needs at least one of %s for %s. Add one", strings.Join(fields, ", "), o.action)
 		}
 	}
 

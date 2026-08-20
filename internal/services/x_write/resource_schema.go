@@ -18,14 +18,14 @@ import (
 func resourceSchema(_ context.Context, op operation) schema.Schema {
 	requiresReplace := []planmodifier.String{stringplanmodifier.RequiresReplace()}
 	return schema.Schema{
-		Description: "Executes one " + op.action + " write and stores only its durable canonical write-action record.",
+		Description: "Runs one " + op.action + " request and stores its canonical write-action record.",
 		Attributes: map[string]schema.Attribute{
-			"id":                        schema.StringAttribute{Computed: true, Description: "Stable canonical write-action ID."},
+			"id":                        schema.StringAttribute{Computed: true, Description: "Canonical write-action ID."},
 			"action":                    schema.StringAttribute{Computed: true},
-			"account":                   schema.StringAttribute{Required: true, Description: "X account used for the request. This is preserved separately from response_account_*.", PlanModifiers: requiresReplace, Validators: []validator.String{stringvalidator.LengthAtLeast(1)}},
-			"idempotency_key":           schema.StringAttribute{Required: true, Sensitive: true, Description: "Visible ASCII key unique to this intended write. Reuse only for an exact replay.", PlanModifiers: requiresReplace, Validators: []validator.String{stringvalidator.LengthBetween(1, 255), stringvalidator.RegexMatches(regexp.MustCompile(`^[!-~]+$`), "must contain visible ASCII only")}},
-			"target_id":                 schema.StringAttribute{Optional: true, Description: "Target Tweet, user, or community ID for targeted writes.", PlanModifiers: requiresReplace},
-			"payload_json":              schema.StringAttribute{Optional: true, Sensitive: true, Description: "Operation-specific JSON object. Do not include account.", PlanModifiers: requiresReplace},
+			"account":                   schema.StringAttribute{Required: true, Description: "X account for the request. Stored separately from response_account_* fields.", PlanModifiers: requiresReplace, Validators: []validator.String{stringvalidator.LengthAtLeast(1)}},
+			"idempotency_key":           schema.StringAttribute{Required: true, Sensitive: true, Description: "Visible ASCII key for this exact write. Reuse only to replay the identical request.", PlanModifiers: requiresReplace, Validators: []validator.String{stringvalidator.LengthBetween(1, 255), stringvalidator.RegexMatches(regexp.MustCompile(`^[!-~]+$`), "use visible ASCII characters only")}},
+			"target_id":                 schema.StringAttribute{Optional: true, Description: "Tweet, user, or community ID for an operation that requires a target.", PlanModifiers: requiresReplace},
+			"payload_json":              schema.StringAttribute{Optional: true, Sensitive: true, Description: "JSON object for this operation. Put the X account in account, not here.", PlanModifiers: requiresReplace},
 			"object":                    schema.StringAttribute{Computed: true},
 			"write_action_id":           schema.StringAttribute{Computed: true},
 			"status":                    schema.StringAttribute{Computed: true},
@@ -42,7 +42,7 @@ func resourceSchema(_ context.Context, op operation) schema.Schema {
 			"billing_charged_credits":   schema.StringAttribute{Computed: true},
 			"billing_planned_credits":   schema.StringAttribute{Computed: true},
 			"request_hash":              schema.StringAttribute{Computed: true},
-			"request_payload_json":      schema.StringAttribute{Computed: true, Sensitive: true, Description: "Sanitized payload recorded by the canonical write action."},
+			"request_payload_json":      schema.StringAttribute{Computed: true, Sensitive: true, Description: "Sanitized payload stored with the canonical write action."},
 			"request_id":                schema.StringAttribute{Computed: true},
 			"response_account_id":       schema.StringAttribute{Computed: true},
 			"response_account_username": schema.StringAttribute{Computed: true},

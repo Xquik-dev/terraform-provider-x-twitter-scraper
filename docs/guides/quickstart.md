@@ -1,8 +1,8 @@
-# Xquik Terraform Provider Quickstart
+# Xquik Terraform provider quickstart
 
-Manage X monitors, signed webhooks, and durable write actions through Terraform.
+Manage X API monitors, signed webhooks, and durable write actions with Terraform.
 
-Use the [REST API](https://docs.xquik.com/api-reference/overview) for tweet search and timeline extraction.
+Use the [REST API](https://docs.xquik.com/api-reference/overview) for Twitter search and timeline extraction.
 
 ## Install
 
@@ -11,7 +11,7 @@ terraform {
   required_providers {
     x-twitter-scraper = {
       source  = "Xquik-dev/x-twitter-scraper"
-      version = "~> 0.3.1"
+      version = "~> 0.7"
     }
   }
 }
@@ -39,7 +39,7 @@ provider "x-twitter-scraper" {}
 
 Run `terraform validate` before applying changes.
 
-## Monitor an X Account
+## Monitor an X account
 
 ```hcl
 resource "x-twitter-scraper_monitor" "product_updates" {
@@ -48,7 +48,7 @@ resource "x-twitter-scraper_monitor" "product_updates" {
 }
 ```
 
-## Register a Signed Webhook
+## Register a signed webhook
 
 ```hcl
 resource "x-twitter-scraper_webhook" "events" {
@@ -57,11 +57,11 @@ resource "x-twitter-scraper_webhook" "events" {
 }
 ```
 
-Store the returned HMAC secret securely.
+Store the returned HMAC secret in a secure secret manager.
 
-## Publish a Tweet
+## Publish a tweet
 
-Every write needs a stable key for that exact intended request.
+Give each intended write one stable idempotency key.
 
 ```hcl
 resource "x-twitter-scraper_x_tweet" "announcement" {
@@ -73,7 +73,7 @@ resource "x-twitter-scraper_x_tweet" "announcement" {
 }
 ```
 
-Changing a write creates a new action and requires a new key.
+Changing the request creates a new action. Give it a new key.
 
 ## Continue
 

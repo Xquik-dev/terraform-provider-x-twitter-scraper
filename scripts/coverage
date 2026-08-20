@@ -38,7 +38,7 @@ go tool covdata textfmt \
   -i="$coverage_data_dir" \
   -o="$raw_coverage_profile"
 
-# Measure shipped provider code. Test-only assertion helpers are excluded.
+# Measure shipped code without test-only helpers.
 coverage_profile="$coverage_workspace/coverage.out"
 awk 'NR == 1 || $0 !~ /\/internal\/test_helpers\//' \
   "$raw_coverage_profile" >"$coverage_profile"
@@ -53,7 +53,7 @@ coverage_percent="$(
 )"
 
 if [[ -z "$coverage_percent" ]]; then
-  echo "Unable to calculate statement coverage." >&2
+  echo "Statement coverage is unavailable. Check the coverage data." >&2
   exit 1
 fi
 
@@ -62,6 +62,6 @@ printf 'Required statement coverage: %s%%\n' "$coverage_threshold"
 
 if ! awk -v actual="$coverage_percent" -v required="$coverage_threshold" \
   'BEGIN { exit !(actual + 0 >= required + 0) }'; then
-  echo "Statement coverage is below the required threshold." >&2
+  echo "Statement coverage is too low. Add tests before merging." >&2
   exit 1
 fi

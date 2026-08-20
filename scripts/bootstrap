@@ -23,9 +23,9 @@ if [ -f "Brewfile" ] && [ "$(uname -s)" = "Darwin" ] && [ "${SKIP_BREW:-}" != "1
   }
 fi
 
-# Mark the generated staging module as private.
+# Keep the SDK staging module outside the public module proxy.
 export GOPRIVATE="${GOPRIVATE:+$GOPRIVATE,}github.com/stainless-sdks/x-twitter-scraper-go"
 
-echo "==> Downloading pinned Go dependencies…"
+echo "==> Downloading verified Go modules"
 go mod download
 go mod verify

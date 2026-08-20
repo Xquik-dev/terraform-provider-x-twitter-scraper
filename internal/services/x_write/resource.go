@@ -65,7 +65,7 @@ func (r *writeResource) Configure(_ context.Context, req resource.ConfigureReque
 	}
 	client, ok := req.ProviderData.(*xtwitterscraper.Client)
 	if !ok {
-		resp.Diagnostics.AddError("unexpected resource configure type", fmt.Sprintf("Expected *xtwitterscraper.Client, got %T.", req.ProviderData))
+		resp.Diagnostics.AddError("provider client type is invalid", fmt.Sprintf("Expected *xtwitterscraper.Client. Received %T.", req.ProviderData))
 		return
 	}
 	r.client = client
@@ -85,13 +85,13 @@ func (r *writeResource) Create(ctx context.Context, req resource.CreateRequest, 
 		payloadJSON:    data.PayloadJSON.ValueString(),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("write did not reach a verified terminal state", err.Error())
+		resp.Diagnostics.AddError("write result is unverified", err.Error())
 		return
 	}
 	data.apply(action)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	if action.Terminal && !action.Success {
-		resp.Diagnostics.AddError("write reached a terminal failure", fmt.Sprintf("Action %s ended with status %s. safeToRetry=%t. No automatic retry was attempted.", action.WriteActionID, action.Status, action.SafeToRetry))
+		resp.Diagnostics.AddError("write failed", fmt.Sprintf("Action %s ended with status %s. safeToRetry=%t. No automatic retry ran.", action.WriteActionID, action.Status, action.SafeToRetry))
 	}
 }
 
@@ -105,11 +105,11 @@ func (r *writeResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	action := writeAction{WriteActionID: data.WriteActionID.ValueString(), StatusURL: data.StatusURL.ValueString()}
 	path, err := canonicalPollPath(action.StatusURL, action.WriteActionID)
 	if err != nil {
-		resp.Diagnostics.AddError("invalid write state", err.Error())
+		resp.Diagnostics.AddError("write state is invalid", err.Error())
 		return
 	}
 	if err := r.client.Get(ctx, path, nil, &action); err != nil {
-		resp.Diagnostics.AddError("failed to refresh write action", err.Error())
+		resp.Diagnostics.AddError("write status check failed", err.Error())
 		return
 	}
 	if err := validateAction(r.operation, action); err != nil {
@@ -119,7 +119,7 @@ func (r *writeResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	if !action.Terminal {
 		action, err = pollUntilTerminal(ctx, r.client, r.operation, action)
 		if err != nil {
-			resp.Diagnostics.AddError("write did not reach a verified terminal state", err.Error())
+			resp.Diagnostics.AddError("write result is unverified", err.Error())
 			return
 		}
 	}
@@ -128,9 +128,9 @@ func (r *writeResource) Read(ctx context.Context, req resource.ReadRequest, resp
 }
 
 func (r *writeResource) Update(_ context.Context, _ resource.UpdateRequest, resp *resource.UpdateResponse) {
-	resp.Diagnostics.AddError("immutable write action", "Changing a write action must replace the resource and requires a new Idempotency-Key.")
+	resp.Diagnostics.AddError("write action is immutable", "Replace the resource and use a new Idempotency-Key.")
 }
 
 func (r *writeResource) Delete(_ context.Context, _ resource.DeleteRequest, _ *resource.DeleteResponse) {
-	// A write action is an immutable audit record. Destroy removes only Terraform state.
+	// Write actions are immutable audit records. Destroy removes only Terraform state.
 }

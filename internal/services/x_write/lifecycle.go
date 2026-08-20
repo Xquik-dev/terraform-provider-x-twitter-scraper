@@ -100,17 +100,17 @@ type writeAction struct {
 
 func executeWrite(ctx context.Context, client *xtwitterscraper.Client, op operation, request writeRequest) (writeAction, error) {
 	if strings.TrimSpace(request.account) == "" {
-		return writeAction{}, fmt.Errorf("account must not be empty")
+		return writeAction{}, fmt.Errorf("account is empty. Enter an X account")
 	}
 	if !validIdempotencyKey(request.idempotencyKey) {
-		return writeAction{}, fmt.Errorf("Idempotency-Key must contain 1-255 visible ASCII characters")
+		return writeAction{}, fmt.Errorf("Idempotency-Key is invalid. Use 1 to 255 visible ASCII characters")
 	}
 	body, err := op.requestBody(request.account, request.payloadJSON)
 	if err != nil {
 		return writeAction{}, err
 	}
 	if op.targetRequired && strings.TrimSpace(request.targetID) == "" {
-		return writeAction{}, fmt.Errorf("target_id is required for %s", op.action)
+		return writeAction{}, fmt.Errorf("target_id is missing for %s. Enter the target ID", op.action)
 	}
 
 	var action writeAction
@@ -124,7 +124,7 @@ func executeWrite(ctx context.Context, client *xtwitterscraper.Client, op operat
 		option.WithMaxRetries(0),
 	)
 	if err != nil {
-		return writeAction{}, fmt.Errorf("write dispatch result is unknown; retry only the exact request with the same Idempotency-Key or verify its result: %w", err)
+		return writeAction{}, fmt.Errorf("write result is unknown. Retry the identical request with the same Idempotency-Key, or verify its status: %w", err)
 	}
 	if err := validateAction(op, action); err != nil {
 		return writeAction{}, err
@@ -150,7 +150,7 @@ func pollUntilTerminal(ctx context.Context, client *xtwitterscraper.Client, op o
 			return action, err
 		}
 		if err := waitForPoll(ctx, action.PollAfterMs); err != nil {
-			return action, fmt.Errorf("write %s is still non-terminal; poll %s before retrying: %w", action.WriteActionID, action.StatusURL, err)
+			return action, fmt.Errorf("write %s is not terminal. Check %s before retrying: %w", action.WriteActionID, action.StatusURL, err)
 		}
 		var nextAction writeAction
 		if err := client.Get(
@@ -159,7 +159,7 @@ func pollUntilTerminal(ctx context.Context, client *xtwitterscraper.Client, op o
 			nil,
 			&nextAction,
 		); err != nil {
-			return action, fmt.Errorf("failed to poll write %s; do not redispatch while dispatch state is unknown: %w", action.WriteActionID, err)
+			return action, fmt.Errorf("write %s could not be checked. Do not dispatch again until its state is known: %w", action.WriteActionID, err)
 		}
 		if err := validateAction(op, nextAction); err != nil {
 			return action, err
@@ -171,25 +171,25 @@ func pollUntilTerminal(ctx context.Context, client *xtwitterscraper.Client, op o
 
 func validateAction(op operation, action writeAction) error {
 	if action.Object != "x_write_action" {
-		return fmt.Errorf("canonical write response has unexpected object %q", action.Object)
+		return fmt.Errorf("canonical write response object is %q; expected x_write_action", action.Object)
 	}
 	if action.WriteActionID == "" || action.ID == "" {
-		return fmt.Errorf("canonical write response omitted id or writeActionId")
+		return fmt.Errorf("canonical write response is missing id or writeActionId")
 	}
 	if action.ID != action.WriteActionID {
-		return fmt.Errorf("canonical write response id and writeActionId differ")
+		return fmt.Errorf("canonical write response id does not match writeActionId")
 	}
 	if action.Action != op.action {
 		return fmt.Errorf("canonical write response action %q does not match %q", action.Action, op.action)
 	}
 	if !validStatuses[action.Status] {
-		return fmt.Errorf("canonical write response has unknown status %q", action.Status)
+		return fmt.Errorf("canonical write response status %q is unknown", action.Status)
 	}
 	if action.Terminal != terminalStatuses[action.Status] {
 		return fmt.Errorf("canonical write response status %q and terminal=%t disagree", action.Status, action.Terminal)
 	}
 	if !validBillingStatuses[action.Billing.Status] {
-		return fmt.Errorf("canonical write response has unknown billing status %q", action.Billing.Status)
+		return fmt.Errorf("canonical write response billing status %q is unknown", action.Billing.Status)
 	}
 	if action.Charged != action.Billing.Charged || action.ChargedCredits != action.Billing.ChargedCredits {
 		return fmt.Errorf("canonical write response billing compatibility fields disagree")
@@ -198,7 +198,7 @@ func validateAction(op operation, action writeAction) error {
 		return fmt.Errorf("canonical write response target compatibility fields disagree")
 	}
 	if action.SafeToRetry && action.SendDispatched {
-		return fmt.Errorf("canonical write response marks a dispatched write safe to retry")
+		return fmt.Errorf("canonical write response marks a dispatched write as safe to retry")
 	}
 	if action.NextAction.RequiresNewIdempotencyKey && !action.SafeToRetry {
 		return fmt.Errorf("canonical write response requires a new Idempotency-Key when safeToRetry is false")
@@ -207,7 +207,7 @@ func validateAction(op operation, action writeAction) error {
 		return fmt.Errorf("canonical write response status %q and success=%t disagree", action.Status, action.Success)
 	}
 	if action.StatusURL == "" {
-		return fmt.Errorf("canonical write response for %s omitted statusUrl", action.WriteActionID)
+		return fmt.Errorf("canonical write response for %s is missing statusUrl", action.WriteActionID)
 	}
 	return nil
 }
@@ -227,11 +227,11 @@ func validIdempotencyKey(key string) bool {
 func canonicalPollPath(statusURL string, writeActionID string) (string, error) {
 	parsed, err := url.Parse(statusURL)
 	if err != nil {
-		return "", fmt.Errorf("invalid statusUrl for write %s: %w", writeActionID, err)
+		return "", fmt.Errorf("statusUrl is invalid for write %s: %w", writeActionID, err)
 	}
 	expectedSuffix := "/x/write-actions/" + url.PathEscape(writeActionID)
 	if !strings.HasSuffix(parsed.EscapedPath(), expectedSuffix) {
-		return "", fmt.Errorf("statusUrl for write %s is not its canonical polling URL", writeActionID)
+		return "", fmt.Errorf("statusUrl for write %s does not match its canonical polling URL", writeActionID)
 	}
 	return strings.TrimPrefix(expectedSuffix, "/"), nil
 }

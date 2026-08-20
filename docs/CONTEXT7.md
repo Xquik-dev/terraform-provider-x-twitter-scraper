@@ -1,10 +1,8 @@
-# Context7 Guide
+# Context7 guide for the Xquik Terraform provider
 
-Use this guide when an agent needs the provider contract quickly.
-
-The provider manages monitors, webhooks, content workflows, and X write actions.
-
-Use the REST API for tweet search, timelines, followers, and export jobs.
+Use this guide for the provider contract. Terraform manages X API monitors,
+webhooks, content workflows, and approved X actions. Use the REST API for
+Twitter search, timelines, followers, and export jobs.
 
 ## Install
 
@@ -13,7 +11,7 @@ terraform {
   required_providers {
     x-twitter-scraper = {
       source  = "Xquik-dev/x-twitter-scraper"
-      version = "~> 0.3.1"
+      version = "~> 0.7"
     }
   }
 }
@@ -41,7 +39,7 @@ provider "x-twitter-scraper" {}
 
 Run `terraform validate` before applying changes.
 
-## Monitor and Deliver Events
+## Monitor accounts & deliver events
 
 ```hcl
 resource "x-twitter-scraper_monitor" "product_updates" {
@@ -55,9 +53,9 @@ resource "x-twitter-scraper_webhook" "events" {
 }
 ```
 
-Treat the returned webhook HMAC secret as sensitive.
+Store the returned webhook HMAC secret in a secure secret manager.
 
-## Create a Durable Write
+## Create a durable write
 
 ```hcl
 resource "x-twitter-scraper_x_tweet" "announcement" {
@@ -69,15 +67,11 @@ resource "x-twitter-scraper_x_tweet" "announcement" {
 }
 ```
 
-Use one stable idempotency key for each exact intended request.
+Give each intended request one stable idempotency key. Changing the request
+replaces the resource, so give the new write a new key. The provider waits for
+a verified terminal state and never blindly retries an uncertain dispatch.
 
-Changing a write replaces the resource and requires a new key.
-
-The provider waits for a verified terminal write state.
-
-It never blindly retries an uncertain dispatch.
-
-## Resource Map
+## Resource map
 
 - Content: `compose`, `draft`, `style`
 - Monitoring: `monitor`, `monitor_keyword`, `webhook`
@@ -91,7 +85,7 @@ It never blindly retries an uncertain dispatch.
 
 Prefix each name with `x-twitter-scraper_` inside Terraform blocks.
 
-## Data Source Map
+## Data source map
 
 - Usage: `account`
 - Content: `draft`, `style`
@@ -101,11 +95,9 @@ Prefix each name with `x-twitter-scraper_` inside Terraform blocks.
 - Write status: `x_write_action`
 - Support: `support_ticket`
 
-Data sources read existing state.
+Data sources read existing state. They do not run Twitter search or scrape timelines.
 
-They do not provide tweet search or timeline scraping.
-
-## Public References
+## Public references
 
 - [Quickstart](guides/quickstart.md)
 - [Generated resources](resources)
@@ -115,7 +107,7 @@ They do not provide tweet search or timeline scraping.
 - [OpenAPI](https://xquik.com/openapi.json)
 - [Security policy](../SECURITY.md)
 
-## Agent Rules
+## Agent rules
 
 - Read generated schema pages before writing Terraform.
 - Never invent fields from REST request bodies.

@@ -8,8 +8,8 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-echo "==> Running formatters"
+echo "==> Formatting Go source"
 gofmt -s -w .
 
-echo "==> Generate terraform docs"
+echo "==> Generating Terraform Registry documentation"
 ./scripts/generate-docs

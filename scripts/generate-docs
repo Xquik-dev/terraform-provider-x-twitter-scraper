@@ -8,10 +8,10 @@ set -euo pipefail
 
 cd -- "$(dirname -- "$0")/.."
 
-# Mark the generated staging module as private.
+# Keep the SDK staging module outside the public module proxy.
 export GOPRIVATE="${GOPRIVATE:+$GOPRIVATE,}github.com/stainless-sdks/x-twitter-scraper-go"
 
-echo "==> Generating Terraform provider documentation"
+echo "==> Generating Terraform Registry documentation"
 
 case "$OSTYPE" in
 linux*)

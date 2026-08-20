@@ -1,7 +1,7 @@
 // Copyright the Xquik contributors.
 // SPDX-License-Identifier: Apache-2.0
 
-// Package coveragebranch joins gocove branch targets with native Go coverage.
+// Package coveragebranch matches gocove targets to native Go coverage.
 package coveragebranch
 
 import (
@@ -56,10 +56,10 @@ var profileLine = regexp.MustCompile(
 	`^(.*):([0-9]+)\.([0-9]+),([0-9]+)\.([0-9]+)[[:space:]]+[0-9]+[[:space:]]+([0-9]+)$`,
 )
 
-// Measure reports covered and total branch targets.
+// Measure returns covered and total branch targets.
 //
 // The pinned gocove beta can associate a nested branch with an outer block.
-// Measure instead checks each target against positive native profile ranges.
+// Measure checks each target against positive native profile ranges.
 // Strict overlap rejects ranges that only touch a target boundary.
 func Measure(reportJSON []byte, profile io.Reader) (int, int, error) {
 	return MeasureExcluding(reportJSON, profile)
@@ -73,7 +73,7 @@ func MeasureExcluding(
 ) (int, int, error) {
 	var report coverageReport
 	if err := json.Unmarshal(reportJSON, &report); err != nil {
-		return 0, 0, fmt.Errorf("parse report: %w", err)
+		return 0, 0, fmt.Errorf("report is invalid: %w", err)
 	}
 
 	entries, err := readProfile(profile)
@@ -94,7 +94,7 @@ func readProfile(profile io.Reader) (map[string][]profileEntry, error) {
 		}
 		match := profileLine.FindStringSubmatch(line)
 		if match == nil {
-			return nil, fmt.Errorf("parse profile line %q", line)
+			return nil, fmt.Errorf("profile line is invalid: %q", line)
 		}
 
 		count, err := parseInt(match[6])
@@ -128,7 +128,7 @@ func readProfile(profile io.Reader) (map[string][]profileEntry, error) {
 		entries[match[1]] = append(entries[match[1]], entry)
 	}
 	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("read profile: %w", err)
+		return nil, fmt.Errorf("profile cannot be read: %w", err)
 	}
 	return entries, nil
 }
@@ -188,7 +188,7 @@ func before(left position, right position) bool {
 func parseInt(value string) (int, error) {
 	number, err := strconv.Atoi(value)
 	if err != nil {
-		return 0, fmt.Errorf("parse profile number %q: %w", value, err)
+		return 0, fmt.Errorf("profile number %q is invalid: %w", value, err)
 	}
 	return number, nil
 }
