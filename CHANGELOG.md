@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.3 (2026-08-20)
+
+Full Changelog: [v0.7.2...v0.7.3](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.7.2...v0.7.3)
+
+### Documentation
+
+* rewrite public provider text ([#41](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/41)) ([d6bad5f](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/d6bad5f6a85501083226c9391818e4048387890d))
+
 ## 0.7.2 (2026-08-18)
 
 Full Changelog: [v0.7.1...v0.7.2](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.7.1...v0.7.2)
