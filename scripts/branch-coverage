@@ -21,7 +21,7 @@ cleanup() {
       rm -rf -- "$branch_workspace"
       ;;
     *)
-      echo "Refusing to remove unexpected path: $branch_workspace" >&2
+      echo "Cleanup path is unsafe: $branch_workspace. Remove it manually." >&2
       ;;
   esac
 }
@@ -29,11 +29,10 @@ trap cleanup EXIT
 
 export GOCOVE_META_DIR="$branch_meta"
 export GOCACHE="$branch_cache"
-# TestMain returns normally, so the generated test main flushes observations.
-# gocove's diagnostic does not distinguish that safe form.
+# TestMain returns normally and flushes observations. gocove cannot detect it.
 export GOCOVE_NO_WARN=1
 
-echo "==> Enforcing 80% branch coverage"
+echo "==> Check 80% branch coverage"
 # Rebuild every package. gocove does not emit catalogs for Go cache hits.
 go run "github.com/srvgit/gocove/cmd/gocove@${gocove_version}" \
   test \

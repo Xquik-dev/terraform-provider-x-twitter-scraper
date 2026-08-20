@@ -41,10 +41,10 @@ jobs:
         run: |
           ./scripts/link "github.com/stainless-sdks/x-twitter-scraper-go@${STAINLESS_REF_NAME}" || true
 
-      - name: Run lints
+      - name: Lint Go source
         run: ./scripts/lint
 
-      - name: Check licensing
+      - name: Check license metadata
         uses: fsfe/reuse-action@676e2d560c9a403aa252096d99fcab3e1132b0f5 # v6.0.0
 
   test:
@@ -65,11 +65,11 @@ jobs:
         run: |
           ./scripts/link "github.com/stainless-sdks/x-twitter-scraper-go@${STAINLESS_REF_NAME}" || true
 
-      - name: Run tests
+      - name: Run tests & coverage
         run: ./scripts/test
 
   release-debug-information:
-    name: Release Debug Information
+    name: Release debug information
     runs-on: ubuntu-24.04
     if: github.event_name == 'push' || github.event.pull_request.head.repo.fork
     steps:
@@ -89,7 +89,7 @@ jobs:
           version: "v2.17.0"
           args: build --snapshot --clean --single-target
 
-      - name: Verify debug information
+      - name: Verify release debug information
         run: ./bin/check-release-debug-info
 
   security:
@@ -103,7 +103,7 @@ jobs:
 
       - uses: ./.github/actions/setup-go
 
-      - name: Scan reachable vulnerabilities
+      - name: Scan reachable Go vulnerabilities
         run: go run golang.org/x/vuln/cmd/govulncheck@v1.6.0 ./...
 
   build:

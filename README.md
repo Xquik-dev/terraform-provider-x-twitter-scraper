@@ -1,18 +1,17 @@
-# Xquik Terraform Provider for X (Twitter) Automation
+# Terraform provider for X API monitors, webhooks & Twitter automation
 
 [![CI](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/actions/workflows/ci.yml/badge.svg)](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/actions/workflows/codeql.yml/badge.svg)](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/actions/workflows/codeql.yml)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13729/badge)](https://www.bestpractices.dev/projects/13729)
 
-Manage Xquik monitors, signed webhooks, content workflows, and X write actions through Terraform.
+Manage Xquik monitors, signed webhooks, content workflows, and approved X actions
+as durable Terraform resources.
 
-Use it only for objects Terraform should own across runs.
+[Quickstart](docs/guides/quickstart.md) | [Provider docs](docs/index.md) | [Examples](examples) | [REST API](https://docs.xquik.com/api-reference/overview) | [OpenAPI](https://xquik.com/openapi.json) | [Security](SECURITY.md)
 
-[Quickstart](docs/guides/quickstart.md) | [Provider Docs](docs/index.md) | [Examples](examples) | [REST API](https://docs.xquik.com/api-reference/overview) | [OpenAPI](https://xquik.com/openapi.json) | [Security](SECURITY.md)
+## Manage durable X automation
 
-## What Does This Provider Manage?
-
-Use resources for desired state and durable write records.
+Use resources for desired state and durable write records:
 
 | Workflow | Resources |
 | --- | --- |
@@ -27,13 +26,12 @@ Use resources for desired state and durable write records.
 | Create, delete, join, and leave communities | `x_community`, `x_community_delete`, `x_community_join`, `x_community_leave` |
 | Request support and guest checkout | `support_ticket`, `guest_wallet` |
 
-Every X write resource stores the canonical write-action response.
+Every X write resource stores its canonical write-action response. The provider
+never retries an uncertain dispatch with a different idempotency key.
 
-It never retries an uncertain dispatch with a different idempotency key.
+## Read existing Xquik data
 
-## What Can Terraform Read?
-
-The provider exposes these data sources:
+Use these data sources:
 
 - Account usage and limits: `account`
 - Drafts and writing styles: `draft`, `style`
@@ -43,26 +41,23 @@ The provider exposes these data sources:
 - Durable write status: `x_write_action`
 - Support requests: `support_ticket`
 
-See the [generated documentation](docs/index.md) for every field.
+See the [generated provider documentation](docs/index.md) for every field.
 
-## Is This a Tweet Search or Timeline Scraper?
+## Run Twitter search outside Terraform
 
-No. Terraform manages durable infrastructure and write records.
+Terraform manages durable infrastructure and write records. Use the
+[Xquik REST API](https://docs.xquik.com/api-reference/overview) for Twitter search,
+timeline extraction, follower exports, and other read jobs.
 
-Use the [Xquik REST API](https://docs.xquik.com/api-reference/overview) for read jobs.
+Use the API when you need to:
 
-Those APIs cover tweet search, timeline extraction, and follower exports.
+- search tweets without the official Twitter API;
+- return structured tweet data through an X API;
+- extract an X or Twitter timeline;
+- export X followers or followings.
 
-They fit questions such as:
-
-- How can I search tweets without the official Twitter API?
-- Which X API alternative returns structured tweet data?
-- How do I extract an X or Twitter timeline?
-- How do I export X followers or followings?
-
-Use an Xquik SDK when application code needs a search tweets API.
-
-Use this provider when Terraform should manage the surrounding automation.
+Use an Xquik SDK for application code. Use this provider for the surrounding
+Twitter automation.
 
 ## Install
 
@@ -73,7 +68,7 @@ terraform {
   required_providers {
     x-twitter-scraper = {
       source  = "Xquik-dev/x-twitter-scraper"
-      version = "~> 0.5.0"
+      version = "~> 0.7"
     }
   }
 }
@@ -99,7 +94,7 @@ Bearer authentication uses `X_TWITTER_SCRAPER_BEARER_TOKEN`.
 
 Never commit credentials or Terraform state.
 
-## Publish a Tweet Safely
+## Publish a tweet safely
 
 Use one stable idempotency key per intended write.
 
@@ -113,25 +108,21 @@ resource "x-twitter-scraper_x_tweet" "announcement" {
 }
 ```
 
-Changing the request replaces the resource and requires a new key.
+Changing the request replaces the resource. Give the new write a new key.
 
-## Reliability and Security
+## Reliability & security
 
-CI enforces formatting, module integrity, race detection, and Windows compilation.
-
-It enforces 90% statement coverage and 80% branch coverage.
-
-It also scans reachable vulnerabilities.
-
-Release builds use pinned actions, signed checksums, and GitHub attestations.
+CI checks formatting, module integrity, race detection, Windows compilation,
+90% statement coverage, 80% branch coverage, and reachable vulnerabilities.
+Releases use pinned actions, signed checksums, and GitHub attestations.
 
 See [OpenSSF evidence](OPENSSF.md) for the current criteria assessment.
 
-Treat plans and state as sensitive because API responses can contain private data.
+Treat plans and state as sensitive. API responses can contain private data.
 
 Report vulnerabilities through [GitHub private reporting](SECURITY.md).
 
-## Development
+## Develop locally
 
 ```sh
 ./scripts/bootstrap

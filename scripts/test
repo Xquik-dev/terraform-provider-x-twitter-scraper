@@ -8,13 +8,13 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-# Mark the generated staging module as private.
+# Keep the SDK staging module outside the public module proxy.
 export GOPRIVATE="${GOPRIVATE:+$GOPRIVATE,}github.com/stainless-sdks/x-twitter-scraper-go"
 
 echo "==> Verifying module integrity"
 go mod verify
 
-echo "==> Running race-enabled tests"
+echo "==> Running tests with race detection"
 go test -race ./... "$@"
 
 if [[ "$#" -eq 0 ]]; then

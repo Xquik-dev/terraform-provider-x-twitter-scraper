@@ -23,7 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func TestAllCanonicalWritesDispatchOnceAndPollUntilTerminal(t *testing.T) {
+func TestCanonicalWritesDispatchOnceAndReachTerminalState(t *testing.T) {
 	for _, op := range operations {
 		op := op
 		t.Run(op.action, func(t *testing.T) {
@@ -120,7 +120,7 @@ func TestAllCanonicalWritesDispatchOnceAndPollUntilTerminal(t *testing.T) {
 	}
 }
 
-func TestWriteDispatchDoesNotBlindRetryUnknownState(t *testing.T) {
+func TestUnknownWriteResultKeepsExactReplayGuidance(t *testing.T) {
 	var dispatchCount atomic.Int64
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
 		dispatchCount.Add(1)
@@ -145,27 +145,27 @@ func TestWriteDispatchDoesNotBlindRetryUnknownState(t *testing.T) {
 
 func TestOperationValidationRejectsAccountCollisionAndInvalidFields(t *testing.T) {
 	_, err := operations[0].requestBody("@account", `{"account":"other","text":"hello"}`)
-	if err == nil || !strings.Contains(err.Error(), "must not contain account") {
-		t.Fatalf("expected account collision error, got %v", err)
+	if err == nil || !strings.Contains(err.Error(), "contains account") {
+		t.Fatalf("payload account error = %v", err)
 	}
 
 	_, err = operations[0].requestBody("@account", `{"typo":"hello"}`)
-	if err == nil || !strings.Contains(err.Error(), "not valid") {
-		t.Fatalf("expected invalid field error, got %v", err)
+	if err == nil || !strings.Contains(err.Error(), "unsupported field") {
+		t.Fatalf("unsupported field error = %v", err)
 	}
 
 	_, err = operations[0].requestBody("@account", `{}`)
 	if err == nil || !strings.Contains(err.Error(), "at least one") {
-		t.Fatalf("expected missing content error, got %v", err)
+		t.Fatalf("missing content error = %v", err)
 	}
 
 	_, err = operations[0].requestBody("@account", `{`)
 	if err == nil || !strings.Contains(err.Error(), "JSON object") {
-		t.Fatalf("expected malformed JSON error, got %v", err)
+		t.Fatalf("malformed JSON error = %v", err)
 	}
 	_, err = operations[0].requestBody("@account", `null`)
 	if err == nil || !strings.Contains(err.Error(), "at least one") {
-		t.Fatalf("expected null payload error, got %v", err)
+		t.Fatalf("null payload error = %v", err)
 	}
 	if present([]any{}) {
 		t.Fatal("empty list is present")
@@ -193,7 +193,7 @@ func TestOperationRegistryIsCompleteAndUnique(t *testing.T) {
 	}
 }
 
-func TestAllWriteResourceSchemasMatchStableStateModel(t *testing.T) {
+func TestWriteResourceSchemasMatchStableStateModel(t *testing.T) {
 	for _, op := range operations {
 		op := op
 		t.Run(op.action, func(t *testing.T) {
@@ -304,8 +304,8 @@ func TestCanonicalResponseRejectsUnsafeRetryGuidance(t *testing.T) {
 	action.Billing.Status = "not_charged"
 
 	err := validateAction(operations[0], action)
-	if err == nil || !strings.Contains(err.Error(), "dispatched write safe to retry") {
-		t.Fatalf("expected unsafe retry guidance error, got %v", err)
+	if err == nil || !strings.Contains(err.Error(), "dispatched write as safe to retry") {
+		t.Fatalf("unsafe retry guidance error = %v", err)
 	}
 }
 
@@ -318,21 +318,21 @@ func TestCanonicalResponseValidationRejectsContractViolations(t *testing.T) {
 		mutate    func(*writeAction)
 		wantError string
 	}{
-		{name: "object", mutate: func(action *writeAction) { action.Object = "other" }, wantError: "unexpected object"},
-		{name: "missing ID", mutate: func(action *writeAction) { action.ID = "" }, wantError: "omitted id"},
-		{name: "different IDs", mutate: func(action *writeAction) { action.ID = "other" }, wantError: "differ"},
+		{name: "object", mutate: func(action *writeAction) { action.Object = "other" }, wantError: "object is"},
+		{name: "missing ID", mutate: func(action *writeAction) { action.ID = "" }, wantError: "missing id"},
+		{name: "different IDs", mutate: func(action *writeAction) { action.ID = "other" }, wantError: "does not match"},
 		{name: "action", mutate: func(action *writeAction) { action.Action = "other" }, wantError: "does not match"},
-		{name: "status", mutate: func(action *writeAction) { action.Status = "other" }, wantError: "unknown status"},
+		{name: "status", mutate: func(action *writeAction) { action.Status = "other" }, wantError: "status \"other\" is unknown"},
 		{name: "terminal", mutate: func(action *writeAction) { action.Terminal = false }, wantError: "terminal=false disagree"},
-		{name: "billing status", mutate: func(action *writeAction) { action.Billing.Status = "other" }, wantError: "unknown billing status"},
+		{name: "billing status", mutate: func(action *writeAction) { action.Billing.Status = "other" }, wantError: "billing status \"other\" is unknown"},
 		{name: "billing fields", mutate: func(action *writeAction) { action.Charged = false }, wantError: "billing compatibility"},
 		{name: "target fields", mutate: func(action *writeAction) { action.TargetID = "other" }, wantError: "target compatibility"},
-		{name: "retry guidance", mutate: func(action *writeAction) { action.SafeToRetry = true }, wantError: "dispatched write safe to retry"},
+		{name: "retry guidance", mutate: func(action *writeAction) { action.SafeToRetry = true }, wantError: "dispatched write as safe to retry"},
 		{name: "new key guidance", mutate: func(action *writeAction) {
 			action.NextAction.RequiresNewIdempotencyKey = true
 		}, wantError: "new Idempotency-Key"},
 		{name: "success", mutate: func(action *writeAction) { action.Success = false }, wantError: "success=false disagree"},
-		{name: "status URL", mutate: func(action *writeAction) { action.StatusURL = "" }, wantError: "omitted statusUrl"},
+		{name: "status URL", mutate: func(action *writeAction) { action.StatusURL = "" }, wantError: "missing statusUrl"},
 	}
 
 	for _, testCase := range cases {
@@ -363,7 +363,7 @@ func TestExecuteWriteRejectsInvalidRequests(t *testing.T) {
 			name:      "empty account",
 			operation: operations[0],
 			request:   writeRequest{idempotencyKey: "test-key", payloadJSON: `{"text":"hello"}`},
-			wantError: "account must not be empty",
+			wantError: "account is empty",
 		},
 		{
 			name:      "invalid idempotency key",
@@ -375,7 +375,7 @@ func TestExecuteWriteRejectsInvalidRequests(t *testing.T) {
 			name:      "missing target",
 			operation: operations[1],
 			request:   writeRequest{account: "@account", idempotencyKey: "test-key"},
-			wantError: "target_id is required",
+			wantError: "target_id is missing",
 		},
 	}
 	for _, testCase := range cases {
@@ -404,7 +404,7 @@ func TestPollingFailuresPreserveSafeRecoveryGuidance(t *testing.T) {
 	cancel()
 	client := xtwitterscraper.NewClient(option.WithBaseURL("https://example.invalid/"))
 	_, err := pollUntilTerminal(cancelledContext, &client, operations[0], valid)
-	if err == nil || !strings.Contains(err.Error(), "still non-terminal") {
+	if err == nil || !strings.Contains(err.Error(), "not terminal") {
 		t.Fatalf("cancelled poll error = %v", err)
 	}
 
@@ -419,7 +419,7 @@ func TestPollingFailuresPreserveSafeRecoveryGuidance(t *testing.T) {
 		option.WithMaxRetries(0),
 	)
 	_, err = pollUntilTerminal(context.Background(), &client, operations[0], valid)
-	if err == nil || !strings.Contains(err.Error(), "do not redispatch") {
+	if err == nil || !strings.Contains(err.Error(), "Do not dispatch") {
 		t.Fatalf("failed poll error = %v", err)
 	}
 }
@@ -443,7 +443,7 @@ func TestPollRejectsInvalidCanonicalResponse(t *testing.T) {
 		option.WithMaxRetries(0),
 	)
 	_, err := pollUntilTerminal(context.Background(), &client, operations[0], action)
-	if err == nil || !strings.Contains(err.Error(), "unexpected object") {
+	if err == nil || !strings.Contains(err.Error(), "object is") {
 		t.Fatalf("invalid canonical poll error = %v", err)
 	}
 }
@@ -452,7 +452,7 @@ func TestCanonicalPollPathRejectsMalformedURL(t *testing.T) {
 	t.Parallel()
 
 	_, err := canonicalPollPath("https://example.com/%", "write-action-123")
-	if err == nil || !strings.Contains(err.Error(), "invalid statusUrl") {
+	if err == nil || !strings.Contains(err.Error(), "statusUrl is invalid") {
 		t.Fatalf("canonicalPollPath() error = %v", err)
 	}
 }
@@ -468,7 +468,7 @@ func TestPollingRejectsMalformedStatusURL(t *testing.T) {
 	action.StatusURL = "https://example.com/%"
 	client := xtwitterscraper.NewClient(option.WithBaseURL("https://example.invalid/"))
 	_, err := pollUntilTerminal(context.Background(), &client, operations[0], action)
-	if err == nil || !strings.Contains(err.Error(), "invalid statusUrl") {
+	if err == nil || !strings.Contains(err.Error(), "statusUrl is invalid") {
 		t.Fatalf("pollUntilTerminal() error = %v", err)
 	}
 }

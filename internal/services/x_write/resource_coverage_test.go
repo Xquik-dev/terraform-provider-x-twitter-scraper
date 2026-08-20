@@ -197,7 +197,7 @@ func TestWriteResourceRejectsInvalidPlan(t *testing.T) {
 	}
 }
 
-func TestWriteResourceRecordsTerminalFailure(t *testing.T) {
+func TestWriteResourceReportsTerminalFailure(t *testing.T) {
 	t.Parallel()
 
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
@@ -237,10 +237,10 @@ func TestWriteResourceRecordsTerminalFailure(t *testing.T) {
 	response.State.Schema = resourceSchema
 	resourceUnderTest.Create(context.Background(), resource.CreateRequest{Plan: plan}, &response)
 	if !response.Diagnostics.HasError() {
-		t.Fatal("terminal failure did not produce a diagnostic")
+		t.Fatal("failed write produced no diagnostic")
 	}
-	if !strings.Contains(response.Diagnostics.Errors()[0].Summary(), "terminal failure") {
-		t.Fatalf("unexpected terminal failure diagnostic: %v", response.Diagnostics)
+	if !strings.Contains(response.Diagnostics.Errors()[0].Summary(), "write failed") {
+		t.Fatalf("failed write diagnostic = %v", response.Diagnostics)
 	}
 }
 

@@ -3,7 +3,7 @@
 // Copyright the Xquik contributors.
 // SPDX-License-Identifier: Apache-2.0
 
-// branch_coverage corrects gocove's cover-profile join before enforcing a gate.
+// branch_coverage fixes gocove's profile join before enforcing the gate.
 package main
 
 import (
@@ -16,20 +16,20 @@ import (
 
 func main() {
 	if len(os.Args) != 4 {
-		exitf("usage: branch_coverage.go REPORT PROFILE MINIMUM")
+		exitf("Usage: branch_coverage.go REPORT PROFILE MINIMUM")
 	}
 	minimum, err := strconv.ParseFloat(os.Args[3], 64)
 	if err != nil {
-		exitf("parse minimum: %v", err)
+		exitf("Minimum is invalid: %v", err)
 	}
 
 	report, err := os.ReadFile(os.Args[1])
 	if err != nil {
-		exitf("read report: %v", err)
+		exitf("Report cannot be read: %v", err)
 	}
 	profile, err := os.Open(os.Args[2])
 	if err != nil {
-		exitf("open profile: %v", err)
+		exitf("Profile cannot be opened: %v", err)
 	}
 	defer profile.Close()
 
@@ -40,15 +40,15 @@ func main() {
 		"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/test_helpers",
 	)
 	if err != nil {
-		exitf("measure branch coverage: %v", err)
+		exitf("Branch coverage cannot be measured: %v", err)
 	}
 	if total == 0 {
-		exitf("branch report has no branches")
+		exitf("Branch report has no branches. Check the test build.")
 	}
 
 	percent := 100 * float64(covered) / float64(total)
 	fmt.Printf(
-		"branch coverage: %d/%d (%.2f%%); minimum %.2f%%\n",
+		"Branch coverage: %d/%d (%.2f%%). Required: %.2f%%.\n",
 		covered,
 		total,
 		percent,

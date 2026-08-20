@@ -1,4 +1,4 @@
-name: Release Doctor
+name: Release doctor
 on:
   pull_request:
     branches:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  # Read repository source to validate release configuration.
+  # Read source files to validate the release configuration.
   contents: read
 
 concurrency:
@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   release_doctor:
-    name: release doctor
+    name: Release configuration
     runs-on: ubuntu-latest
     if: github.repository == 'Xquik-dev/terraform-provider-x-twitter-scraper'
 

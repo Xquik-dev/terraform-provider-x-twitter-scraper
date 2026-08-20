@@ -1,15 +1,15 @@
-name: Setup Go
-description: 'Sets up Go environment with private modules'
+name: Set up Go
+description: 'Sets up Go and downloads verified modules'
 inputs:
   stainless-api-key:
     required: false
-    description: the value of the STAINLESS_API_KEY secret
+    description: Credential for the SDK staging repository
   go-version:
     required: false
-    description: version or version range of Go to use
+    description: Go version or version range
   cache-dependency-path:
     required: false
-    description: path to dependency files for caching
+    description: Dependency files used for caching
 runs:
   using: composite
   steps:
@@ -20,20 +20,20 @@ runs:
         repo: stainless-sdks/x-twitter-scraper-go
         stainless-api-key: ${{ inputs.stainless-api-key }}
 
-    - name: Configure Git to access the Go SDK staging repository
+    - name: Configure Git for the SDK staging repository
       if: github.repository == 'stainless-sdks/x-twitter-scraper-terraform'
       shell: bash
       env:
         STAINLESS_GITHUB_ACCESS_TOKEN: ${{ steps.get_token.outputs.github_access_token }}
       run: git config --global url."https://x-access-token:${STAINLESS_GITHUB_ACCESS_TOKEN}@github.com/stainless-sdks/x-twitter-scraper-go".insteadOf "https://github.com/stainless-sdks/x-twitter-scraper-go"
 
-    - name: Setup go
+    - name: Set up Go
       uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
       with:
         go-version: ${{ inputs.go-version }}
         go-version-file: ./go.mod
         cache-dependency-path: ${{ inputs.cache-dependency-path }}
 
-    - name: Bootstrap
+    - name: Download verified modules
       shell: bash
       run: ./scripts/bootstrap

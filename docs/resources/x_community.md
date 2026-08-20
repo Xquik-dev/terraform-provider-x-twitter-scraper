@@ -3,12 +3,12 @@
 page_title: "x-twitter-scraper_x_community Resource - X Twitter Scraper"
 subcategory: ""
 description: |-
-  Executes one create_community write and stores only its durable canonical write-action record.
+  Runs one create_community request and stores its canonical write-action record.
 ---
 
 # x-twitter-scraper_x_community (Resource)
 
-Executes one create_community write and stores only its durable canonical write-action record.
+Runs one create_community request and stores its canonical write-action record.
 
 
 
@@ -17,13 +17,13 @@ Executes one create_community write and stores only its durable canonical write-
 
 ### Required
 
-- `account` (String) X account used for the request. This is preserved separately from response_account_*.
-- `idempotency_key` (String, Sensitive) Visible ASCII key unique to this intended write. Reuse only for an exact replay.
+- `account` (String) X account for the request. Stored separately from response_account_* fields.
+- `idempotency_key` (String, Sensitive) Visible ASCII key for this exact write. Reuse only to replay the identical request.
 
 ### Optional
 
-- `payload_json` (String, Sensitive) Operation-specific JSON object. Do not include account.
-- `target_id` (String) Target Tweet, user, or community ID for targeted writes.
+- `payload_json` (String, Sensitive) JSON object for this operation. Put the X account in account, not here.
+- `target_id` (String) Tweet, user, or community ID for an operation that requires a target.
 
 ### Read-Only
 
@@ -35,7 +35,7 @@ Executes one create_community write and stores only its durable canonical write-
 - `charged` (Boolean)
 - `charged_credits` (String)
 - `error` (String)
-- `id` (String) Stable canonical write-action ID.
+- `id` (String) Canonical write-action ID.
 - `message` (String)
 - `next_action_after_ms` (Number)
 - `next_action_requires_new_idempotency_key` (Boolean)
@@ -45,7 +45,7 @@ Executes one create_community write and stores only its durable canonical write-
 - `poll_after_ms` (Number)
 - `request_hash` (String)
 - `request_id` (String)
-- `request_payload_json` (String, Sensitive) Sanitized payload recorded by the canonical write action.
+- `request_payload_json` (String, Sensitive) Sanitized payload stored with the canonical write action.
 - `response_account_id` (String)
 - `response_account_username` (String)
 - `response_target_id` (String)
