@@ -18,7 +18,7 @@ This public, released Terraform provider meets the OpenSSF eligibility rules.
 | Build | Pinned Go modules, checksum verification, and `./scripts/build` |
 | Tests | `./scripts/test` runs race-enabled unit and regression tests |
 | Statement coverage | `./scripts/coverage` enforces 90%; latest full result is 93.6% |
-| Branch coverage | `./scripts/branch-coverage` enforces 80%; current result is 795/963 (82.55%) |
+| Branch coverage | `./scripts/branch-coverage` enforces 80%; current result is 794/963 (82.45%) |
 | Static analysis | `go vet` and CodeQL security-extended queries |
 | Dynamic analysis | Scheduled Go fuzzing and race detection |
 | Dependency review | Dependabot, `go mod verify`, and `govulncheck` |
@@ -45,7 +45,7 @@ The branch gate pins gocove, rebuilds every package, and instruments control
 flow. Native Go coverage confirms executed ranges. The local verifier corrects
 nested-block associations and excludes only unshipped test support and itself.
 
-The current result is 795 of 963 branches, or 82.55%.
+The current result is 794 of 963 branches, or 82.45%.
 
 ## Outstanding Gold blockers
 
