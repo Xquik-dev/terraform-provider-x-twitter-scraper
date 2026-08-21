@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.4 (2026-08-21)
+
+Full Changelog: [v0.7.3...v0.7.4](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.7.3...v0.7.4)
+
+### Documentation
+
+* tighten Terraform provider copy ([#43](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/43)) ([b124bab](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/b124babbfade9d62da29ed657e3d879c1526ca65))
+
 ## 0.7.3 (2026-08-20)
 
 Full Changelog: [v0.7.2...v0.7.3](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.7.2...v0.7.3)

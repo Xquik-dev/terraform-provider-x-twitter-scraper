@@ -10,8 +10,6 @@ Manage Xquik monitors, signed webhooks, content workflows & approved X actions a
 
 ## Manage durable X automation
 
-These resources manage desired state and store durable write records:
-
 | Workflow | Resources |
 | --- | --- |
 | Compose and refine posts | `compose`, `draft`, `style` |
@@ -39,15 +37,7 @@ Every X write resource stores its canonical response. Uncertain retries keep the
 
 ## Run Twitter search outside Terraform
 
-Terraform manages durable infrastructure and write records.
-Use the [Xquik REST API](https://docs.xquik.com/api-reference/overview) for Twitter search, timelines, follower exports & other reads.
-
-Use the API when you need to:
-
-- Search tweets without the official Twitter API.
-- Return structured tweet data through an X API.
-- Extract an X or Twitter timeline.
-- Export X followers or following accounts.
+Use the [Xquik REST API](https://docs.xquik.com/api-reference/overview) for Twitter search, timelines, follower exports & other reads without the official Twitter API.
 
 Use an Xquik SDK for application code. Use this provider for related Twitter automation.
 
