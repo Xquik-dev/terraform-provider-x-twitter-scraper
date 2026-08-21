@@ -75,7 +75,7 @@ resource "x-twitter-scraper_x_tweet" "announcement" {
 
 Changing the request creates a new action. Give it a new key.
 
-## Continue
+## More documentation
 
 - [Provider documentation](../index.md)
 - [Resource examples](../../examples)

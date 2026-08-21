@@ -1,4 +1,4 @@
-# Terraform Provider for X API Monitors, Webhooks & Twitter Automation
+# Terraform provider for X API monitors, webhooks & Twitter automation
 
 [![CI](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/actions/workflows/ci.yml/badge.svg)](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/actions/workflows/codeql.yml/badge.svg)](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/actions/workflows/codeql.yml)
@@ -8,9 +8,9 @@ Manage Xquik monitors, signed webhooks, content workflows & approved X actions a
 
 [Quickstart](docs/guides/quickstart.md) | [Provider docs](docs/index.md) | [Examples](examples) | [REST API](https://docs.xquik.com/api-reference/overview) | [OpenAPI](https://xquik.com/openapi.json) | [Security](SECURITY.md)
 
-## Manage Durable X Automation
+## Manage durable X automation
 
-Use resources for desired state and durable write records:
+These resources manage desired state and store durable write records:
 
 | Workflow | Resources |
 | --- | --- |
@@ -27,9 +27,7 @@ Use resources for desired state and durable write records:
 
 Every X write resource stores its canonical response. Uncertain retries keep the same idempotency key.
 
-## Read Existing Xquik Data
-
-Use these data sources:
+## Read existing Xquik data
 
 - Account usage and limits: `account`
 - Drafts and writing styles: `draft`, `style`
@@ -39,7 +37,7 @@ Use these data sources:
 - Durable write status: `x_write_action`
 - Support requests: `support_ticket`
 
-## Run Twitter Search Outside Terraform
+## Run Twitter search outside Terraform
 
 Terraform manages durable infrastructure and write records.
 Use the [Xquik REST API](https://docs.xquik.com/api-reference/overview) for Twitter search, timelines, follower exports & other reads.
@@ -88,7 +86,7 @@ Bearer authentication uses `X_TWITTER_SCRAPER_BEARER_TOKEN`.
 
 Never commit credentials or Terraform state.
 
-## Publish a Tweet Safely
+## Publish a tweet
 
 Use one stable idempotency key per intended write.
 
@@ -104,7 +102,7 @@ resource "x-twitter-scraper_x_tweet" "announcement" {
 
 Changing the request replaces the resource. Give the new write a new key.
 
-## Reliability & Security
+## Reliability & security
 
 CI checks formatting, integrity, race safety, Windows builds, coverage & reachable vulnerabilities.
 Releases use pinned actions, signed checksums & GitHub attestations.
@@ -113,7 +111,7 @@ See [OpenSSF evidence](OPENSSF.md) for the current criteria assessment.
 Treat plans and state as sensitive. API responses can contain private data.
 Report vulnerabilities through [GitHub private reporting](SECURITY.md).
 
-## Develop Locally
+## Develop locally
 
 ```sh
 ./scripts/bootstrap
