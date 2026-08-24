@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.5 (2026-08-24)
+
+Full Changelog: [v0.7.4...v0.7.5](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.7.4...v0.7.5)
+
+### Documentation
+
+* enforce source LOC reduction ([#47](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/47)) ([12c8e64](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/12c8e643f8141860b06794629302013ec7233f0f))
+
 ## 0.7.4 (2026-08-21)
 
 Full Changelog: [v0.7.3...v0.7.4](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.7.3...v0.7.4)
