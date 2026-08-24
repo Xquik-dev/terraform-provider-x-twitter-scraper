@@ -65,16 +65,4 @@ with an isolated account:
 TF_ACC=1 ./scripts/test
 ```
 
-## Submit changes
-
-Sign each non-trivial commit under the DCO:
-
-```sh
-git commit -s
-```
-
-Open a pull request and resolve every blocking comment.
-
-A different person must approve non-trivial changes.
-
 Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.
