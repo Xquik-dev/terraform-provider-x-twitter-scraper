@@ -115,7 +115,7 @@ Full Changelog: [v0.4.0...v0.5.0](https://github.com/Xquik-dev/terraform-provide
 
 ### Documentation
 
-* add Contributor Covenant 2.1 Code of Conduct ([#2192](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/2192)) ([4e0d175](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/4e0d175a8d789f320c5bed9d1c5c6277b589e458))
+* add Contributor Covenant 2.1 Code of Conduct ([4e0d175](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/4e0d175a8d789f320c5bed9d1c5c6277b589e458))
 * add DeepWiki badge ([c5fb7e5](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/c5fb7e5155cf5ffd2532486aa13158ea0507f423))
 * clarify repository discovery ([cbded21](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/cbded216b7cb33aeaa85ebaa3d29a25fb0804eee))
 * map common Terraform workflows ([#9](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/9)) ([746b306](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/746b3069736a93d53ed86162cf4cb0c1018b4240))
@@ -162,7 +162,7 @@ Full Changelog: [v0.3.3...v0.4.0](https://github.com/Xquik-dev/terraform-provide
 
 ### Documentation
 
-* add Contributor Covenant 2.1 Code of Conduct ([#2192](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/2192)) ([4e0d175](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/4e0d175a8d789f320c5bed9d1c5c6277b589e458))
+* add Contributor Covenant 2.1 Code of Conduct ([4e0d175](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/4e0d175a8d789f320c5bed9d1c5c6277b589e458))
 * add DeepWiki badge ([c5fb7e5](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/c5fb7e5155cf5ffd2532486aa13158ea0507f423))
 * clarify repository discovery ([cbded21](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/cbded216b7cb33aeaa85ebaa3d29a25fb0804eee))
 * map common Terraform workflows ([#9](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/9)) ([746b306](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/746b3069736a93d53ed86162cf4cb0c1018b4240))
@@ -243,7 +243,7 @@ Full Changelog: [v0.2.0...v0.2.1](https://github.com/Xquik-dev/terraform-provide
 
 ### Documentation
 
-* add Contributor Covenant 2.1 Code of Conduct ([#2192](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/2192)) ([4e0d175](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/4e0d175a8d789f320c5bed9d1c5c6277b589e458))
+* add Contributor Covenant 2.1 Code of Conduct ([4e0d175](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/4e0d175a8d789f320c5bed9d1c5c6277b589e458))
 * add DeepWiki badge ([c5fb7e5](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/c5fb7e5155cf5ffd2532486aa13158ea0507f423))
 
 ## 0.2.0 (2026-04-01)
