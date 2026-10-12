@@ -1,0 +1,239 @@
+#!/usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2026 Xquik contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Runs every required check before a merge or a release.
+#
+# Usage: bin/check-local [--no-status]
+#
+# On a clean tree whose commit is on GitHub, it posts the xquik-local-checks
+# commit status for that commit. Set FUZZ_TIME, for example to 2m, to also
+# fuzz the multipart encoder.
+
+set -euo pipefail
+
+cd -- "$(dirname -- "$0")/.."
+
+readonly repo="Xquik-dev/terraform-provider-x-twitter-scraper"
+readonly status_context="xquik-local-checks"
+readonly reuse_version="6.2.0"
+readonly temp_root="${TMPDIR:-/tmp}"
+
+post_status=1
+for arg in "$@"; do
+  case "$arg" in
+    --no-status)
+      post_status=0
+      ;;
+    *)
+      echo "Unknown option $arg. Run bin/check-local or bin/check-local --no-status." >&2
+      exit 2
+      ;;
+  esac
+done
+
+current_check="Check required tools"
+passed_checks=()
+platform="this machine"
+status_sha=""
+workspace=""
+
+post_commit_status() {
+  local state="$1"
+  local description="${2:0:139}"
+
+  if ! gh api --silent "repos/$repo/statuses/$status_sha" \
+    -f state="$state" \
+    -f context="$status_context" \
+    -f description="$description"; then
+    echo "Could not post the $state commit status. Run gh auth status." >&2
+  fi
+}
+
+join_checks() {
+  local joined=""
+  local check
+  for check in "${passed_checks[@]}"; do
+    joined="${joined:+$joined, }$check"
+  done
+  printf '%s' "$joined"
+}
+
+finish() {
+  local exit_code=$?
+  local description
+
+  case "$workspace" in
+    "${temp_root%/}"/check-local.*)
+      rm -rf -- "$workspace"
+      ;;
+  esac
+
+  if [[ -n "$status_sha" ]]; then
+    if [[ "$exit_code" -eq 0 ]]; then
+      description="Passed: $(join_checks) on $platform"
+      if [[ "${#description}" -gt 139 ]]; then
+        description="All ${#passed_checks[@]} checks passed on $platform"
+      fi
+      post_commit_status success "$description"
+    else
+      post_commit_status failure "Failed: $current_check on $platform. Run bin/check-local."
+    fi
+  fi
+
+  exit "$exit_code"
+}
+trap finish EXIT
+
+prepare_status() {
+  local sha
+
+  if [[ "$post_status" -eq 0 ]]; then
+    echo "==> Not posting a commit status because of --no-status"
+    return
+  fi
+  if ! command -v gh >/dev/null 2>&1; then
+    echo "==> Not posting a commit status because gh is missing"
+    return
+  fi
+  if [[ -n "$(git status --porcelain --untracked-files=all)" ]]; then
+    echo "==> Not posting a commit status because the tree has uncommitted changes"
+    return
+  fi
+
+  sha="$(git rev-parse HEAD)"
+  if ! gh api --silent "repos/$repo/commits/$sha" >/dev/null 2>&1; then
+    echo "==> Not posting a commit status because GitHub does not have commit ${sha:0:12}"
+    return
+  fi
+
+  status_sha="$sha"
+  echo "==> Posting a pending $status_context status for commit ${sha:0:12}"
+  post_commit_status pending "Running lint, license, test, audit, build & release checks"
+}
+
+require_tool() {
+  local tool="$1"
+  local hint="$2"
+
+  if ! command -v "$tool" >/dev/null 2>&1; then
+    echo "check-local: $tool is missing. $hint" >&2
+    exit 1
+  fi
+}
+
+run_check() {
+  local short_name="$1"
+  local title="$2"
+  local hint="$3"
+  shift 3
+
+  current_check="$title"
+  echo "==> $title"
+  if ! "$@"; then
+    echo "check-local: $title failed. $hint" >&2
+    exit 1
+  fi
+  passed_checks+=("$short_name")
+}
+
+check_licenses() {
+  if command -v reuse >/dev/null 2>&1; then
+    reuse lint
+  else
+    uvx --from "reuse==$reuse_version" reuse lint
+  fi
+}
+
+snapshot_checksums() {
+  local checksum_path
+
+  # Send build logs to stderr. Callers capture stdout as the checksum path.
+  goreleaser release --snapshot --clean --skip=sign >&2 || return 1
+  checksum_path="$(find dist -maxdepth 1 -type f -name '*_SHA256SUMS' -print -quit)"
+  if [[ -z "$checksum_path" ]]; then
+    echo "GoReleaser wrote no checksum file to dist." >&2
+    return 1
+  fi
+  printf '%s' "$checksum_path"
+}
+
+build_snapshot() {
+  local checksum_path
+
+  checksum_path="$(snapshot_checksums)" || return 1
+  install -m 0644 "$checksum_path" "$workspace/first-checksums.txt"
+}
+
+verify_reproducible_build() {
+  local checksum_path
+
+  checksum_path="$(snapshot_checksums)" || return 1
+  cmp "$workspace/first-checksums.txt" "$checksum_path"
+}
+
+check_release_config() {
+  goreleaser check || return 1
+  jq -e '.version == 1 and (.metadata.protocol_versions | index("6.0") != null)' \
+    terraform-registry-manifest.json >/dev/null
+}
+
+prepare_status
+
+require_tool go "Install the Go version in go.mod."
+require_tool jq "Install it with brew install jq."
+require_tool goreleaser "Install it with brew install goreleaser."
+require_tool objdump "Install the Xcode command line tools or binutils."
+
+platform="$(go env GOOS)/$(go env GOARCH), $(go env GOVERSION)"
+workspace="$(mktemp -d "${temp_root%/}/check-local.XXXXXX")"
+
+run_check modules "Download verified modules" \
+  "Run go mod download and restore go.sum." \
+  env SKIP_BREW=1 ./scripts/bootstrap
+
+run_check lint "Lint Go source" \
+  "Fix the listed issues. Run ./scripts/format for formatting." \
+  ./scripts/lint
+
+if command -v reuse >/dev/null 2>&1 || command -v uvx >/dev/null 2>&1; then
+  run_check licenses "Check license metadata" \
+    "Add SPDX headers or REUSE.toml entries for the listed files." \
+    check_licenses
+else
+  echo "==> Skipping license metadata. Install reuse or uv to check it."
+fi
+
+run_check tests "Run tests & coverage" \
+  "Fix the failing tests or add tests until coverage passes." \
+  ./scripts/test
+
+run_check build "Build release snapshot" \
+  "Fix the GoReleaser error above." \
+  build_snapshot
+
+run_check "debug info" "Verify release debug information" \
+  "Keep DWARF data in release builds. Check the ldflags in .goreleaser.yml." \
+  ./bin/check-release-debug-info
+
+run_check audit "Scan dependencies for known vulnerabilities" \
+  "Upgrade each listed module to its fixed version with go get." \
+  ./scripts/vulncheck
+
+run_check reproducibility "Verify reproducible checksums" \
+  "Remove the build input that changes between runs, such as a timestamp." \
+  verify_reproducible_build
+
+run_check "release config" "Check release configuration" \
+  "Fix .goreleaser.yml or terraform-registry-manifest.json." \
+  check_release_config
+
+if [[ -n "${FUZZ_TIME:-}" ]]; then
+  run_check fuzz "Fuzz multipart encoding for $FUZZ_TIME" \
+    "Fix the crash saved under internal/apiform/testdata/fuzz." \
+    go test ./internal/apiform -run '^$' -fuzz '^FuzzMarshalRoundTrip$' -fuzztime="$FUZZ_TIME"
+fi
+
+echo "All checks passed."

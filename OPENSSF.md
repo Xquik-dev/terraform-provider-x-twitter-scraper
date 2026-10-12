@@ -19,24 +19,20 @@ This public, released Terraform provider meets the OpenSSF eligibility rules.
 | Tests | `./scripts/test` runs race-enabled unit and regression tests |
 | Statement coverage | `./scripts/coverage` enforces 90%; latest full result is 93.6% |
 | Branch coverage | `./scripts/branch-coverage` enforces 80%; current result is 794/963 (82.45%) |
-| Static analysis | `go vet` and CodeQL security-extended queries |
-| Dynamic analysis | Scheduled Go fuzzing and race detection |
-| Dependency review | Dependabot, `go mod verify`, and `govulncheck` |
-| CI | Pull requests from this repository and forks run every required job |
-| Releases | Signed checksums, exact tags, and GitHub artifact attestations |
-| Reproducibility | CI builds each GoReleaser snapshot twice and compares checksums |
+| Static analysis | `go vet` through `./scripts/lint` |
+| Dynamic analysis | Race detection, plus Go fuzzing with `FUZZ_TIME` in `bin/check-local` |
+| Dependency review | `go mod verify` and `govulncheck` through `./scripts/vulncheck` |
+| Required checks | `bin/check-local` runs every check and posts the `xquik-local-checks` commit status |
+| Releases | `bin/release-local` publishes GPG-signed checksums and exact annotated tags |
+| Reproducibility | `bin/check-local` builds each GoReleaser snapshot twice and compares checksums |
 | Documentation | Generated Registry pages match registered schemas |
-| Portability | CI compiles every package for Windows AMD64 |
+| Portability | `./scripts/test` compiles every package for Windows AMD64 |
 | Two-factor authentication | The Xquik-dev organization requires 2FA |
 
 Verify locally:
 
 ```sh
-./scripts/bootstrap
-./scripts/lint
-./scripts/test
-uvx --from reuse==5.1.1 reuse lint
-go run golang.org/x/vuln/cmd/govulncheck@v1.6.0 ./...
+bin/check-local
 ```
 
 ## Branch coverage evidence
@@ -63,8 +59,8 @@ The repository must not claim Gold while any mandatory criterion remains unmet.
 
 ## Maintenance
 
-CI checks licensing, tests, coverage, security, and reproducibility. Scheduled
-CodeQL, fuzzing, Scorecard, and dependency updates detect drift. Reassess this
-file before each major release. Update bestpractices.dev only with public evidence.
+`bin/check-local` checks licensing, tests, coverage, security, and
+reproducibility before each merge and release. Reassess this file before each
+major release. Update bestpractices.dev only with public evidence.
 
 Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.

@@ -1,0 +1,207 @@
+#!/usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2026 Xquik contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Publishes a signed GitHub release. The Terraform Registry reads it from there.
+#
+# Usage: bin/release-local
+#
+# Run it on a clean main branch that matches origin/main. It reads the version
+# from .release-please-manifest.json and the notes from CHANGELOG.md.
+
+set -euo pipefail
+
+cd -- "$(dirname -- "$0")/.."
+
+readonly repo="Xquik-dev/terraform-provider-x-twitter-scraper"
+readonly project="terraform-provider-x-twitter-scraper"
+readonly registry_versions_url="https://registry.terraform.io/v1/providers/Xquik-dev/x-twitter-scraper/versions"
+readonly gpg_key_id="4900C25E85324F28"
+readonly passphrase_service="xquik-terraform-provider-gpg-passphrase"
+readonly temp_root="${TMPDIR:-/tmp}"
+
+current_step="start"
+tag=""
+tag_created=0
+tag_pushed=0
+workspace=""
+
+step() {
+  current_step="$1"
+  echo "==> $1"
+}
+
+fail() {
+  echo "release-local: $1" >&2
+  exit 1
+}
+
+finish() {
+  local exit_code=$?
+
+  if [[ "$tag_created" -eq 1 && "$tag_pushed" -eq 0 ]]; then
+    git tag -d "$tag" >/dev/null 2>&1 || true
+  fi
+
+  case "$workspace" in
+    "${temp_root%/}"/release-local.*)
+      rm -rf -- "$workspace"
+      ;;
+  esac
+
+  if [[ "$exit_code" -ne 0 ]]; then
+    echo "release-local stopped at: $current_step" >&2
+    if [[ "$tag_pushed" -eq 1 ]]; then
+      echo "Tag $tag is on GitHub. Finish the release with gh release upload and gh release edit." >&2
+    fi
+  fi
+}
+trap finish EXIT
+
+step "Checking required tools"
+for tool in git gh go jq gpg curl security shasum objdump; do
+  command -v "$tool" >/dev/null 2>&1 || fail "$tool is missing. Install it and rerun."
+done
+if ! command -v goreleaser >/dev/null 2>&1; then
+  command -v brew >/dev/null 2>&1 || fail "GoReleaser is missing. Install it and rerun."
+  step "Installing GoReleaser with Homebrew"
+  brew install goreleaser
+fi
+gh auth status >/dev/null 2>&1 || fail "gh is not signed in. Run gh auth login and rerun."
+gpg_fingerprint="$(
+  gpg --batch --with-colons --list-secret-keys "$gpg_key_id" 2>/dev/null |
+    awk -F: '$1 == "fpr" { print $10; exit }' || true
+)"
+[[ -n "$gpg_fingerprint" ]] || fail "GPG secret key $gpg_key_id is missing. Import it and rerun."
+# Without -w, security prints only the item attributes, never the passphrase.
+security find-generic-password -s "$passphrase_service" >/dev/null 2>&1 ||
+  fail "Keychain has no $passphrase_service item. Add the GPG passphrase under that service."
+
+step "Checking that main is clean and matches origin/main"
+[[ "$(git symbolic-ref --quiet --short HEAD || true)" == "main" ]] || fail "Switch to the main branch and rerun."
+[[ -z "$(git status --porcelain --untracked-files=all)" ]] || fail "Commit or remove local changes and rerun."
+git fetch --quiet origin || fail "Cannot fetch origin. Check the network and rerun."
+head_sha="$(git rev-parse HEAD)"
+[[ "$head_sha" == "$(git rev-parse origin/main)" ]] || fail "Local main differs from origin/main. Pull or push, then rerun."
+
+step "Reading the release version"
+version="$(jq -er '."."' .release-please-manifest.json)" ||
+  fail "Cannot read the version from .release-please-manifest.json."
+[[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z][0-9A-Za-z.-]*)?$ ]] ||
+  fail "Version $version is not semantic. Fix .release-please-manifest.json."
+grep -Fq "PackageVersion = \"$version\"" internal/version.go ||
+  fail "internal/version.go does not say $version. Make it match .release-please-manifest.json."
+tag="v$version"
+workspace="$(mktemp -d "${temp_root%/}/release-local.XXXXXX")"
+notes_file="$workspace/notes.md"
+awk -v version="$version" '
+  /^## / {
+    if (found) exit
+    found = ($2 == version)
+    next
+  }
+  found { print }
+' CHANGELOG.md >"$notes_file"
+grep -q '[^[:space:]]' "$notes_file" || fail "CHANGELOG.md has no notes for $version. Add a ## $version section."
+
+step "Checking that tag $tag is new"
+if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null; then
+  fail "Tag $tag already exists on origin. Bump the version first."
+else
+  ls_remote_status=$?
+  [[ "$ls_remote_status" -eq 2 ]] || fail "Cannot read tags from origin. Check the network and rerun."
+fi
+if git rev-parse --quiet --verify "refs/tags/$tag" >/dev/null; then
+  fail "Local tag $tag exists. Delete it with git tag -d $tag and rerun."
+fi
+
+step "Looking for a draft GitHub release for $tag"
+tag_releases="$(
+  gh api --paginate --slurp "repos/$repo/releases?per_page=100" |
+    jq -c --arg tag "$tag" '[.[][] | select(.tag_name == $tag)]'
+)" || fail "Cannot list GitHub releases. Run gh auth status."
+draft_release=0
+case "$(jq 'length' <<<"$tag_releases")" in
+  0) ;;
+  1)
+    [[ "$(jq -r '.[0].draft' <<<"$tag_releases")" == "true" ]] ||
+      fail "A published GitHub release already uses $tag. Bump the version first."
+    draft_target="$(jq -r '.[0].target_commitish' <<<"$tag_releases")"
+    if [[ "$draft_target" =~ ^[0-9a-f]{40}$ && "$draft_target" != "$head_sha" ]]; then
+      fail "The $tag draft targets ${draft_target:0:12}, but main is ${head_sha:0:12}. Fix the draft target."
+    fi
+    draft_release=1
+    ;;
+  *)
+    fail "Several GitHub releases use $tag. Delete the extra drafts and rerun."
+    ;;
+esac
+
+step "Running bin/check-local"
+./bin/check-local
+
+step "Auditing dependencies with govulncheck"
+./scripts/vulncheck
+
+step "Building $tag with GoReleaser"
+git tag -a "$tag" -m "Release $tag"
+tag_created=1
+# Sign below instead, so the passphrase goes straight from Keychain to gpg.
+GORELEASER_CURRENT_TAG="$tag" goreleaser release --clean --skip=publish,sign
+
+step "Verifying the release files"
+checksum_file="dist/${project}_${version}_SHA256SUMS"
+[[ -f "$checksum_file" ]] || fail "GoReleaser wrote no $checksum_file. Check .goreleaser.yml."
+install -m 0644 terraform-registry-manifest.json "dist/${project}_${version}_manifest.json"
+./bin/check-release-debug-info
+(cd dist && shasum -a 256 -c "${checksum_file#dist/}" >/dev/null) ||
+  fail "Release files do not match $checksum_file. Rebuild and rerun."
+
+step "Checking whether the Terraform Registry already has $version"
+registry_versions="$(curl -fsS --max-time 30 --proto '=https' "$registry_versions_url")" ||
+  fail "Cannot reach the Terraform Registry. Retry later."
+if jq -e --arg version "$version" 'any(.versions[]; .version == $version)' \
+  <<<"$registry_versions" >/dev/null; then
+  echo "Version $version is already on the Terraform Registry. Skipping the upload."
+  exit 0
+fi
+
+step "Signing $checksum_file with GPG key $gpg_key_id"
+security find-generic-password -s "$passphrase_service" -w |
+  gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 \
+    --local-user "$gpg_fingerprint" \
+    --output "$checksum_file.sig" \
+    --detach-sign "$checksum_file"
+if ! gpg --batch --status-fd 1 --verify "$checksum_file.sig" "$checksum_file" 2>/dev/null |
+  awk -v fpr="$gpg_fingerprint" '$2 == "VALIDSIG" && $NF == fpr { found = 1 } END { exit !found }'; then
+  fail "The signature does not verify with key $gpg_key_id. Check the key and rerun."
+fi
+
+assets=("$checksum_file" "$checksum_file.sig")
+while IFS= read -r asset_name; do
+  assets+=("dist/$asset_name")
+done < <(awk '{ print $2 }' "$checksum_file")
+
+release_flags=(--latest)
+if [[ "$version" == *-* ]]; then
+  release_flags=(--prerelease)
+fi
+
+step "Pushing tag $tag"
+git push origin "refs/tags/$tag"
+tag_pushed=1
+
+if [[ "$draft_release" -eq 1 ]]; then
+  step "Uploading ${#assets[@]} files to the $tag draft and publishing it"
+  gh release upload "$tag" "${assets[@]}" --repo "$repo" --clobber
+  gh release edit "$tag" --repo "$repo" --title "$tag" --notes-file "$notes_file" \
+    --draft=false --verify-tag "${release_flags[@]}"
+else
+  step "Creating GitHub release $tag with ${#assets[@]} files"
+  gh release create "$tag" "${assets[@]}" --repo "$repo" --title "$tag" \
+    --notes-file "$notes_file" --verify-tag "${release_flags[@]}"
+fi
+
+echo "Released $tag. The Terraform Registry reads it from GitHub."
