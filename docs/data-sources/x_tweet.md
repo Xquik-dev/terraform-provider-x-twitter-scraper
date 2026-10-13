@@ -327,7 +327,7 @@ Read-Only:
 - `media_url` (String) Media preview URL
 - `monetizable` (Boolean) Whether X reports the media as monetizable.
 - `sizes` (Attributes Map) Named media renditions and resize modes. (see [below for nested schema](#nestedatt--tweet--media--sizes))
-- `type` (String) Available values: "photo", "video", "animated_gif".
+- `type` (String) Available values are "photo", "video" and "animated_gif".
 - `url` (String) X media link from the tweet
 - `video_variants` (Attributes List) Available video encodings, ordered as returned (see [below for nested schema](#nestedatt--tweet--media--video_variants))
 - `width` (Number) Original media width.
@@ -634,7 +634,7 @@ Read-Only:
 - `media_url` (String) Media preview URL
 - `monetizable` (Boolean) Whether X reports the media as monetizable.
 - `sizes` (Attributes Map) Named media renditions and resize modes. (see [below for nested schema](#nestedatt--tweet--quoted_tweet--media--sizes))
-- `type` (String) Available values: "photo", "video", "animated_gif".
+- `type` (String) Available values are "photo", "video" and "animated_gif".
 - `url` (String) X media link from the tweet
 - `video_variants` (Attributes List) Available video encodings, ordered as returned (see [below for nested schema](#nestedatt--tweet--quoted_tweet--media--video_variants))
 - `width` (Number) Original media width.
@@ -942,7 +942,7 @@ Read-Only:
 - `media_url` (String) Media preview URL
 - `monetizable` (Boolean) Whether X reports the media as monetizable.
 - `sizes` (Attributes Map) Named media renditions and resize modes. (see [below for nested schema](#nestedatt--tweet--retweeted_tweet--media--sizes))
-- `type` (String) Available values: "photo", "video", "animated_gif".
+- `type` (String) Available values are "photo", "video" and "animated_gif".
 - `url` (String) X media link from the tweet
 - `video_variants` (Attributes List) Available video encodings, ordered as returned (see [below for nested schema](#nestedatt--tweet--retweeted_tweet--media--video_variants))
 - `width` (Number) Original media width.

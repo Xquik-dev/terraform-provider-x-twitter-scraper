@@ -18,7 +18,7 @@ Accountless prepaid access for paid read endpoints
 ### Required
 
 - `amount_minor` (Number) USD cents accepted for this checkout.
-- `currency` (String) Available values: "usd".
+- `currency` (String) The only available value is "usd".
 - `idempotency_key` (String, Sensitive) Cryptographically random UUID v4. Reuse it only to retry the same wallet and amount request.
 
 ### Read-Only
@@ -28,16 +28,16 @@ Accountless prepaid access for paid read endpoints
 - `api_key` (String, Sensitive) Paid-read bearer credential returned only by initial creation. Store it as a secret. Never place it in a URL or log.
 - `authorization` (Attributes) (see [below for nested schema](#nestedatt--authorization))
 - `checkout_url` (String) Hosted checkout URL for user interaction.
-- `credential_notice` (String) Available values: "Store api_key and the Idempotency-Key securely before sharing checkout_url. No email recovery is available.".
+- `credential_notice` (String) The only available value is "Store api_key and the Idempotency-Key securely before sharing checkout_url. No email recovery is available.".
 - `credits` (String) Credits granted after verified payment.
 - `expires_at` (String) Time when the pending checkout expires.
 - `instructions` (String) Hosted checkout and status polling instructions.
 - `poll_after_seconds` (Number) Wait at least this long before polling status_url.
-Available values: 2.
+The only available value is 2.
 - `purchase_id` (String)
 - `requires_user_interaction` (Boolean)
-- `status` (String) Available values: "creating", "pending", "paid", "expired", "failed", "refunded", "disputed".
-- `status_url` (String) Available values: "https://xquik.com/api/v1/guest-wallets/status".
+- `status` (String) Available values are "creating", "pending", "paid", "expired", "failed", "refunded" and "disputed".
+- `status_url` (String) The only available value is "https://xquik.com/api/v1/guest-wallets/status".
 - `wallet_id` (String)
 
 <a id="nestedatt--amount"></a>
@@ -46,7 +46,7 @@ Available values: 2.
 Read-Only:
 
 - `amount_minor` (Number) USD amount in cents. Accepted range is $10-$250.
-- `currency` (String) Available values: "usd".
+- `currency` (String) The only available value is "usd".
 
 
 <a id="nestedatt--authorization"></a>
@@ -54,5 +54,5 @@ Read-Only:
 
 Read-Only:
 
-- `header` (String) Available values: "Authorization".
-- `scheme` (String) Available values: "Bearer".
+- `header` (String) The only available value is "Authorization".
+- `scheme` (String) The only available value is "Bearer".

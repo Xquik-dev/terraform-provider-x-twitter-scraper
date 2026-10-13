@@ -17,20 +17,20 @@ Tweet composition, drafts, writing styles & radar
 
 ### Required
 
-- `step` (String) Workflow step
-Available values: "compose", "refine", "score".
+- `step` (String) Workflow step.
+Available values are "compose", "refine" and "score".
 
 ### Optional
 
 - `additional_context` (String) Extra context or URLs (refine)
 - `call_to_action` (String) Desired call to action (refine)
 - `draft` (String) Tweet draft text to evaluate (score)
-- `goal` (String) Optimization goal
-Available values: "engagement", "followers", "authority", "conversation".
+- `goal` (String) Optimization goal.
+Available values are "engagement", "followers", "authority" and "conversation".
 - `has_link` (Boolean) Whether a link is attached (score)
 - `has_media` (Boolean) Whether media is attached (score)
-- `media_type` (String) Media type (refine)
-Available values: "photo", "video", "none".
+- `media_type` (String) Media type (refine).
+Available values are "photo", "video" and "none".
 - `style_username` (String) Cached style username for voice matching (compose)
 - `tone` (String) Desired tone (refine)
 - `topic` (String) Tweet topic (compose, refine)

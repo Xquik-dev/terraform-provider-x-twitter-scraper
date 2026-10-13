@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+// File generated from our OpenAPI spec. See CONTRIBUTING.md for details.
 
 package x_write_action
 
@@ -29,7 +29,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Required: true,
 			},
 			"action": schema.StringAttribute{
-				Description: `Available values: "create_tweet", "delete_tweet", "like", "unlike", "retweet", "unretweet", "follow", "unfollow", "remove_follower", "send_dm", "upload_media", "update_profile", "update_avatar", "update_banner", "create_community", "delete_community", "join_community", "leave_community".`,
+				Description: `Available values are "create_tweet", "delete_tweet", "like", "unlike", "retweet", "unretweet", "follow", "unfollow", "remove_follower", "send_dm", "upload_media", "update_profile", "update_avatar", "update_banner", "create_community", "delete_community", "join_community" and "leave_community".`,
 				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive(
@@ -117,7 +117,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"object": schema.StringAttribute{
-				Description: `Available values: "x_write_action".`,
+				Description: `The only available value is "x_write_action".`,
 				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive("x_write_action"),
@@ -156,7 +156,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  timetypes.RFC3339Type{},
 			},
 			"status": schema.StringAttribute{
-				Description: `Available values: "accepted", "dispatching", "pending_confirmation", "success", "failed", "expired".`,
+				Description: `Available values are "accepted", "dispatching", "pending_confirmation", "success", "failed" and "expired".`,
 				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive(
@@ -232,7 +232,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						Computed: true,
 					},
 					"status": schema.StringAttribute{
-						Description: `Available values: "not_charged", "pending", "charged", "charge_failed", "refunded".`,
+						Description: `Available values are "not_charged", "pending", "charged", "charge_failed" and "refunded".`,
 						Computed:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOfCaseInsensitive(
@@ -252,7 +252,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  customfield.NewNestedObjectType[XWriteActionNextActionDataSourceModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{
-						Description: `Available values: "poll", "retry", "verify_result", "fix_request".`,
+						Description: `Available values are "poll", "retry", "verify_result" and "fix_request".`,
 						Computed:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOfCaseInsensitive(
@@ -306,7 +306,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						Computed: true,
 					},
 					"type": schema.StringAttribute{
-						Description: `Available values: "tweet", "direct_message", "media", "community", "state_change".`,
+						Description: `Available values are "tweet", "direct_message", "media", "community" and "state_change".`,
 						Computed:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOfCaseInsensitive(
@@ -329,7 +329,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						Computed: true,
 					},
 					"type": schema.StringAttribute{
-						Description: `Available values: "tweet", "user", "community".`,
+						Description: `Available values are "tweet", "user" and "community".`,
 						Computed:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOfCaseInsensitive(
