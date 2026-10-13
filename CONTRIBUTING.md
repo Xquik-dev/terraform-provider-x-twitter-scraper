@@ -64,7 +64,7 @@ It runs these checks in order.
 10. Go fuzzing of the multipart encoder for 15 seconds, or for `FUZZ_TIME`,
     such as `FUZZ_TIME=2m`
 11. CodeQL with the Go `security-extended` queries on a copy of the tree,
-    which fails on any result
+    which fails on any result and on any file CodeQL could not read
 12. A check that no step changed the working tree
 
 It stops at the first failure and says what to fix.
