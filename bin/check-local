@@ -4,330 +4,218 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# Runs every required check before a merge or a release.
-#
-# Usage: bin/check-local [--no-status]
-#
-# On a clean tree whose commit is on GitHub, it posts the xquik-local-checks
-# commit status for that commit with the gh login of whoever runs it. On the
-# release machine, that is the owner's gh login. The status turns success only
-# after every mandatory check passed, and its text lists only the checks that
-# ran. --no-status skips posting.
-#
-# Mandatory tools: go, jq, goreleaser, objdump and codeql. License metadata
-# runs when reuse or uv is installed. Set FUZZ_TIME, for example to 2m, to also
-# fuzz the multipart encoder.
+# Runs every repository check in the order the deleted CI ran them and stops
+# at the first failure with 1 line that names the check and the next step.
+# REUSE and CodeQL are required. REUSE runs at a pinned version through uv.
+# Posts the xquik-local-checks commit status for a clean, pushed HEAD through
+# the gh login of whoever runs it. On the release machine, that is the owner's
+# login. The success text lists only the checks that ran and passed, and it
+# comes only after every check passed.
+# Pass --no-status to skip the status.
+# FUZZ_TIME sets the fuzzing time, 15s by default. Use 2m for a full campaign.
 
 set -euo pipefail
 
 cd -- "$(dirname -- "$0")/.."
 
-readonly repo="Xquik-dev/terraform-provider-x-twitter-scraper"
+readonly repository="Xquik-dev/terraform-provider-x-twitter-scraper"
 readonly status_context="xquik-local-checks"
 readonly status_limit=139
 readonly reuse_version="6.2.0"
-readonly codeql_suite="codeql/go-queries:codeql-suites/go-security-extended.qls"
-readonly temp_root="${TMPDIR:-/tmp}"
 
-post_status=1
-for arg in "$@"; do
-  case "$arg" in
-    --no-status)
-      post_status=0
-      ;;
+post_requested=true
+for argument in "$@"; do
+  case "$argument" in
+    --no-status) post_requested=false ;;
     *)
-      echo "Unknown option $arg. Run bin/check-local or bin/check-local --no-status." >&2
+      echo "Unknown option $argument. Run bin/check-local or bin/check-local --no-status." >&2
       exit 2
       ;;
   esac
 done
 
-current_short="tools"
+readonly fuzz_time="${FUZZ_TIME:-15s}"
+temp_root="${TMPDIR:-/tmp}"
+check_name="Startup"
+check_label=""
+check_hint="Fix the error above, then rerun."
 passed_checks=()
-skipped_checks=()
-all_checks_passed=0
-platform=""
 status_sha=""
-workspace=""
+workspace="$(mktemp -d "${temp_root%/}/xquik-terraform-check.XXXXXX")"
 
-post_commit_status() {
-  local state="$1"
-  local description="${2:0:$status_limit}"
-
-  if ! gh api --silent "repos/$repo/statuses/$status_sha" \
-    -f state="$state" \
+post_status() {
+  if [[ -z "$status_sha" ]]; then
+    return 0
+  fi
+  local description="$2"
+  gh api --method POST "repos/$repository/statuses/$status_sha" \
+    -f state="$1" \
     -f context="$status_context" \
-    -f description="$description"; then
-    echo "Could not post the $state commit status. Run gh auth status." >&2
-  fi
-}
-
-join_words() {
-  local joined=""
-  local word
-  for word in "$@"; do
-    joined="${joined:+$joined, }$word"
-  done
-  printf '%s' "$joined"
-}
-
-# Prints the first candidate that fits the status description limit.
-first_fitting() {
-  local candidate
-  for candidate in "$@"; do
-    if [[ "${#candidate}" -le "$status_limit" ]]; then
-      printf '%s' "$candidate"
-      return
-    fi
-  done
-  printf '%s' "${candidate:0:$status_limit}"
-}
-
-success_description() {
-  local passed
-  local skipped=""
-
-  passed="Passed: $(join_words "${passed_checks[@]}")"
-  if [[ "${#skipped_checks[@]}" -gt 0 ]]; then
-    skipped="; skipped: $(join_words "${skipped_checks[@]}")"
-  fi
-  first_fitting \
-    "$passed$skipped on $platform" \
-    "$passed$skipped" \
-    "$passed" \
-    "Passed ${#passed_checks[@]} checks"
-}
-
-failure_description() {
-  local failed="Failed: $current_short"
-  local passed=""
-
-  if [[ "${#passed_checks[@]}" -gt 0 ]]; then
-    passed="; passed: $(join_words "${passed_checks[@]}")"
-  fi
-  first_fitting \
-    "$failed$passed${platform:+ on $platform}" \
-    "$failed$passed" \
-    "$failed${platform:+ on $platform}" \
-    "$failed"
+    -f description="${description:0:$status_limit}" >/dev/null ||
+    echo "Could not post the $1 commit status. Check gh auth status and push access." >&2
 }
 
 finish() {
-  local exit_code=$?
-
-  case "$workspace" in
-    "${temp_root%/}"/check-local.*)
-      rm -rf -- "$workspace"
-      ;;
-  esac
-
-  if [[ -n "$status_sha" ]]; then
-    if [[ "$exit_code" -eq 0 && "$all_checks_passed" -eq 1 ]]; then
-      post_commit_status success "$(success_description)"
-    else
-      post_commit_status failure "$(failure_description)"
-    fi
+  local status=$?
+  rm -rf -- "${workspace:?}"
+  if ((status != 0)); then
+    echo "Check failed at $check_name. $check_hint" >&2
+    post_status failure "Failed at $check_name."
   fi
-
-  exit "$exit_code"
 }
 trap finish EXIT
 
-prepare_status() {
-  local sha
-
-  if [[ "$post_status" -eq 0 ]]; then
-    echo "==> Not posting a commit status because of --no-status"
-    return
-  fi
-  if ! command -v gh >/dev/null 2>&1; then
-    echo "==> Not posting a commit status because gh is missing"
-    return
-  fi
-  if [[ -n "$(git status --porcelain --untracked-files=all)" ]]; then
-    echo "==> Not posting a commit status because the tree has uncommitted changes"
-    return
-  fi
-
-  sha="$(git rev-parse HEAD)"
-  if ! gh api --silent "repos/$repo/commits/$sha" >/dev/null 2>&1; then
-    echo "==> Not posting a commit status because GitHub does not have commit ${sha:0:12}"
-    return
-  fi
-
-  status_sha="$sha"
-  echo "==> Posting a pending $status_context status for commit ${sha:0:12}"
-  post_commit_status pending "Running checks"
+start_check() {
+  check_name="$1"
+  check_label="$2"
+  check_hint="$3"
+  echo "==> $check_name"
 }
 
-require_tool() {
-  local tool="$1"
-  local hint="$2"
-
-  if ! command -v "$tool" >/dev/null 2>&1; then
-    current_short="tools ($tool is missing)"
-    echo "check-local: $tool is missing. $hint" >&2
-    exit 1
+pass_check() {
+  if [[ -n "$check_label" ]]; then
+    passed_checks+=("$check_label")
   fi
 }
 
-run_check() {
-  local short_name="$1"
-  local title="$2"
-  local hint="$3"
-  shift 3
-
-  current_short="$short_name"
-  echo "==> $title"
-  if ! "$@"; then
-    echo "check-local: $title failed. $hint" >&2
-    exit 1
-  fi
-  passed_checks+=("$short_name")
-}
-
-skip_check() {
-  local short_name="$1"
-  local reason="$2"
-
-  echo "==> Skipping $short_name: $reason"
-  skipped_checks+=("$short_name")
-}
-
-check_licenses() {
-  if command -v reuse >/dev/null 2>&1; then
-    reuse lint
-  else
-    uvx --from "reuse==$reuse_version" reuse lint
-  fi
-}
-
+# Builds a GoReleaser snapshot and prints the path of its checksums file.
 snapshot_checksums() {
-  local checksum_path
-
-  # Send build logs to stderr. Callers capture stdout as the checksum path.
+  local checksums
+  # Build logs go to stderr, because callers read the path from stdout. A
+  # command substitution ignores set -e, so a failed build returns here.
   goreleaser release --snapshot --clean --skip=sign >&2 || return 1
-  checksum_path="$(find dist -maxdepth 1 -type f -name '*_SHA256SUMS' -print -quit)"
-  if [[ -z "$checksum_path" ]]; then
-    echo "GoReleaser wrote no checksum file to dist." >&2
+  checksums="$(find dist -maxdepth 1 -type f -name '*_SHA256SUMS' -print -quit)"
+  if [[ -z "$checksums" ]]; then
+    echo "GoReleaser wrote no SHA256SUMS file to dist." >&2
     return 1
   fi
-  printf '%s' "$checksum_path"
+  printf '%s\n' "$checksums"
 }
 
-build_snapshot() {
-  local checksum_path
+tree_state="$(git status --porcelain)"
 
-  checksum_path="$(snapshot_checksums)" || return 1
-  install -m 0644 "$checksum_path" "$workspace/first-checksums.txt"
-}
-
-verify_reproducible_build() {
-  local checksum_path
-
-  checksum_path="$(snapshot_checksums)" || return 1
-  cmp "$workspace/first-checksums.txt" "$checksum_path"
-}
-
-run_codeql() {
-  local database="$workspace/codeql-database"
-  local sarif="$workspace/codeql.sarif"
-  local finding_count
-
-  codeql database create "$database" \
-    --language=go \
-    --build-mode=autobuild \
-    --source-root=. \
-    --threads=0 \
-    --overwrite || return 1
-  codeql database analyze "$database" "$codeql_suite" \
-    --download \
-    --threads=0 \
-    --format=sarif-latest \
-    --output="$sarif" || return 1
-
-  finding_count="$(jq '[.runs[].results[]] | length' "$sarif")" || return 1
-  if [[ "$finding_count" -ne 0 ]]; then
-    jq -r '
-      .runs[].results[]
-      | (.locations[0].physicalLocation // {}) as $location
-      | "\(.ruleId) at \($location.artifactLocation.uri // "unknown"):\($location.region.startLine // 0): \(.message.text)"
-    ' "$sarif" >&2
-    echo "CodeQL reported $finding_count findings." >&2
-    return 1
+echo "==> Commit status"
+if [[ "$post_requested" == false ]]; then
+  echo "Commit status not posted because --no-status was passed."
+elif ! command -v gh >/dev/null 2>&1; then
+  echo "Commit status not posted because gh is not installed."
+elif [[ -n "$tree_state" ]]; then
+  echo "Commit status not posted because the working tree has changes."
+else
+  head_sha="$(git rev-parse HEAD)"
+  if gh api "repos/$repository/commits/$head_sha" >/dev/null 2>&1; then
+    status_sha="$head_sha"
+    post_status pending "Local checks are running."
+    echo "Posting $status_context for $head_sha."
+  else
+    echo "Commit status not posted because GitHub has no commit $head_sha. Push it, or run gh auth login."
   fi
-}
-
-check_release_config() {
-  goreleaser check || return 1
-  jq -e '.version == 1 and (.metadata.protocol_versions | index("6.0") != null)' \
-    terraform-registry-manifest.json >/dev/null
-}
-
-prepare_status
-
-require_tool go "Install the Go version in go.mod."
-require_tool jq "Install it with brew install jq."
-require_tool goreleaser "Install it with brew install goreleaser."
-require_tool objdump "Install the Xcode command line tools or binutils."
-require_tool codeql "Install it with brew install --cask codeql."
-
-platform="$(go env GOOS)/$(go env GOARCH), $(go env GOVERSION)"
-workspace="$(mktemp -d "${temp_root%/}/check-local.XXXXXX")"
-
-run_check modules "Download verified modules" \
-  "Run go mod download and restore go.sum." \
-  env SKIP_BREW=1 ./scripts/bootstrap
-
-run_check lint "Lint Go source" \
-  "Fix the listed issues. Run ./scripts/format for formatting." \
-  ./scripts/lint
-
-if command -v reuse >/dev/null 2>&1 || command -v uvx >/dev/null 2>&1; then
-  run_check licenses "Check license metadata" \
-    "Add SPDX headers or REUSE.toml entries for the listed files." \
-    check_licenses
-else
-  skip_check licenses "install reuse or uv to check license metadata"
 fi
 
-run_check tests "Run tests & coverage" \
-  "Fix the failing tests or add tests until coverage passes." \
-  ./scripts/test
+start_check "Required tools" "" "Install the missing tool, then rerun."
+for tool in cmp codeql git go goreleaser jq objdump pgrep shellcheck tar unzip uvx; do
+  if ! command -v "$tool" >/dev/null 2>&1; then
+    case "$tool" in
+      codeql) check_hint="Install the CodeQL CLI with brew install --cask codeql, then rerun." ;;
+      go) check_hint="Install Go from https://go.dev/dl/, then rerun." ;;
+      goreleaser) check_hint="Install GoReleaser with brew install goreleaser, then rerun." ;;
+      objdump) check_hint="Install the Xcode command line tools with xcode-select --install, then rerun." ;;
+      shellcheck) check_hint="Install ShellCheck with brew install shellcheck, then rerun." ;;
+      uvx) check_hint="Install uv with brew install uv, then rerun." ;;
+      *) check_hint="Install $tool, then rerun." ;;
+    esac
+    exit 1
+  fi
+done
 
-run_check build "Build release snapshot" \
-  "Fix the GoReleaser error above." \
-  build_snapshot
+start_check "Module download and integrity" "modules" "Run go clean -modcache, then rerun."
+SKIP_BREW=1 ./scripts/bootstrap
+pass_check
 
-run_check dwarf "Verify release debug information" \
-  "Keep DWARF data in release builds. Check the ldflags in .goreleaser.yml." \
-  ./bin/check-release-debug-info
+start_check "REUSE licensing" "REUSE" "Add the missing license notice or REUSE.toml entry, then rerun."
+uvx --from "reuse==$reuse_version" reuse lint
+pass_check
 
-run_check "repro build" "Verify reproducible checksums" \
-  "Remove the build input that changes between runs, such as a timestamp." \
-  verify_reproducible_build
+start_check "Lint" "lint" "Run ./scripts/format and go mod tidy, fix the go vet findings above, then rerun."
+./scripts/lint
+pass_check
 
-run_check codeql "Scan code with CodeQL security-extended queries" \
-  "Fix each listed CodeQL finding." \
-  run_codeql
+start_check "Shell scripts" "shellcheck" "Fix the shellcheck findings above, then rerun."
+shell_scripts=()
+for script in bin/* scripts/* scripts/tests/*; do
+  if [[ -f "$script" && "$(head -n 1 "$script")" == "#!/usr/bin/env bash" ]]; then
+    shell_scripts+=("$script")
+  fi
+done
+shellcheck --external-sources "${shell_scripts[@]}"
+pass_check
 
-run_check "release config" "Check release configuration" \
-  "Fix .goreleaser.yml or terraform-registry-manifest.json." \
-  check_release_config
+start_check "Script tests" "script tests" "Fix the failing script tests above, then rerun."
+./scripts/test-scripts
+pass_check
 
-if [[ -n "${FUZZ_TIME:-}" ]]; then
-  run_check fuzz "Fuzz multipart encoding for $FUZZ_TIME" \
-    "Fix the crash saved under internal/apiform/testdata/fuzz." \
-    go test ./internal/apiform -run '^$' -fuzz '^FuzzMarshalRoundTrip$' -fuzztime="$FUZZ_TIME"
-else
-  skip_check fuzz "set FUZZ_TIME to run it"
+start_check "Go tests and coverage" "Go tests" "Fix the failing test or add coverage, then rerun."
+./scripts/test
+pass_check
+
+start_check "Dependency audit" "audit" "Upgrade each blocked module above, or raise the go line in go.mod for standard library findings."
+./scripts/audit | tee "$workspace/audit.log"
+exceptions="$(sed -nE 's/^Dependency audit passed with ([0-9]+) reviewed exceptions?\.$/\1/p' "$workspace/audit.log")"
+case "$exceptions" in
+  "") ;;
+  1) check_label="audit with 1 reviewed exception" ;;
+  *) check_label="audit with $exceptions reviewed exceptions" ;;
+esac
+pass_check
+
+# The Terraform Registry reads the manifest to learn the plugin protocol. The
+# provider serves protocol 6 through the plugin framework.
+start_check "Release configuration" "" "Fix .goreleaser.yml, or make terraform-registry-manifest.json name protocol 6.0 only."
+goreleaser check
+jq -e '.version == 1 and .metadata.protocol_versions == ["6.0"]' terraform-registry-manifest.json >/dev/null
+
+start_check "Reproducible snapshot build" "" "Remove the build input that changes between builds, such as a timestamp."
+first_checksums="$(snapshot_checksums)"
+cp -- "$first_checksums" "$workspace/first-checksums.txt"
+second_checksums="$(snapshot_checksums)"
+cmp -- "$workspace/first-checksums.txt" "$second_checksums"
+
+start_check "Release debug information" "reproducible build" "Keep DWARF data. Remove -s and -w from the .goreleaser.yml ldflags."
+./bin/check-release-debug-info
+pass_check
+
+start_check "Fuzzing" "fuzzing" "Fix the crash. Go saved its input under internal/apiform/testdata/fuzz."
+go test ./internal/apiform -run '^$' -fuzz '^FuzzMarshalRoundTrip$' -fuzztime="$fuzz_time"
+pass_check
+
+start_check "CodeQL security-extended queries" "CodeQL" "Fix the CodeQL error or results above, then rerun."
+./scripts/codeql
+pass_check
+
+if [[ -z "$tree_state" ]]; then
+  start_check "Unchanged working tree" "" "A check changed or added the files above. Fix that check so it leaves the tree alone, then rerun."
+  tree_changes="$(git status --porcelain)"
+  if [[ -n "$tree_changes" ]]; then
+    echo "$tree_changes"
+    exit 1
+  fi
 fi
 
-# The audit runs last. New advisories can fail it without a code change, and
-# the checks above still report on the code.
-run_check audit "Audit dependencies for known vulnerabilities" \
-  "Upgrade each blocking module. Only unfixable development findings go in audit-exceptions.json." \
-  ./scripts/vulncheck
-
-all_checks_passed=1
-echo "All mandatory checks passed."
+check_name="Commit status"
+summary=""
+last_index=$((${#passed_checks[@]} - 1))
+for index in "${!passed_checks[@]}"; do
+  if ((index == 0)); then
+    summary="${passed_checks[$index]}"
+  elif ((index == last_index)); then
+    summary="$summary and ${passed_checks[$index]}"
+  else
+    summary="$summary, ${passed_checks[$index]}"
+  fi
+done
+summary="Passed $summary."
+if ((${#summary} > status_limit)); then
+  summary="Passed all ${#passed_checks[@]} checks. Run bin/check-local to list them."
+fi
+post_status success "$summary"
+echo "$summary"

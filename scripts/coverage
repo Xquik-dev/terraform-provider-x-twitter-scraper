@@ -57,8 +57,8 @@ if [[ -z "$coverage_percent" ]]; then
   exit 1
 fi
 
-printf 'Total statement coverage: %s%%\n' "$coverage_percent"
-printf 'Required statement coverage: %s%%\n' "$coverage_threshold"
+printf 'Total statement coverage is %s%%.\n' "$coverage_percent"
+printf 'Required statement coverage is %s%%.\n' "$coverage_threshold"
 
 if ! awk -v actual="$coverage_percent" -v required="$coverage_threshold" \
   'BEGIN { exit !(actual + 0 >= required + 0) }'; then
