@@ -21,7 +21,7 @@ Run `terraform init`.
 
 ## Authenticate
 
-Prefer environment variables:
+Prefer environment variables.
 
 ```sh
 export X_TWITTER_SCRAPER_API_KEY="your-api-key"
@@ -73,27 +73,27 @@ a verified terminal state and never blindly retries an uncertain dispatch.
 
 ## Resource map
 
-- Content: `compose`, `draft`, `style`
-- Monitoring: `monitor`, `monitor_keyword`, `webhook`
-- Posts: `x_tweet`, `x_tweet_delete`
-- Engagement: `x_tweet_like`, `x_tweet_unlike`, `x_tweet_retweet`, `x_tweet_unretweet`
-- Relationships: `x_user_follow`, `x_user_unfollow`, `x_user_remove_follower`
-- Messaging and media: `x_dm`, `x_media`
-- Profiles: `x_profile`, `x_profile_avatar`, `x_profile_banner`
-- Communities: `x_community`, `x_community_delete`, `x_community_join`, `x_community_leave`
-- Support and checkout: `support_ticket`, `guest_wallet`
+- `compose`, `draft` and `style` for content
+- `monitor`, `monitor_keyword` and `webhook` for monitoring
+- `x_tweet` and `x_tweet_delete` for posts
+- `x_tweet_like`, `x_tweet_unlike`, `x_tweet_retweet` and `x_tweet_unretweet` for engagement
+- `x_user_follow`, `x_user_unfollow` and `x_user_remove_follower` for relationships
+- `x_dm` and `x_media` for messages and media
+- `x_profile`, `x_profile_avatar` and `x_profile_banner` for profiles
+- `x_community`, `x_community_delete`, `x_community_join` and `x_community_leave` for communities
+- `support_ticket` and `guest_wallet` for support and checkout
 
 Prefix each name with `x-twitter-scraper_` inside Terraform blocks.
 
 ## Data source map
 
-- Usage: `account`
-- Content: `draft`, `style`
-- Monitoring: `monitor`, `monitor_keyword`, `event`
-- Draws: `draw`
-- X lookups: `x_tweet`, `x_user`, `x_account`
-- Write status: `x_write_action`
-- Support: `support_ticket`
+- `account` for usage
+- `draft` and `style` for content
+- `monitor`, `monitor_keyword` and `event` for monitoring
+- `draw` for giveaway draws
+- `x_tweet`, `x_user` and `x_account` for X lookups
+- `x_write_action` for write status
+- `support_ticket` for support
 
 Data sources read existing state. They do not run Twitter search or scrape timelines.
 

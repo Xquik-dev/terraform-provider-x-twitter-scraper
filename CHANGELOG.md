@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.7.5 (2026-10-13)
+
+[Full changelog from v0.7.4 to v0.7.5](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.7.4...v0.7.5)
+
+### Security
+
+* Build with Go 1.27.2, grpc 1.84.0 & golang.org/x/net 0.61.0. Release 0.7.4 had 16 advisories in them.
+* The fixed advisories are GO-2026-6348, GO-2026-6441 & GO-2026-6443 in grpc, and GO-2026-6599, GO-2026-6600, GO-2026-6603, GO-2026-6604, GO-2026-6605, GO-2026-6607, GO-2026-6608, GO-2026-6609, GO-2026-6610, GO-2026-6611, GO-2026-6612, GO-2026-6613 & GO-2026-6617 in Go.
+* 11 of them cannot affect the provider. It runs no HTTP server and uses no affected template, file server, Windows path or xDS feature.
+* 3 sit on the local plugin socket that Terraform itself uses, which needs Terraform's own client certificate. Only GO-2026-6348 applies there without features the provider never turns on.
+* GO-2026-6611 lets a malicious HTTP/2 API server waste the provider's CPU, and GO-2026-6610 lets it send malformed headers. Both need a base URL you point at that server.
+
+### Requirements
+
+* The provider now needs macOS 13 Ventura or later, because Go 1.27 dropped macOS 12. Linux, Windows & FreeBSD support is unchanged.
+
+### Documentation
+
+* The README title is now "X API & Twitter API Terraform provider by Xquik".
+* The README & the registry docs lead with what the provider manages, then the positioning, billing & legal lines.
+
+### Chores
+
+* Update every Go module to its latest release.
+* Release assets no longer include a provenance file, since releases now run from a maintainer's machine.
+
 ## 0.7.4 (2026-08-21)
 
 Full Changelog: [v0.7.3...v0.7.4](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.7.3...v0.7.4)

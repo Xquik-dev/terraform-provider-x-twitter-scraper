@@ -29,7 +29,7 @@ Webhook endpoint management and delivery
 - `consecutive_failures` (Number) Consecutive failed delivery attempts since the last success.
 - `created_at` (String)
 - `delivery_status` (String) Endpoint delivery state. needs_attention means delivery stopped after repeated failures.
-Available values: "active", "paused", "needs_attention".
+Available values are "active", "paused" and "needs_attention".
 - `failure_hard_cap` (Number) Consecutive delivery failures that pause the endpoint.
 - `id` (String) The ID of this resource.
 - `secret` (String, Sensitive) Plaintext HMAC signing secret returned only at creation.

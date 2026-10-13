@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+// File generated from our OpenAPI spec. See CONTRIBUTING.md for details.
 
 package x_tweet
 
@@ -640,7 +640,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 									Computed:    true,
 								},
 								"type": schema.StringAttribute{
-									Description: `Available values: "photo", "video", "animated_gif".`,
+									Description: `Available values are "photo", "video" and "animated_gif".`,
 									Computed:    true,
 									Validators: []validator.String{
 										stringvalidator.OneOfCaseInsensitive(
@@ -1284,7 +1284,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 											Computed:    true,
 										},
 										"type": schema.StringAttribute{
-											Description: `Available values: "photo", "video", "animated_gif".`,
+											Description: `Available values are "photo", "video" and "animated_gif".`,
 											Computed:    true,
 											Validators: []validator.String{
 												stringvalidator.OneOfCaseInsensitive(
@@ -1952,7 +1952,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 											Computed:    true,
 										},
 										"type": schema.StringAttribute{
-											Description: `Available values: "photo", "video", "animated_gif".`,
+											Description: `Available values are "photo", "video" and "animated_gif".`,
 											Computed:    true,
 											Validators: []validator.String{
 												stringvalidator.OneOfCaseInsensitive(

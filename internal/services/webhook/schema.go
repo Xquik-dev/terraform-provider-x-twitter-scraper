@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+// File generated from our OpenAPI spec. See CONTRIBUTING.md for details.
 
 package webhook
 
@@ -78,7 +78,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				CustomType: timetypes.RFC3339Type{},
 			},
 			"delivery_status": schema.StringAttribute{
-				Description: "Endpoint delivery state. needs_attention means delivery stopped after repeated failures.\nAvailable values: \"active\", \"paused\", \"needs_attention\".",
+				Description: "Endpoint delivery state. needs_attention means delivery stopped after repeated failures.\nAvailable values are \"active\", \"paused\" and \"needs_attention\".",
 				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive(

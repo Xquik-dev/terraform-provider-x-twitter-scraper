@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+// File generated from our OpenAPI spec. See CONTRIBUTING.md for details.
 
 package event
 
@@ -35,7 +35,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				CustomType: timetypes.RFC3339Type{},
 			},
 			"type": schema.StringAttribute{
-				Description: `Available values: "tweet.new", "tweet.reply", "tweet.retweet", "tweet.quote", "follower.gained", "follower.lost".`,
+				Description: `Available values are "tweet.new", "tweet.reply", "tweet.retweet", "tweet.quote", "follower.gained" and "follower.lost".`,
 				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive(

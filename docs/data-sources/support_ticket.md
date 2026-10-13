@@ -21,7 +21,7 @@ Support ticket management
 - `id` (String) The ID of this resource.
 - `messages` (Attributes List) (see [below for nested schema](#nestedatt--messages))
 - `public_id` (String)
-- `status` (String) Available values: "open", "in_progress", "resolved", "closed".
+- `status` (String) Available values are "open", "in_progress", "resolved" and "closed".
 - `subject` (String)
 - `updated_at` (String)
 
@@ -33,7 +33,7 @@ Read-Only:
 - `attachments` (Attributes List) (see [below for nested schema](#nestedatt--messages--attachments))
 - `body` (String)
 - `created_at` (String)
-- `sender` (String) Available values: "user", "support", "system".
+- `sender` (String) Available values are "user", "support" and "system".
 
 <a id="nestedatt--messages--attachments"></a>
 ### Nested Schema for `messages.attachments`
@@ -41,12 +41,12 @@ Read-Only:
 Read-Only:
 
 - `content_type` (String) Validated media type.
-Available values: "image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4", "video/quicktime", "video/webm".
+Available values are "image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4", "video/quicktime" and "video/webm".
 - `filename` (String)
 - `kind` (String) Attachment media class.
-Available values: "image", "video".
+Available values are "image" and "video".
 - `public_id` (String)
 - `size_bytes` (Number)
 - `status` (String) Storage processing state.
-Available values: "pending", "ready", "failed".
+Available values are "pending", "ready" and "failed".
 - `url` (String)

@@ -21,6 +21,6 @@ Activity events from monitored accounts
 - `id` (String) The ID of this resource.
 - `monitor_id` (String)
 - `occurred_at` (String)
-- `type` (String) Available values: "tweet.new", "tweet.reply", "tweet.retweet", "tweet.quote", "follower.gained", "follower.lost".
+- `type` (String) Available values are "tweet.new", "tweet.reply", "tweet.retweet", "tweet.quote", "follower.gained" and "follower.lost".
 - `username` (String)
 - `x_event_id` (String)

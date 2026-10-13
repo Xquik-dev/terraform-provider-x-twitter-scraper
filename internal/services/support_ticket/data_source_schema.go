@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+// File generated from our OpenAPI spec. See CONTRIBUTING.md for details.
 
 package support_ticket
 
@@ -34,7 +34,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed: true,
 			},
 			"status": schema.StringAttribute{
-				Description: `Available values: "open", "in_progress", "resolved", "closed".`,
+				Description: `Available values are "open", "in_progress", "resolved" and "closed".`,
 				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive(
@@ -63,7 +63,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
 									"content_type": schema.StringAttribute{
-										Description: "Validated media type.\nAvailable values: \"image/jpeg\", \"image/png\", \"image/gif\", \"image/webp\", \"video/mp4\", \"video/quicktime\", \"video/webm\".",
+										Description: "Validated media type.\nAvailable values are \"image/jpeg\", \"image/png\", \"image/gif\", \"image/webp\", \"video/mp4\", \"video/quicktime\" and \"video/webm\".",
 										Computed:    true,
 										Validators: []validator.String{
 											stringvalidator.OneOfCaseInsensitive(
@@ -81,7 +81,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 										Computed: true,
 									},
 									"kind": schema.StringAttribute{
-										Description: "Attachment media class.\nAvailable values: \"image\", \"video\".",
+										Description: "Attachment media class.\nAvailable values are \"image\" and \"video\".",
 										Computed:    true,
 										Validators: []validator.String{
 											stringvalidator.OneOfCaseInsensitive("image", "video"),
@@ -94,7 +94,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 										Computed: true,
 									},
 									"status": schema.StringAttribute{
-										Description: "Storage processing state.\nAvailable values: \"pending\", \"ready\", \"failed\".",
+										Description: "Storage processing state.\nAvailable values are \"pending\", \"ready\" and \"failed\".",
 										Computed:    true,
 										Validators: []validator.String{
 											stringvalidator.OneOfCaseInsensitive(
@@ -118,7 +118,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 							CustomType: timetypes.RFC3339Type{},
 						},
 						"sender": schema.StringAttribute{
-							Description: `Available values: "user", "support", "system".`,
+							Description: `Available values are "user", "support" and "system".`,
 							Computed:    true,
 							Validators: []validator.String{
 								stringvalidator.OneOfCaseInsensitive(

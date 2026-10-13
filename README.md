@@ -1,10 +1,18 @@
-# Terraform provider for X API monitors, webhooks & Twitter automation
+# X API & Twitter API Terraform provider by Xquik
 
-[![CI](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/actions/workflows/ci.yml/badge.svg)](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/actions/workflows/codeql.yml/badge.svg)](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/actions/workflows/codeql.yml)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13729/badge)](https://www.bestpractices.dev/projects/13729)
 
-Manage Xquik monitors, signed webhooks, content workflows & approved X actions as Terraform resources.
+Use this X API & Twitter API Terraform provider to manage X automation as code.
+It turns Xquik monitors, signed webhooks, drafts & X actions into Terraform resources.
+Scrape Twitter search, timelines & followers with the [Xquik REST API](https://docs.xquik.com/api-reference/overview).
+That API works as a Twitter scraper & tweet scraper for your apps.
+The provider is a Twitter API alternative built on that same API.
+
+Xquik is the world's fastest and cheapest X Twitter scraper service with the most complete X data.
+Xquik charges only for delivered, unique, filter-matching results and never pads rows.
+
+> Xquik is an independent third-party service. Not affiliated with X Corp.
+> "Twitter" and "X" are trademarks of X Corp.
 
 [Quickstart](docs/guides/quickstart.md) | [Provider docs](docs/index.md) | [Examples](examples) | [REST API](https://docs.xquik.com/api-reference/overview) | [OpenAPI](https://xquik.com/openapi.json) | [Security](SECURITY.md)
 
@@ -27,13 +35,13 @@ Every X write resource stores its canonical response. Uncertain retries keep the
 
 ## Read existing Xquik data
 
-- Account usage and limits: `account`
-- Drafts and writing styles: `draft`, `style`
-- Account and keyword monitors: `monitor`, `monitor_keyword`
-- Events and giveaway draws: `event`, `draw`
-- Tweet, user, and account lookups: `x_tweet`, `x_user`, `x_account`
-- Durable write status: `x_write_action`
-- Support requests: `support_ticket`
+- `account` for account usage and limits
+- `draft` and `style` for drafts and writing styles
+- `monitor` and `monitor_keyword` for account and keyword monitors
+- `event` and `draw` for events and giveaway draws
+- `x_tweet`, `x_user` and `x_account` for tweet, user and account lookups
+- `x_write_action` for durable write status
+- `support_ticket` for support requests
 
 ## Run Twitter search outside Terraform
 
@@ -58,15 +66,11 @@ terraform {
 provider "x-twitter-scraper" {}
 ```
 
-Then run:
-
-```sh
-terraform init
-```
+Then run `terraform init`.
 
 ## Authenticate
 
-Prefer environment variables:
+Prefer environment variables.
 
 ```sh
 export X_TWITTER_SCRAPER_API_KEY="your-api-key"
@@ -94,8 +98,8 @@ Changing the request replaces the resource. Give the new write a new key.
 
 ## Reliability & security
 
-CI checks formatting, integrity, race safety, Windows builds, coverage & reachable vulnerabilities.
-Releases use pinned actions, signed checksums & GitHub attestations.
+`bin/check-local` checks formatting, licenses, race safety, Windows builds, coverage, reproducible builds, fuzzing, CodeQL findings & known vulnerabilities.
+Maintainers publish releases with `bin/release-local`, which signs the checksums with the provider's GPG key.
 
 See [OpenSSF evidence](OPENSSF.md) for the current criteria assessment.
 Treat plans and state as sensitive. API responses can contain private data.
@@ -105,10 +109,9 @@ Report vulnerabilities through [GitHub private reporting](SECURITY.md).
 
 ```sh
 ./scripts/bootstrap
-./scripts/lint
-./scripts/test
+bin/check-local
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) before changing generated code.
+`bin/check-local` runs every required check. See [CONTRIBUTING.md](CONTRIBUTING.md) before changing generated code.
 
 Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.

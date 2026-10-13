@@ -8,13 +8,10 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-# Keep the SDK staging module outside the public module proxy.
-export GOPRIVATE="${GOPRIVATE:+$GOPRIVATE,}github.com/stainless-sdks/x-twitter-scraper-go"
-
 echo "==> Checking formatting"
 unformatted="$(gofmt -s -l .)"
 if [[ -n "$unformatted" ]]; then
-  echo "The following files need gofmt -s:" >&2
+  echo "These files need gofmt -s." >&2
   echo "$unformatted" >&2
   exit 1
 fi
