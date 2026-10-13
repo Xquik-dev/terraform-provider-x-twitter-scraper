@@ -77,7 +77,7 @@ cleanup() {
 trap cleanup EXIT
 
 step "Checking required tools"
-required_tools=(curl gh git go jq shasum unzip)
+required_tools=(cmp curl gh git go jq shasum unzip)
 if [[ "$dry_run" == false ]]; then
   required_tools+=(gpg security)
 fi
@@ -247,9 +247,12 @@ security find-generic-password -s "$RELEASE_SIGNING_KEYCHAIN_SERVICE" -w |
 gpg --batch --status-fd 1 --verify "$signature" "$checksums" 2>/dev/null |
   awk -v fingerprint="$fingerprint" '$2 == "VALIDSIG" && $NF == fingerprint { found = 1 } END { exit !found }' ||
   refuse "The signature does not verify with GPG key $gpg_key_id. Check the key, then rerun."
-# The Terraform Registry reads only binary signatures.
-[[ "$(head -c 5 "$signature")" != "-----" ]] ||
+# The Terraform Registry reads only binary signatures. cmp compares the first 5
+# bytes in place, because a command substitution would drop the null bytes of a
+# binary signature and print a warning.
+if cmp -s -n 5 "$signature" <(printf '%s' '-----'); then
   refuse "gpg wrote an ASCII armored signature. Remove armor from the gpg configuration, then rerun."
+fi
 
 asset_paths=("$checksums" "$signature")
 while IFS= read -r name; do

@@ -154,7 +154,8 @@ EOF
 # Stands in for gpg. It records its arguments and what it reads on standard
 # input. It lists 1 secret key unless FAKE_NO_KEY is set, writes a binary
 # signature unless FAKE_ARMORED is set, and verifies it unless
-# FAKE_BAD_SIGNATURE is set.
+# FAKE_BAD_SIGNATURE is set. The binary signature starts with the header
+# bytes of a real one, which hold a null byte.
 echo "gpg $*" >>"$FAKE_LOGS/order"
 echo "$*" >>"$FAKE_LOGS/gpg-arguments"
 fingerprint="0000111122223333444455556666777788889999"
@@ -175,7 +176,7 @@ case " $* " in
     if [ -n "${FAKE_ARMORED:-}" ]; then
       echo "-----BEGIN PGP SIGNATURE-----" >"$output"
     else
-      printf 'binary signature\n' >"$output"
+      printf '\211\002\117\004\000binary signature\n' >"$output"
     fi
     ;;
   *" --verify "*)
@@ -429,7 +430,8 @@ gh release edit v1.2.3 --repo $repository --draft=false --verify-tag --title v1.
   assert_not_contains "$(log_of security-arguments)" "$test_passphrase" "the security arguments"
   assert_not_contains "$(log_of order)" "$test_passphrase" "the commands that ran"
   assert_not_contains "$run_stdout$run_stderr" "$test_passphrase" "the output"
-  assert_equal "binary signature" "$(cat "$sandbox_logs/draft-assets/$sums.sig")" "the uploaded signature"
+  cmp -s "$sandbox_logs/draft-assets/$sums.sig" <(printf '\211\002\117\004\000binary signature\n') ||
+    fail_test "The uploaded signature differs from the one gpg wrote."
   assert_contains "$(remote_tags)" "refs/tags/v1.2.3" "the tags on origin"
   assert_equal "tag" "$(sandbox_git cat-file -t v1.2.3)" "the tag type"
 }
