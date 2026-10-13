@@ -21,7 +21,7 @@ cleanup() {
       rm -rf -- "$branch_workspace"
       ;;
     *)
-      echo "Cleanup path is unsafe: $branch_workspace. Remove it manually." >&2
+      echo "Refusing to remove $branch_workspace, which is no gocove folder. Remove it by hand." >&2
       ;;
   esac
 }

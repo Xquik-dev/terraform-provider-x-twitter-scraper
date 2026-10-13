@@ -21,7 +21,7 @@ AI tweet composition, drafts, writing styles, and radar
 
 ### Optional
 
-- `goal` (String) Available values: "engagement", "followers", "authority", "conversation".
+- `goal` (String) Available values are "engagement", "followers", "authority" and "conversation".
 - `topic` (String)
 
 ### Read-Only

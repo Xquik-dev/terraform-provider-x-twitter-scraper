@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2026 Xquik contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Prints what a release would publish, from the GoReleaser output in dist,
+# and checks it against what the Terraform Registry reads. The registry wants
+# 1 zip per platform that holds terraform-provider-<name>_v<version>, the
+# registry manifest, a SHA256SUMS file that covers the zips and the manifest,
+# and a binary GPG signature of that file. bin/release-local makes the
+# signature after this listing.
+#
+# Usage: scripts/release-listing <version> <notes file>
+
+set -euo pipefail
+
+cd -- "$(dirname -- "$0")/.."
+
+refuse() {
+  echo "$1" >&2
+  exit 1
+}
+
+[[ "$#" -eq 2 ]] || refuse "Run scripts/release-listing <version> <notes file>."
+readonly version="$1"
+readonly notes_file="$2"
+readonly project="terraform-provider-x-twitter-scraper"
+readonly registry_address="registry.terraform.io/Xquik-dev/x-twitter-scraper"
+readonly artifacts="dist/artifacts.json"
+readonly checksums="dist/${project}_${version}_SHA256SUMS"
+readonly manifest="dist/${project}_${version}_manifest.json"
+readonly binary="${project}_v${version}"
+
+[[ -f "$artifacts" ]] || refuse "$artifacts is missing. Build the release assets first."
+[[ -f "$checksums" ]] || refuse "$checksums is missing. Build the release assets for $version first."
+[[ -f "$manifest" ]] || refuse "$manifest is missing. Copy terraform-registry-manifest.json there first."
+[[ -f "$notes_file" ]] || refuse "The release notes file $notes_file is missing."
+
+cmp -s terraform-registry-manifest.json "$manifest" ||
+  refuse "$manifest differs from terraform-registry-manifest.json. Rebuild the release assets."
+protocols="$(jq -er 'select(.version == 1) | .metadata.protocol_versions | join(", ")' "$manifest")" ||
+  refuse "$manifest needs version 1 and a protocol_versions list. Fix terraform-registry-manifest.json."
+
+zips="$(jq -r '[.[] | select(.type == "Archive") | .path] | sort | .[]' "$artifacts")"
+[[ -n "$zips" ]] || refuse "$artifacts lists no zips. Check the archives section of .goreleaser.yml."
+
+# The checksums file must cover exactly the zips and the manifest.
+expected_names="$(
+  {
+    while IFS= read -r path; do basename -- "$path"; done <<<"$zips"
+    basename -- "$manifest"
+  } | LC_ALL=C sort
+)"
+listed_names="$(awk '{ print $2 }' "$checksums" | LC_ALL=C sort)"
+[[ "$listed_names" == "$expected_names" ]] ||
+  refuse "$checksums must list every zip and the manifest, and nothing else. Check the checksum section of .goreleaser.yml."
+
+echo "Version  $version"
+echo "Tag  v$version"
+echo "Registry address  $registry_address"
+echo "Protocol versions  $protocols"
+echo "Platforms"
+platforms=0
+while IFS= read -r path; do
+  name="$(basename -- "$path")"
+  platform="${name#"${project}_${version}_"}"
+  platform="${platform%.zip}"
+  wanted="$binary"
+  [[ "$platform" != windows_* ]] || wanted="$binary.exe"
+  binaries="$(unzip -Z1 "$path" | grep '^terraform-provider-' || true)"
+  [[ "$binaries" == "$wanted" ]] ||
+    refuse "$name must hold the binary $wanted. Check the binary name in .goreleaser.yml."
+  printf '  %s  %s\n' "$platform" "$wanted"
+  platforms=$((platforms + 1))
+done <<<"$zips"
+
+echo "Release assets"
+count=0
+while IFS= read -r path; do
+  [[ -f "$path" ]] || refuse "$path is missing from dist. Rebuild the release assets."
+  name="$(basename -- "$path")"
+  size="$(wc -c <"$path" | tr -d '[:space:]')"
+  actual="$(shasum -a 256 "$path" | cut -d ' ' -f 1)"
+  if [[ "$path" != "$checksums" ]]; then
+    listed="$(awk -v name="$name" '$2 == name { print $1 }' "$checksums")"
+    [[ "$listed" == "$actual" ]] ||
+      refuse "$name does not match its line in ${checksums#dist/}. Rebuild the release assets."
+  fi
+  printf '  %s  %s bytes  sha256 %s\n' "$name" "$size" "$actual"
+  count=$((count + 1))
+done < <(printf '%s\n' "$zips" "$manifest" "$checksums")
+echo "  ${checksums#dist/}.sig  made by bin/release-local after this listing"
+echo "Asset count  $((count + 1)) with the signature, $platforms platforms"
+
+echo "GitHub release title  v$version"
+echo "GitHub release notes from CHANGELOG.md"
+sed 's/^\(.\)/  \1/' "$notes_file"

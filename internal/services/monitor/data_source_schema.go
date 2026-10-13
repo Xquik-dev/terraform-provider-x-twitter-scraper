@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+// File generated from our OpenAPI spec. See CONTRIBUTING.md for details.
 
 package monitor
 
@@ -46,7 +46,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  timetypes.RFC3339Type{},
 			},
 			"paused_reason": schema.StringAttribute{
-				Description: "Why Xquik automatically paused this monitor.\nAvailable values: \"x_user_not_found\".",
+				Description: "Why Xquik automatically paused this monitor.\nThe only available value is \"x_user_not_found\".",
 				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive("x_user_not_found"),

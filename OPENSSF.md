@@ -1,8 +1,8 @@
 # OpenSSF Best Practices evidence
 
-Official assessment: [bestpractices.dev project 13729](https://www.bestpractices.dev/projects/13729).
+The official assessment is [bestpractices.dev project 13729](https://www.bestpractices.dev/projects/13729).
 
-Assessment date: 2026-08-20.
+The assessment date is 2026-08-20.
 
 ## Eligibility
 
@@ -13,30 +13,26 @@ This public, released Terraform provider meets the OpenSSF eligibility rules.
 | Area | Evidence |
 | --- | --- |
 | License | Apache-2.0, REUSE 3.3 metadata, and bundled BSD-3-Clause terms |
-| Contribution process | `CONTRIBUTING.md`, DCO sign-off, and independent review rules |
+| Contribution process | `CONTRIBUTING.md`, DCO sign-off, and `bin/check-local` before every merge |
 | Security reporting | Private GitHub reporting, response targets, and safe harbor in `SECURITY.md` |
 | Build | Pinned Go modules, checksum verification, and `./scripts/build` |
 | Tests | `./scripts/test` runs race-enabled unit and regression tests |
-| Statement coverage | `./scripts/coverage` enforces 90%; latest full result is 93.6% |
-| Branch coverage | `./scripts/branch-coverage` enforces 80%; current result is 794/963 (82.45%) |
-| Static analysis | `go vet` and CodeQL security-extended queries |
-| Dynamic analysis | Scheduled Go fuzzing and race detection |
-| Dependency review | Dependabot, `go mod verify`, and `govulncheck` |
-| CI | Pull requests from this repository and forks run every required job |
-| Releases | Signed checksums, exact tags, and GitHub artifact attestations |
-| Reproducibility | CI builds each GoReleaser snapshot twice and compares checksums |
+| Statement coverage | `./scripts/coverage` enforces 90%. The latest full result is 93.6% |
+| Branch coverage | `./scripts/branch-coverage` enforces 80%. The current result is 794/963 (82.45%) |
+| Static analysis | `go vet`, ShellCheck and CodeQL security-extended queries through `bin/check-local` |
+| Dynamic analysis | Race detection, plus 15 seconds of Go fuzzing in every `bin/check-local` run |
+| Dependency review | `go mod verify`, and `govulncheck` at every severity with reviewed exceptions in `audit-exceptions.json` |
+| Required checks | `bin/check-local` runs every check and posts the `xquik-local-checks` commit status |
+| Releases | `bin/release-local` publishes GPG-signed checksums and exact annotated tags, with a `--dry-run` that stops before signing |
+| Reproducibility | `bin/check-local` builds each GoReleaser snapshot twice and compares checksums |
 | Documentation | Generated Registry pages match registered schemas |
-| Portability | CI compiles every package for Windows AMD64 |
+| Portability | `./scripts/test` compiles every package for Windows AMD64 |
 | Two-factor authentication | The Xquik-dev organization requires 2FA |
 
-Verify locally:
+Verify locally.
 
 ```sh
-./scripts/bootstrap
-./scripts/lint
-./scripts/test
-uvx --from reuse==5.1.1 reuse lint
-go run golang.org/x/vuln/cmd/govulncheck@v1.6.0 ./...
+bin/check-local
 ```
 
 ## Branch coverage evidence
@@ -49,7 +45,7 @@ The current result is 794 of 963 branches, or 82.45%.
 
 ## Outstanding Gold blockers
 
-These criteria require human or organizational evidence:
+These criteria require human or organizational evidence.
 
 | Gold Criterion | Current Evidence | Required Action |
 | --- | --- | --- |
@@ -63,8 +59,8 @@ The repository must not claim Gold while any mandatory criterion remains unmet.
 
 ## Maintenance
 
-CI checks licensing, tests, coverage, security, and reproducibility. Scheduled
-CodeQL, fuzzing, Scorecard, and dependency updates detect drift. Reassess this
-file before each major release. Update bestpractices.dev only with public evidence.
+`bin/check-local` checks licensing, tests, coverage, security, and
+reproducibility before each merge and release. Reassess this file before each
+major release. Update bestpractices.dev only with public evidence.
 
 Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.

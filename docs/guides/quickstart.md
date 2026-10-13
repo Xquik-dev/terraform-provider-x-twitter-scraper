@@ -21,7 +21,7 @@ Run `terraform init` inside your Terraform project.
 
 ## Authenticate
 
-Prefer an environment variable:
+Prefer an environment variable.
 
 ```sh
 export X_TWITTER_SCRAPER_API_KEY="your-api-key"

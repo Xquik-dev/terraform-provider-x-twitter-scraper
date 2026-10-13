@@ -1,1 +1,6 @@
 brew "go"
+brew "goreleaser"
+brew "jq"
+brew "shellcheck"
+brew "uv"
+cask "codeql"

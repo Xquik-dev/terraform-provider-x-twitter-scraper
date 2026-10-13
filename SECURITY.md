@@ -12,7 +12,7 @@ Use [GitHub private vulnerability reporting](https://github.com/Xquik-dev/terraf
 
 Never publish exploit details in an issue or discussion.
 
-Include:
+Include these details.
 
 - Affected provider and Terraform versions
 - Impact and required access
@@ -29,7 +29,7 @@ Email [security@xquik.com](mailto:security@xquik.com) if private reporting fails
 Expect an acknowledgment within 3 business days and classification within 14
 days. Maintainers prioritize critical vulnerabilities and coordinate disclosure.
 
-Confirmed fixes require regression tests and independent review.
+Confirmed fixes require regression tests and the maintainer's review.
 
 Maintainers will publish advisories and fixed releases when appropriate.
 

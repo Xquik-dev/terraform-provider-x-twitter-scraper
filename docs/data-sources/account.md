@@ -21,7 +21,7 @@ Account info and settings
 - `monitor_billing` (Attributes) (see [below for nested schema](#nestedatt--monitor_billing))
 - `monitors_allowed` (Number, Deprecated) Deprecated. Monitor slots are unlimited, so this is always Number.MAX_SAFE_INTEGER.
 - `monitors_used` (Number)
-- `plan` (String) Available values: "active", "inactive".
+- `plan` (String) Available values are "active" and "inactive".
 - `x_username` (String) Linked X username, omitted when no X account is connected.
 
 <a id="nestedatt--credit_info"></a>

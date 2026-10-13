@@ -16,20 +16,20 @@ import (
 
 func main() {
 	if len(os.Args) != 4 {
-		exitf("Usage: branch_coverage.go REPORT PROFILE MINIMUM")
+		exitf("Run go run scripts/branch_coverage.go REPORT PROFILE MINIMUM.")
 	}
 	minimum, err := strconv.ParseFloat(os.Args[3], 64)
 	if err != nil {
-		exitf("Minimum is invalid: %v", err)
+		exitf("The minimum is not a number. %v", err)
 	}
 
 	report, err := os.ReadFile(os.Args[1])
 	if err != nil {
-		exitf("Report cannot be read: %v", err)
+		exitf("The report cannot be read. %v", err)
 	}
 	profile, err := os.Open(os.Args[2])
 	if err != nil {
-		exitf("Profile cannot be opened: %v", err)
+		exitf("The profile cannot be opened. %v", err)
 	}
 	defer profile.Close()
 
@@ -40,7 +40,7 @@ func main() {
 		"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/test_helpers",
 	)
 	if err != nil {
-		exitf("Branch coverage cannot be measured: %v", err)
+		exitf("Branch coverage cannot be measured. %v", err)
 	}
 	if total == 0 {
 		exitf("Branch report has no branches. Check the test build.")
@@ -48,7 +48,7 @@ func main() {
 
 	percent := 100 * float64(covered) / float64(total)
 	fmt.Printf(
-		"Branch coverage: %d/%d (%.2f%%). Required: %.2f%%.\n",
+		"Branch coverage is %d/%d (%.2f%%). %.2f%% is required.\n",
 		covered,
 		total,
 		percent,

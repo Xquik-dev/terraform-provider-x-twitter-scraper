@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+// File generated from our OpenAPI spec. See CONTRIBUTING.md for details.
 
 package compose
 
@@ -25,7 +25,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 		Description: "Tweet composition, drafts, writing styles & radar",
 		Attributes: map[string]schema.Attribute{
 			"step": schema.StringAttribute{
-				Description: "Workflow step\nAvailable values: \"compose\", \"refine\", \"score\".",
+				Description: "Workflow step.\nAvailable values are \"compose\", \"refine\" and \"score\".",
 				Required:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive(
@@ -52,7 +52,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"goal": schema.StringAttribute{
-				Description: "Optimization goal\nAvailable values: \"engagement\", \"followers\", \"authority\", \"conversation\".",
+				Description: "Optimization goal.\nAvailable values are \"engagement\", \"followers\", \"authority\" and \"conversation\".",
 				Optional:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive(
@@ -75,7 +75,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()},
 			},
 			"media_type": schema.StringAttribute{
-				Description: "Media type (refine)\nAvailable values: \"photo\", \"video\", \"none\".",
+				Description: "Media type (refine).\nAvailable values are \"photo\", \"video\" and \"none\".",
 				Optional:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive(

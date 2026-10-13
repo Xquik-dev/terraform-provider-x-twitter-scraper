@@ -18,7 +18,7 @@ X write actions (tweets, likes, follows, DMs)
 ### Read-Only
 
 - `account` (Attributes) Connected account selected for the write. (see [below for nested schema](#nestedatt--account))
-- `action` (String) Available values: "create_tweet", "delete_tweet", "like", "unlike", "retweet", "unretweet", "follow", "unfollow", "remove_follower", "send_dm", "upload_media", "update_profile", "update_avatar", "update_banner", "create_community", "delete_community", "join_community", "leave_community".
+- `action` (String) Available values are "create_tweet", "delete_tweet", "like", "unlike", "retweet", "unretweet", "follow", "unfollow", "remove_follower", "send_dm", "upload_media", "update_profile", "update_avatar", "update_banner", "create_community", "delete_community", "join_community" and "leave_community".
 - `billing` (Attributes) plannedCredits is the approved maximum. chargedCredits comes from the settled credit ledger. Pending or failed writes are not charged. (see [below for nested schema](#nestedatt--billing))
 - `charged` (Boolean)
 - `charged_credits` (String)
@@ -40,7 +40,7 @@ X write actions (tweets, likes, follows, DMs)
 - `message` (String)
 - `message_id` (String) Compatibility field for a confirmed direct message ID.
 - `next_action` (Attributes) Exact follow-up an API client or agent should perform. (see [below for nested schema](#nestedatt--next_action))
-- `object` (String) Available values: "x_write_action".
+- `object` (String) The only available value is "x_write_action".
 - `poll_after_ms` (Number)
 - `request` (Attributes) Stable fingerprint and sanitized payload for replay checks. (see [below for nested schema](#nestedatt--request))
 - `request_hash` (String)
@@ -51,7 +51,7 @@ X write actions (tweets, likes, follows, DMs)
 - `safe_to_retry` (Boolean) True only when no write was dispatched and a new idempotency key may be used.
 - `send_dispatched` (Boolean)
 - `send_dispatched_at` (String) Dispatch timestamp when the write reached execution.
-- `status` (String) Available values: "accepted", "dispatching", "pending_confirmation", "success", "failed", "expired".
+- `status` (String) Available values are "accepted", "dispatching", "pending_confirmation", "success", "failed" and "expired".
 - `status_url` (String)
 - `success` (Boolean)
 - `target` (Attributes) Existing X resource targeted by the write, when applicable. (see [below for nested schema](#nestedatt--target))
@@ -78,7 +78,7 @@ Read-Only:
 - `charged` (Boolean)
 - `charged_credits` (String)
 - `planned_credits` (String)
-- `status` (String) Available values: "not_charged", "pending", "charged", "charge_failed", "refunded".
+- `status` (String) Available values are "not_charged", "pending", "charged", "charge_failed" and "refunded".
 
 
 <a id="nestedatt--next_action"></a>
@@ -88,7 +88,7 @@ Read-Only:
 
 - `after_ms` (Number)
 - `requires_new_idempotency_key` (Boolean)
-- `type` (String) Available values: "poll", "retry", "verify_result", "fix_request".
+- `type` (String) Available values are "poll", "retry", "verify_result" and "fix_request".
 - `url` (String)
 
 
@@ -108,7 +108,7 @@ Read-Only:
 
 - `id` (String)
 - `state` (String)
-- `type` (String) Available values: "tweet", "direct_message", "media", "community", "state_change".
+- `type` (String) Available values are "tweet", "direct_message", "media", "community" and "state_change".
 
 
 <a id="nestedatt--target"></a>
@@ -117,4 +117,4 @@ Read-Only:
 Read-Only:
 
 - `id` (String)
-- `type` (String) Available values: "tweet", "user", "community".
+- `type` (String) Available values are "tweet", "user" and "community".

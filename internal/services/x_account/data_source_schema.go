@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+// File generated from our OpenAPI spec. See CONTRIBUTING.md for details.
 
 package x_account
 
@@ -34,7 +34,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				CustomType: timetypes.RFC3339Type{},
 			},
 			"health": schema.StringAttribute{
-				Description: `Available values: "healthy", "locked", "needsReauth", "recovering", "suspended", "temporaryIssue".`,
+				Description: `Available values are "healthy", "locked", "needsReauth", "recovering", "suspended" and "temporaryIssue".`,
 				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive(

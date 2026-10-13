@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+// File generated from our OpenAPI spec. See CONTRIBUTING.md for details.
 
 package guest_wallet
 
@@ -37,7 +37,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.Int64{int64planmodifier.RequiresReplace()},
 			},
 			"currency": schema.StringAttribute{
-				Description: `Available values: "usd".`,
+				Description: `The only available value is "usd".`,
 				Required:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive("usd"),
@@ -69,7 +69,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"credential_notice": schema.StringAttribute{
-				Description: `Available values: "Store api_key and the Idempotency-Key securely before sharing checkout_url. No email recovery is available.".`,
+				Description: `The only available value is "Store api_key and the Idempotency-Key securely before sharing checkout_url. No email recovery is available.".`,
 				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive("Store api_key and the Idempotency-Key securely before sharing checkout_url. No email recovery is available."),
@@ -89,7 +89,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"poll_after_seconds": schema.Int64Attribute{
-				Description: "Wait at least this long before polling status_url.\nAvailable values: 2.",
+				Description: "Wait at least this long before polling status_url.\nThe only available value is 2.",
 				Computed:    true,
 				Validators: []validator.Int64{
 					int64validator.OneOf(2),
@@ -102,7 +102,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Computed: true,
 			},
 			"status": schema.StringAttribute{
-				Description: `Available values: "creating", "pending", "paid", "expired", "failed", "refunded", "disputed".`,
+				Description: `Available values are "creating", "pending", "paid", "expired", "failed", "refunded" and "disputed".`,
 				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive(
@@ -117,7 +117,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"status_url": schema.StringAttribute{
-				Description: `Available values: "https://xquik.com/api/v1/guest-wallets/status".`,
+				Description: `The only available value is "https://xquik.com/api/v1/guest-wallets/status".`,
 				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive("https://xquik.com/api/v1/guest-wallets/status"),
@@ -139,7 +139,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"currency": schema.StringAttribute{
-						Description: `Available values: "usd".`,
+						Description: `The only available value is "usd".`,
 						Computed:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOfCaseInsensitive("usd"),
@@ -152,14 +152,14 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				CustomType: customfield.NewNestedObjectType[GuestWalletAuthorizationModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"header": schema.StringAttribute{
-						Description: `Available values: "Authorization".`,
+						Description: `The only available value is "Authorization".`,
 						Computed:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOfCaseInsensitive("Authorization"),
 						},
 					},
 					"scheme": schema.StringAttribute{
-						Description: `Available values: "Bearer".`,
+						Description: `The only available value is "Bearer".`,
 						Computed:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOfCaseInsensitive("Bearer"),
