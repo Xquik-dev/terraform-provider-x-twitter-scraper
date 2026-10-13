@@ -84,7 +84,9 @@ EOF
 #!/bin/sh
 # Stands in for GoReleaser. Each run builds a Linux and a Windows zip and a
 # SHA256SUMS file that lists them and the registry manifest, as the real
-# checksum section does. FAKE_SUMS_WITHOUT_MANIFEST leaves the manifest out,
+# checksum section does. Like Go, it stamps each binary with the tag on HEAD,
+# or with a pseudo-version when HEAD has no tag.
+# FAKE_SUMS_WITHOUT_MANIFEST leaves the manifest out,
 # FAKE_WRONG_BINARY names the Linux binary wrongly and FAKE_DIRTY_BUILD
 # changes a tracked file.
 {
@@ -99,8 +101,9 @@ rm -rf dist
 mkdir -p dist/linux dist/windows
 linux_binary="$binary"
 [ -z "${FAKE_WRONG_BINARY:-}" ] || linux_binary="terraform-provider-x-twitter-scraper"
-printf 'linux %s\n' "$version" >"dist/linux/$linux_binary"
-printf 'windows %s\n' "$version" >"dist/windows/$binary.exe"
+stamp="$(git describe --tags --exact-match HEAD 2>/dev/null || echo "pseudo-version of $(git rev-parse --short HEAD)")"
+printf 'linux %s built as %s\n' "$version" "$stamp" >"dist/linux/$linux_binary"
+printf 'windows %s built as %s\n' "$version" "$stamp" >"dist/windows/$binary.exe"
 touch -t 202601010000 "dist/linux/$linux_binary" "dist/windows/$binary.exe"
 (cd dist/linux && zip -qX "../${prefix}_linux_amd64.zip" "$linux_binary")
 (cd dist/windows && zip -qX "../${prefix}_windows_amd64.zip" "$binary.exe")
@@ -300,6 +303,42 @@ goreleaser release --clean --skip=publish,validate,sign with GORELEASER_CURRENT_
 check-release-debug-info" "$(order_without_paths)" "the steps"
   assert_equal "" "$(log_of security-arguments)" "the Keychain calls"
   assert_equal "" "$(remote_tags)" "the tags on origin"
+  assert_equal "" "$(sandbox_git tag)" "the local tags"
+}
+
+test_a_dry_run_lists_the_same_checksums_as_a_release_of_the_same_commit() {
+  local sums="${project}_1.2.3_SHA256SUMS" dry_run_checksums
+  prepare_release
+
+  run_in_repo bin/release-local --dry-run
+  dry_run_checksums="$(cat "$sandbox_repo/dist/$sums")"
+  run_env=("RELEASE_SIGNING_KEYCHAIN_SERVICE=$test_service")
+  run_in_repo bin/release-local
+
+  assert_equal 0 "$run_status" "the exit code of the release"
+  assert_contains "$(cat "$sandbox_repo/dist/linux/${project}_v1.2.3")" "built as v1.2.3" "the released Linux binary"
+  assert_equal "$dry_run_checksums" "$(cat "$sandbox_logs/draft-assets/$sums")" "the uploaded checksums"
+}
+
+test_a_dry_run_keeps_a_local_tag_that_was_there_before() {
+  prepare_release
+  sandbox_git tag --annotate v1.2.3 --message "Release v1.2.3"
+
+  run_in_repo bin/release-local --dry-run
+
+  assert_equal 0 "$run_status" "the exit code"
+  assert_contains "$run_stdout" "==> Reusing the local annotated tag v1.2.3" "stdout"
+  assert_equal "tag" "$(sandbox_git cat-file -t v1.2.3)" "the local tag type"
+  assert_equal "" "$(remote_tags)" "the tags on origin"
+}
+
+test_a_failed_dry_run_removes_the_tag_it_created() {
+  prepare_release
+  run_env=("FAKE_WRONG_BINARY=1")
+
+  run_in_repo bin/release-local --dry-run
+
+  assert_equal 1 "$run_status" "the exit code"
   assert_equal "" "$(sandbox_git tag)" "the local tags"
 }
 

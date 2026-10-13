@@ -24,7 +24,7 @@ This public, released Terraform provider meets the OpenSSF eligibility rules.
 | Dependency review | `go mod verify`, and `govulncheck` at every severity with reviewed exceptions in `audit-exceptions.json` |
 | Required checks | `bin/check-local` runs every check and posts the `xquik-local-checks` commit status |
 | Releases | `bin/release-local` publishes GPG-signed checksums and exact annotated tags, with a `--dry-run` that stops before signing |
-| Reproducibility | `bin/check-local` builds each GoReleaser snapshot twice and compares checksums |
+| Reproducibility | `bin/check-local` builds each GoReleaser snapshot twice and compares checksums. A dry run builds with the release tag, so its checksums equal the release's |
 | Documentation | Generated Registry pages match registered schemas |
 | Portability | `./scripts/test` compiles every package for Windows AMD64 |
 | Two-factor authentication | The Xquik-dev organization requires 2FA |

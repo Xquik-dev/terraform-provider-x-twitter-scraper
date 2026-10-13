@@ -20,7 +20,13 @@
 # Pass --dry-run to run every check, build every release asset and print the
 # version, each asset with its size and checksum, the registry manifest and
 # the release notes. A dry run needs no Keychain variable, posts no commit
-# status and stops before signing, the tag and the GitHub release.
+# status and stops before signing, pushing the tag and the GitHub release.
+#
+# Go stamps the module version into each binary from the Git tag on HEAD, and
+# without a tag it stamps a pseudo-version. So both modes build with the local
+# annotated tag in place, the release ships binaries stamped with its version,
+# and a dry run's checksums equal the release's. A run removes a local tag it
+# created unless it pushed that tag.
 
 set -euo pipefail
 # Keep the passphrase out of trace output, even under bash -x.
@@ -60,7 +66,15 @@ fi
 
 temp_root="${TMPDIR:-/tmp}"
 workspace="$(mktemp -d "${temp_root%/}/xquik-terraform-release.XXXXXX")"
-trap 'rm -rf -- "${workspace:?}"' EXIT
+remove_local_tag=false
+
+cleanup() {
+  rm -rf -- "${workspace:?}"
+  if [[ "$remove_local_tag" == true ]]; then
+    git tag --delete "$tag" >/dev/null
+  fi
+}
+trap cleanup EXIT
 
 step "Checking required tools"
 required_tools=(curl gh git go jq shasum unzip)
@@ -196,6 +210,14 @@ fi
 step "Auditing dependencies with govulncheck"
 ./scripts/audit
 
+if [[ "$local_tag" == true ]]; then
+  step "Reusing the local annotated tag $tag"
+else
+  step "Creating the local annotated tag $tag for the build. The run removes it unless it pushes it."
+  git tag --annotate "$tag" --message "Release $tag"
+  remove_local_tag=true
+fi
+
 # The checks above end with GoReleaser snapshot builds. This build runs right
 # after them in the same tree, so a check that left files behind would show.
 step "Building the release assets for $tag with GoReleaser"
@@ -235,13 +257,6 @@ while IFS= read -r name; do
 done < <(awk '{ print $2 }' "$checksums")
 expected_assets="$(printf '%s\n' "${asset_paths[@]#dist/}" | jq -R . | jq -cs 'sort')"
 
-if [[ "$local_tag" == true ]]; then
-  step "Reusing the local annotated tag $tag"
-else
-  step "Creating the local annotated tag $tag"
-  git tag --annotate "$tag" --message "Release $tag"
-fi
-
 if ((draft_count == 0)); then
   step "Creating draft release $tag with notes from CHANGELOG.md"
   gh release create "$tag" --repo "$repository" --draft --title "$tag" \
@@ -269,6 +284,7 @@ done
 
 step "Pushing tag $tag to origin"
 git push --quiet origin "refs/tags/$tag"
+remove_local_tag=false
 
 if [[ "$version" == *-* ]]; then
   release_flags=(--prerelease --latest=false)
