@@ -6,8 +6,8 @@ Report vulnerabilities through [SECURITY.md](SECURITY.md).
 
 ## Set up the repository
 
-Install the Go version declared in `go.mod`, GoReleaser, and `jq`.
-On macOS, `./scripts/bootstrap` offers to install Go and GoReleaser from the
+Install the Go version declared in `go.mod`, GoReleaser, the CodeQL CLI, and
+`jq`. On macOS, `./scripts/bootstrap` offers to install them from the
 `Brewfile`.
 
 Run:
@@ -55,16 +55,26 @@ It runs, in order:
 4. `./scripts/test` for race detection, 90% statement and 80% branch
    coverage, and Windows compilation
 5. A GoReleaser snapshot build and a DWARF debug information check
-6. `./scripts/vulncheck` for reachable known vulnerabilities
-7. A second snapshot build that must match the first checksums
+6. A second snapshot build that must match the first checksums
+7. CodeQL with the Go `security-extended` queries, which fails on any finding
 8. `goreleaser check` and the Terraform Registry manifest
+9. Go fuzzing of the multipart encoder, only when `FUZZ_TIME` is set, such as
+   `FUZZ_TIME=2m`
+10. `./scripts/vulncheck`, the dependency audit
 
-It stops at the first failure and says what to fix. Set `FUZZ_TIME=2m` to
-also fuzz the multipart encoder.
+It stops at the first failure and says what to fix.
+
+The audit blocks on any finding in a package the provider binary links, and
+on any other finding with a fixed version. An unfixable development-only
+finding passes only while `audit-exceptions.json` lists it with its advisory,
+package path, reason, and a recheck date at most 30 days out. The list is
+empty today.
 
 On a clean tree whose commit is on GitHub, `bin/check-local` posts the
-`xquik-local-checks` commit status. Maintainers merge a pull request after
-that status passes. Pass `--no-status` to skip it.
+`xquik-local-checks` commit status with your `gh` login. It posts success only
+after every mandatory check passes, and the text names only the checks that
+ran. Maintainers merge a pull request after that status passes. Pass
+`--no-status` to skip it.
 
 Run the branch gate independently:
 
@@ -88,7 +98,7 @@ from a clean `main` that matches `origin/main`, and it:
 
 1. Reads the version from `.release-please-manifest.json`
 2. Stops when tag `v<version>` already exists on GitHub
-3. Runs `bin/check-local` and `./scripts/vulncheck`
+3. Runs `bin/check-local` and the dependency audit
 4. Builds the release with GoReleaser
 5. Stops when the Terraform Registry already lists the version
 6. Signs the checksum file with the provider's GPG key

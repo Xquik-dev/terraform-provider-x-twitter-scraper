@@ -19,9 +19,9 @@ This public, released Terraform provider meets the OpenSSF eligibility rules.
 | Tests | `./scripts/test` runs race-enabled unit and regression tests |
 | Statement coverage | `./scripts/coverage` enforces 90%; latest full result is 93.6% |
 | Branch coverage | `./scripts/branch-coverage` enforces 80%; current result is 794/963 (82.45%) |
-| Static analysis | `go vet` through `./scripts/lint` |
+| Static analysis | `go vet` and CodeQL security-extended queries through `bin/check-local` |
 | Dynamic analysis | Race detection, plus Go fuzzing with `FUZZ_TIME` in `bin/check-local` |
-| Dependency review | `go mod verify` and `govulncheck` through `./scripts/vulncheck` |
+| Dependency review | `go mod verify`, and `govulncheck` with reviewed exceptions in `audit-exceptions.json` |
 | Required checks | `bin/check-local` runs every check and posts the `xquik-local-checks` commit status |
 | Releases | `bin/release-local` publishes GPG-signed checksums and exact annotated tags |
 | Reproducibility | `bin/check-local` builds each GoReleaser snapshot twice and compares checksums |

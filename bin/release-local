@@ -10,6 +10,10 @@
 #
 # Run it on a clean main branch that matches origin/main. It reads the version
 # from .release-please-manifest.json and the notes from CHANGELOG.md.
+#
+# It runs bin/check-local, which posts the xquik-local-checks status with the
+# owner's gh login on the release machine, and the govulncheck audit with the
+# reviewed exceptions in audit-exceptions.json.
 
 set -euo pipefail
 
@@ -142,7 +146,7 @@ esac
 step "Running bin/check-local"
 ./bin/check-local
 
-step "Auditing dependencies with govulncheck"
+step "Auditing dependencies with govulncheck and audit-exceptions.json"
 ./scripts/vulncheck
 
 step "Building $tag with GoReleaser"

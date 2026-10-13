@@ -9,7 +9,13 @@
 # Usage: bin/check-local [--no-status]
 #
 # On a clean tree whose commit is on GitHub, it posts the xquik-local-checks
-# commit status for that commit. Set FUZZ_TIME, for example to 2m, to also
+# commit status for that commit with the gh login of whoever runs it. On the
+# release machine, that is the owner's gh login. The status turns success only
+# after every mandatory check passed, and its text lists only the checks that
+# ran. --no-status skips posting.
+#
+# Mandatory tools: go, jq, goreleaser, objdump and codeql. License metadata
+# runs when reuse or uv is installed. Set FUZZ_TIME, for example to 2m, to also
 # fuzz the multipart encoder.
 
 set -euo pipefail
@@ -18,7 +24,9 @@ cd -- "$(dirname -- "$0")/.."
 
 readonly repo="Xquik-dev/terraform-provider-x-twitter-scraper"
 readonly status_context="xquik-local-checks"
+readonly status_limit=139
 readonly reuse_version="6.2.0"
+readonly codeql_suite="codeql/go-queries:codeql-suites/go-security-extended.qls"
 readonly temp_root="${TMPDIR:-/tmp}"
 
 post_status=1
@@ -34,15 +42,17 @@ for arg in "$@"; do
   esac
 done
 
-current_check="Check required tools"
+current_short="tools"
 passed_checks=()
-platform="this machine"
+skipped_checks=()
+all_checks_passed=0
+platform=""
 status_sha=""
 workspace=""
 
 post_commit_status() {
   local state="$1"
-  local description="${2:0:139}"
+  local description="${2:0:$status_limit}"
 
   if ! gh api --silent "repos/$repo/statuses/$status_sha" \
     -f state="$state" \
@@ -52,18 +62,58 @@ post_commit_status() {
   fi
 }
 
-join_checks() {
+join_words() {
   local joined=""
-  local check
-  for check in "${passed_checks[@]}"; do
-    joined="${joined:+$joined, }$check"
+  local word
+  for word in "$@"; do
+    joined="${joined:+$joined, }$word"
   done
   printf '%s' "$joined"
 }
 
+# Prints the first candidate that fits the status description limit.
+first_fitting() {
+  local candidate
+  for candidate in "$@"; do
+    if [[ "${#candidate}" -le "$status_limit" ]]; then
+      printf '%s' "$candidate"
+      return
+    fi
+  done
+  printf '%s' "${candidate:0:$status_limit}"
+}
+
+success_description() {
+  local passed
+  local skipped=""
+
+  passed="Passed: $(join_words "${passed_checks[@]}")"
+  if [[ "${#skipped_checks[@]}" -gt 0 ]]; then
+    skipped="; skipped: $(join_words "${skipped_checks[@]}")"
+  fi
+  first_fitting \
+    "$passed$skipped on $platform" \
+    "$passed$skipped" \
+    "$passed" \
+    "Passed ${#passed_checks[@]} checks"
+}
+
+failure_description() {
+  local failed="Failed: $current_short"
+  local passed=""
+
+  if [[ "${#passed_checks[@]}" -gt 0 ]]; then
+    passed="; passed: $(join_words "${passed_checks[@]}")"
+  fi
+  first_fitting \
+    "$failed$passed${platform:+ on $platform}" \
+    "$failed$passed" \
+    "$failed${platform:+ on $platform}" \
+    "$failed"
+}
+
 finish() {
   local exit_code=$?
-  local description
 
   case "$workspace" in
     "${temp_root%/}"/check-local.*)
@@ -72,14 +122,10 @@ finish() {
   esac
 
   if [[ -n "$status_sha" ]]; then
-    if [[ "$exit_code" -eq 0 ]]; then
-      description="Passed: $(join_checks) on $platform"
-      if [[ "${#description}" -gt 139 ]]; then
-        description="All ${#passed_checks[@]} checks passed on $platform"
-      fi
-      post_commit_status success "$description"
+    if [[ "$exit_code" -eq 0 && "$all_checks_passed" -eq 1 ]]; then
+      post_commit_status success "$(success_description)"
     else
-      post_commit_status failure "Failed: $current_check on $platform. Run bin/check-local."
+      post_commit_status failure "$(failure_description)"
     fi
   fi
 
@@ -111,7 +157,7 @@ prepare_status() {
 
   status_sha="$sha"
   echo "==> Posting a pending $status_context status for commit ${sha:0:12}"
-  post_commit_status pending "Running lint, license, test, audit, build & release checks"
+  post_commit_status pending "Running checks"
 }
 
 require_tool() {
@@ -119,6 +165,7 @@ require_tool() {
   local hint="$2"
 
   if ! command -v "$tool" >/dev/null 2>&1; then
+    current_short="tools ($tool is missing)"
     echo "check-local: $tool is missing. $hint" >&2
     exit 1
   fi
@@ -130,13 +177,21 @@ run_check() {
   local hint="$3"
   shift 3
 
-  current_check="$title"
+  current_short="$short_name"
   echo "==> $title"
   if ! "$@"; then
     echo "check-local: $title failed. $hint" >&2
     exit 1
   fi
   passed_checks+=("$short_name")
+}
+
+skip_check() {
+  local short_name="$1"
+  local reason="$2"
+
+  echo "==> Skipping $short_name: $reason"
+  skipped_checks+=("$short_name")
 }
 
 check_licenses() {
@@ -174,6 +229,35 @@ verify_reproducible_build() {
   cmp "$workspace/first-checksums.txt" "$checksum_path"
 }
 
+run_codeql() {
+  local database="$workspace/codeql-database"
+  local sarif="$workspace/codeql.sarif"
+  local finding_count
+
+  codeql database create "$database" \
+    --language=go \
+    --build-mode=autobuild \
+    --source-root=. \
+    --threads=0 \
+    --overwrite || return 1
+  codeql database analyze "$database" "$codeql_suite" \
+    --download \
+    --threads=0 \
+    --format=sarif-latest \
+    --output="$sarif" || return 1
+
+  finding_count="$(jq '[.runs[].results[]] | length' "$sarif")" || return 1
+  if [[ "$finding_count" -ne 0 ]]; then
+    jq -r '
+      .runs[].results[]
+      | (.locations[0].physicalLocation // {}) as $location
+      | "\(.ruleId) at \($location.artifactLocation.uri // "unknown"):\($location.region.startLine // 0): \(.message.text)"
+    ' "$sarif" >&2
+    echo "CodeQL reported $finding_count findings." >&2
+    return 1
+  fi
+}
+
 check_release_config() {
   goreleaser check || return 1
   jq -e '.version == 1 and (.metadata.protocol_versions | index("6.0") != null)' \
@@ -186,6 +270,7 @@ require_tool go "Install the Go version in go.mod."
 require_tool jq "Install it with brew install jq."
 require_tool goreleaser "Install it with brew install goreleaser."
 require_tool objdump "Install the Xcode command line tools or binutils."
+require_tool codeql "Install it with brew install --cask codeql."
 
 platform="$(go env GOOS)/$(go env GOARCH), $(go env GOVERSION)"
 workspace="$(mktemp -d "${temp_root%/}/check-local.XXXXXX")"
@@ -203,7 +288,7 @@ if command -v reuse >/dev/null 2>&1 || command -v uvx >/dev/null 2>&1; then
     "Add SPDX headers or REUSE.toml entries for the listed files." \
     check_licenses
 else
-  echo "==> Skipping license metadata. Install reuse or uv to check it."
+  skip_check licenses "install reuse or uv to check license metadata"
 fi
 
 run_check tests "Run tests & coverage" \
@@ -214,17 +299,17 @@ run_check build "Build release snapshot" \
   "Fix the GoReleaser error above." \
   build_snapshot
 
-run_check "debug info" "Verify release debug information" \
+run_check dwarf "Verify release debug information" \
   "Keep DWARF data in release builds. Check the ldflags in .goreleaser.yml." \
   ./bin/check-release-debug-info
 
-run_check audit "Scan dependencies for known vulnerabilities" \
-  "Upgrade each listed module to its fixed version with go get." \
-  ./scripts/vulncheck
-
-run_check reproducibility "Verify reproducible checksums" \
+run_check "repro build" "Verify reproducible checksums" \
   "Remove the build input that changes between runs, such as a timestamp." \
   verify_reproducible_build
+
+run_check codeql "Scan code with CodeQL security-extended queries" \
+  "Fix each listed CodeQL finding." \
+  run_codeql
 
 run_check "release config" "Check release configuration" \
   "Fix .goreleaser.yml or terraform-registry-manifest.json." \
@@ -234,6 +319,15 @@ if [[ -n "${FUZZ_TIME:-}" ]]; then
   run_check fuzz "Fuzz multipart encoding for $FUZZ_TIME" \
     "Fix the crash saved under internal/apiform/testdata/fuzz." \
     go test ./internal/apiform -run '^$' -fuzz '^FuzzMarshalRoundTrip$' -fuzztime="$FUZZ_TIME"
+else
+  skip_check fuzz "set FUZZ_TIME to run it"
 fi
 
-echo "All checks passed."
+# The audit runs last. New advisories can fail it without a code change, and
+# the checks above still report on the code.
+run_check audit "Audit dependencies for known vulnerabilities" \
+  "Upgrade each blocking module. Only unfixable development findings go in audit-exceptions.json." \
+  ./scripts/vulncheck
+
+all_checks_passed=1
+echo "All mandatory checks passed."
