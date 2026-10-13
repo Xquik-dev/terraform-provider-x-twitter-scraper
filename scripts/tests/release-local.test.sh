@@ -348,6 +348,18 @@ test_a_real_run_with_an_empty_keychain_variable_stops_at_once() {
   assert_equal "" "$(log_of order)" "the steps"
 }
 
+# Puts the 2 commands of 1 pipeline in pipeline order. The shell starts both
+# at once, so either may record its call first.
+pipeline_in_order() {
+  awk -v first="$1" -v second="$2" '
+    held != "" && index($0, first) == 1 { print; print held; held = ""; next }
+    held != "" { print held; held = "" }
+    index($0, second) == 1 { held = $0; next }
+    { print }
+    END { if (held != "") print held }
+  '
+}
+
 test_a_release_signs_through_a_pipe_uploads_then_tags_and_publishes() {
   local sums="${project}_1.2.3_SHA256SUMS"
   prepare_release
@@ -372,7 +384,7 @@ gh release upload v1.2.3 dist/$sums dist/$sums.sig dist/${project}_1.2.3_linux_a
 gh release view v1.2.3 --repo $repository --json assets --jq [.assets[].name] | sort
 gh release download v1.2.3 --repo $repository --dir DRAFT --pattern $sums --pattern $sums.sig
 gh release edit v1.2.3 --repo $repository --draft=false --verify-tag --title v1.2.3 --notes-file NOTES --latest" \
-    "$(order_without_paths)" "the steps"
+    "$(order_without_paths | pipeline_in_order "security find-generic-password -s $test_service -w" "gpg --batch --yes --pinentry-mode loopback")" "the steps"
   assert_equal "$test_passphrase" "$(log_of gpg-input)" "what gpg read on standard input"
   assert_not_contains "$(log_of gpg-arguments)" "$test_passphrase" "the gpg arguments"
   assert_not_contains "$(log_of security-arguments)" "$test_passphrase" "the security arguments"
