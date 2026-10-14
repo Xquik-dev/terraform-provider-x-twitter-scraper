@@ -1,7 +1,5 @@
 # Terraform provider for X API monitors, webhooks & Twitter automation
 
-[![CI](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/actions/workflows/ci.yml/badge.svg)](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/actions/workflows/codeql.yml/badge.svg)](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/actions/workflows/codeql.yml)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13729/badge)](https://www.bestpractices.dev/projects/13729)
 
 Manage Xquik monitors, signed webhooks, content workflows & approved X actions as Terraform resources.
@@ -94,8 +92,8 @@ Changing the request replaces the resource. Give the new write a new key.
 
 ## Reliability & security
 
-CI checks formatting, integrity, race safety, Windows builds, coverage & reachable vulnerabilities.
-Releases use pinned actions, signed checksums & GitHub attestations.
+Required checks cover formatting, integrity, race safety, builds, coverage & reachable vulnerabilities.
+Releases require native checks, registered signing keys & immutable checksum lists.
 
 See [OpenSSF evidence](OPENSSF.md) for the current criteria assessment.
 Treat plans and state as sensitive. API responses can contain private data.

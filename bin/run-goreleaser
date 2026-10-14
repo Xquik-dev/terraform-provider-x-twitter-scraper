@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Xquik contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
+set -euo pipefail
+fail() { echo "$1" >&2; exit 1; }
+root="$(cd -- "$(dirname -- "$0")/.." && pwd -P)"
+policy="$root/release-policy.json"
+[[ "$(uname -s)_$(uname -m)" == "$(jq -er '.goreleaser_distribution.platform' "$policy")" ]] \
+  || fail 'Use the pinned Linux x86-64 distribution on an authorized runner.'
+installed="$(command -v goreleaser)" || fail 'Put the pinned GoReleaser distribution on PATH.'
+distribution="$(cd -- "$(dirname -- "$installed")" && pwd -P)"
+pins="$(jq -er '
+  .goreleaser_distribution.sha256
+  | if keys == ["checksums.txt", "checksums.txt.sigstore.json", "cosign", "goreleaser", "goreleaser_Linux_x86_64.tar.gz"]
+       and all(.[]; type == "string" and test("^[a-f0-9]{64}$")) then
+      to_entries[] | "\(.value)  \(.key)"
+    else error("Pin every distribution file with SHA-256.") end' "$policy")"
+(cd -- "$distribution" && sha256sum --check --strict <<<"$pins") >&2
+verifier="$distribution/cosign"
+[[ "$("$verifier" version --json | jq -er '.gitVersion')" == "v$(jq -er '.goreleaser_distribution.cosign_version' "$policy")" ]] \
+  || fail 'Install the pinned Cosign runtime.'
+"$verifier" verify-blob \
+  --certificate-identity "$(jq -er '.goreleaser_distribution.certificate_identity' "$policy")" \
+  --certificate-oidc-issuer "$(jq -er '.goreleaser_distribution.certificate_oidc_issuer' "$policy")" \
+  --bundle "$distribution/checksums.txt.sigstore.json" "$distribution/checksums.txt" >&2
+archive_checksum="$(awk '$2 == "goreleaser_Linux_x86_64.tar.gz" { print }' "$distribution/checksums.txt")"
+(cd -- "$distribution" && sha256sum --check --strict <<<"$archive_checksum") >&2
+runtime="$distribution/goreleaser"
+[[ "$("$runtime" --version | awk '/^GitVersion:/ { print $2 }')" == "$(jq -er '.goreleaser_version' "$policy")" ]] \
+  || fail 'Install the pinned GoReleaser runtime.'
+exec "$runtime" "$@"

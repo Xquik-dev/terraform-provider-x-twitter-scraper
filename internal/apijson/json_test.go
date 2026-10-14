@@ -206,10 +206,9 @@ var tests = map[string]struct {
 	"date_time":             {`"2007-03-01T13:00:00Z"`, time.Date(2007, time.March, 1, 13, 0, 0, 0, time.UTC)},
 	"date_time_nano_coerce": {`"2007-03-01T13:03:05.123456789Z"`, time.Date(2007, time.March, 1, 13, 3, 5, 123456789, time.UTC)},
 
-	"date_time_missing_t_coerce":              {`"2007-03-01 13:03:05Z"`, time.Date(2007, time.March, 1, 13, 3, 5, 0, time.UTC)},
-	"date_time_missing_timezone_coerce":       {`"2007-03-01T13:03:05"`, time.Date(2007, time.March, 1, 13, 3, 5, 0, time.UTC)},
-	"date_time_missing_timezone_colon_coerce": {`"2007-03-01T13:03:05+0100"`, time.Date(2007, time.March, 1, 13, 3, 5, 0, time.FixedZone("", 60*60))},
-	"date_time_nano_missing_t_coerce":         {`"2007-03-01 13:03:05.123456789Z"`, time.Date(2007, time.March, 1, 13, 3, 5, 123456789, time.UTC)},
+	"date_time_missing_t_coerce":        {`"2007-03-01 13:03:05Z"`, time.Date(2007, time.March, 1, 13, 3, 5, 0, time.UTC)},
+	"date_time_missing_timezone_coerce": {`"2007-03-01T13:03:05"`, time.Date(2007, time.March, 1, 13, 3, 5, 0, time.UTC)},
+	"date_time_nano_missing_t_coerce":   {`"2007-03-01 13:03:05.123456789Z"`, time.Date(2007, time.March, 1, 13, 3, 5, 123456789, time.UTC)},
 
 	"date_time_custom":             {`"2007-03-01T13:00:00Z"`, time2time(time.Date(2007, time.March, 1, 13, 0, 0, 0, time.UTC))},
 	"date_time_custom_nano_coerce": {`"2007-03-01T13:03:05.123456789Z"`, time2time(time.Date(2007, time.March, 1, 13, 3, 5, 123456789, time.UTC))},
@@ -589,6 +588,19 @@ func TestDecode(t *testing.T) {
 				t.Fatalf("incorrect deserialization for '%s':\nexpected:\n%s\nactual:\n%s\n", test.buf, spew.Sdump(test.val), spew.Sdump(result))
 			}
 		})
+	}
+}
+
+func TestUnmarshalPreservesColonlessTimezoneOffset(t *testing.T) {
+	var value time.Time
+	if err := Unmarshal([]byte(`"2007-03-01T13:03:05+0100"`), &value); err != nil {
+		t.Fatal(err)
+	}
+	if got := value.Format(time.RFC3339Nano); got != "2007-03-01T13:03:05+01:00" {
+		t.Fatalf("decoded timestamp: %s", got)
+	}
+	if _, offset := value.Zone(); offset != 3600 {
+		t.Fatalf("decoded timezone offset: %d", offset)
 	}
 }
 

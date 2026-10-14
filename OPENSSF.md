@@ -23,7 +23,7 @@ This public, released Terraform provider meets the OpenSSF eligibility rules.
 | Dynamic analysis | Scheduled Go fuzzing and race detection |
 | Dependency review | Dependabot, `go mod verify`, and `govulncheck` |
 | CI | Pull requests from this repository and forks run every required job |
-| Releases | Signed checksums, exact tags, and GitHub artifact attestations |
+| Releases | Signed checksums & exact tags |
 | Reproducibility | CI builds each GoReleaser snapshot twice and compares checksums |
 | Documentation | Generated Registry pages match registered schemas |
 | Portability | CI compiles every package for Windows AMD64 |

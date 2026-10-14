@@ -1,5 +1,6 @@
 # yaml-language-server: schema=https://goreleaser.com/static/schema.json
 version: 2
+dist: '{{ if .Env.RELEASE_OUTPUT_DIR }}{{ .Env.RELEASE_OUTPUT_DIR }}{{ else }}dist{{ end }}'
 metadata:
   mod_timestamp: "{{ .CommitTimestamp }}"
 builds:
@@ -47,6 +48,8 @@ checksum:
   extra_files:
     - glob: "terraform-registry-manifest.json"
       name_template: "{{ .ProjectName }}_{{ .Version }}_manifest.json"
+    - glob: "{{ .Env.RELEASE_SOURCE_FILE }}"
+      name_template: "{{ .ProjectName }}_{{ .Version }}_source.json"
   algorithm: sha256
 signs:
   - artifacts: checksum

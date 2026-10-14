@@ -1,0 +1,191 @@
+#!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Xquik contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
+set -euo pipefail
+cd -- "$(dirname -- "$0")/.."
+trap 'release_exit=$?; if ((release_exit)); then printf "{\"status\":\"failed\",\"exitCode\":%d}\n" "$release_exit"; fi' EXIT
+fail() { echo "$1" >&2; exit 1; }
+
+mode="${1:-}"
+case "$mode" in prepare|publish|verify) ;; *) echo 'Use prepare, publish, or verify.' >&2; exit 2 ;; esac
+[[ -z "$(git status --porcelain)" ]] || { echo 'Commit verified changes before release preparation.' >&2; exit 1; }
+revision="$(git rev-parse HEAD)"
+version="$(jq -er '."."' .release-please-manifest.json)"
+[[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Use a stable release version.' >&2; exit 1; }
+tag="v$version"
+[[ "$(git rev-parse --verify "$tag^{commit}" 2>/dev/null || true)" == "$revision" ]] || { echo 'Create the matching immutable release tag first.' >&2; exit 1; }
+git fetch origin main >&2
+git merge-base --is-ancestor "$revision" origin/main || { echo 'Merge the release into main first.' >&2; exit 1; }
+
+repository='Xquik-dev/terraform-provider-x-twitter-scraper'
+tag_object="$(gh api "repos/$repository/git/ref/tags/$tag")"
+jq -e --arg ref "refs/tags/$tag" '.ref == $ref' <<<"$tag_object" >/dev/null \
+  || fail 'Publish the matching immutable release tag first.'
+for depth in 1 2 3 4 5; do
+  [[ "$(jq -r '.object.type' <<<"$tag_object")" == tag ]] || break
+  tag_object="$(gh api "repos/$repository/git/tags/$(jq -r '.object.sha' <<<"$tag_object")")"
+done
+[[ "$(jq -r '.object.type' <<<"$tag_object")" == commit && "$(jq -r '.object.sha' <<<"$tag_object")" == "$revision" ]] \
+  || { echo 'Publish the matching immutable release tag first.' >&2; exit 1; }
+canonical_main="$(gh api "repos/$repository/git/ref/heads/main" --jq '.object.sha')"
+comparison="$(gh api "repos/$repository/compare/$revision...$canonical_main")"
+jq -e --arg revision "$revision" --arg main "$canonical_main" \
+  '.base_commit.sha == $revision and .merge_base_commit.sha == $revision and (.status == "ahead" or (.status == "identical" and $main == $revision))' <<<"$comparison" >/dev/null \
+  || { echo 'Merge the release into the canonical repository first.' >&2; exit 1; }
+native_app_id="$(jq -er '.native_check_app_id | select(type == "number" and . > 0)' release-policy.json)" \
+  || { echo 'Confirm the native check publisher binding before releasing.' >&2; exit 1; }
+requirements="$(gh api "repos/$repository/branches/main/protection/required_status_checks")"
+required_contexts="$(jq -c '.required_checks | sort' release-policy.json)"
+jq -e --argjson contexts "$required_contexts" '([.checks[].context] | sort) == $contexts' <<<"$requirements" >/dev/null \
+  || fail 'Restore the complete required release checks.'
+runs="$(gh api --paginate --slurp "repos/$repository/commits/$revision/check-runs?filter=all&per_page=100")"
+qualification="$(jq -cn --argjson requirements "$requirements" --argjson pages "$runs" --arg revision "$revision" --argjson native_app_id "$native_app_id" '
+  ($pages | map(.check_runs) | add) as $runs
+  | if $requirements.strict != true or ($requirements.checks | length) == 0 then
+      error("Restore strict release checks.")
+    else
+      [$requirements.checks[] as $required
+       | if $required.app_id != $native_app_id or $native_app_id == 15368 then
+           error("Bind every release check to its required GitHub App.")
+         else
+           [$runs[] | select(.name == $required.context and .app.id == $required.app_id and .app.slug != "github-actions" and .head_sha == $revision)]
+           | sort_by(.id) | last
+           | if .status == "completed" and .conclusion == "success" then
+               {name, id, app_id: .app.id}
+             else error("Complete every required check on the exact release commit.") end
+         end]
+    end')" || exit 1
+
+if [[ "$mode" == prepare ]]; then
+  [[ "$(uname -s)" != Darwin ]] || { echo 'Prepare release builds on an authorized build runner.' >&2; exit 1; }
+  [[ "$#" -eq 1 ]] || { echo 'Prepare takes no artifact directory.' >&2; exit 2; }
+  ./bin/check-release-environment >&2
+  destination="$PWD/dist/releases/$revision"
+  [[ ! -e "$destination" ]] || { echo 'Keep existing artifacts. Use verify or publish to resume.' >&2; exit 1; }
+  mkdir -p "$destination"
+  jq -n --arg commit "$revision" --arg version "$version" --arg tree "$(git rev-parse HEAD^{tree})" --argjson checks "$qualification" \
+    '{commit:$commit,version:$version,tree:$tree,checks:$checks}' > "$destination/source.json"
+  for build in first second; do
+    RELEASE_OUTPUT_DIR="$destination/$build" RELEASE_SOURCE_FILE="$destination/source.json" \
+      ./bin/run-goreleaser release --clean --skip=publish,sign >&2
+    ./bin/check-release-debug-info "$destination/$build/artifacts.json" >&2
+  done
+  cmp "$destination/first/terraform-provider-x-twitter-scraper_${version}_SHA256SUMS" \
+    "$destination/second/terraform-provider-x-twitter-scraper_${version}_SHA256SUMS" >&2
+  for archive in "$destination/first"/*.zip; do
+    cmp "$archive" "$destination/second/$(basename "$archive")" >&2
+  done
+  artifacts="$destination/first"
+else
+  [[ "$#" -eq 2 && -d "$2" ]] || { echo 'Pass the prepared artifact directory.' >&2; exit 2; }
+  artifacts="$(cd -- "$2" && pwd -P)"
+fi
+
+[[ "$(git rev-parse HEAD)" == "$revision" && -z "$(git status --porcelain)" ]] || { echo 'Sources changed during release preparation.' >&2; exit 1; }
+jq -e --arg commit "$revision" --arg version "$version" --arg tag "$tag" \
+  '.commit == $commit and .version == $version and .tag == $tag' "$artifacts/metadata.json" >/dev/null
+jq -e --arg commit "$revision" --arg version "$version" --arg tree "$(git rev-parse HEAD^{tree})" --argjson pages "$runs" --argjson requirements "$requirements" --argjson app_id "$native_app_id" '
+  ($pages | map(.check_runs) | add) as $runs
+  | .commit == $commit and .version == $version and .tree == $tree
+    and ([.checks[].name] | sort) == ([$requirements.checks[].context] | sort)
+    and all(.checks[]; . as $record
+      | $record.app_id == $app_id and any($runs[];
+          .name == $record.name and .id == $record.id and .app.id == $app_id
+          and .app.slug != "github-actions" and .head_sha == $commit
+          and .status == "completed" and .conclusion == "success"))' \
+  "$artifacts/terraform-provider-x-twitter-scraper_${version}_source.json" >/dev/null \
+  || fail 'Verify the recorded native check results.'
+checksums="$artifacts/terraform-provider-x-twitter-scraper_${version}_SHA256SUMS"
+manifest="$artifacts/terraform-provider-x-twitter-scraper_${version}_manifest.json"
+jq -e '.version == 1 and .metadata.protocol_versions == ["6.0"]' "$manifest" >/dev/null
+artifact_names=()
+while IFS= read -r platform; do
+  artifact_names+=("terraform-provider-x-twitter-scraper_${version}_${platform}.zip")
+done < <(jq -er '.platforms[]' release-policy.json)
+expected_archives="$(printf '%s\n' "${artifact_names[@]}" | sort)"
+artifact_names+=("$(basename "$manifest")" "terraform-provider-x-twitter-scraper_${version}_source.json")
+expected_checksums="$(printf '%s\n' "${artifact_names[@]}" | sort)"
+checksum_names="$(awk 'NF != 2 || length($1) != 64 || $1 ~ /[^0-9a-f]/ { exit 1 } { print $2 }' "$checksums" | sort)" \
+  || fail 'Verify the exact release artifact set.'
+[[ "$checksum_names" == "$expected_checksums" ]] || fail 'Verify the exact release artifact set.'
+shopt -s nullglob
+archives=("$artifacts"/*.zip)
+archive_names=()
+for archive in "${archives[@]}"; do archive_names+=("$(basename "$archive")"); done
+[[ "$(printf '%s\n' "${archive_names[@]}" | sort)" == "$expected_archives" ]] || fail 'Verify the exact release artifact set.'
+for name in "${artifact_names[@]}"; do
+  [[ -f "$artifacts/$name" && ! -L "$artifacts/$name" ]] || fail 'Verify the exact release artifact set.'
+done
+(cd -- "$artifacts" && shasum -a 256 --check "$(basename "$checksums")") >&2 \
+  || fail 'Verify the exact release artifact set.'
+
+if [[ "$mode" != prepare ]]; then
+  : "${GPG_FINGERPRINT:?Set the registered public signing-key fingerprint.}"
+  registry='https://registry.terraform.io/v1/providers/xquik-dev/x-twitter-scraper'
+  registered_version="$(curl --fail --silent --show-error "$registry/versions" | jq -er '[.versions[] | select(.version | test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))] | sort_by(.version | split(".") | map(tonumber)) | last.version')"
+  registered_keys="$(curl --fail --silent --show-error "$registry/$registered_version/download/linux/amd64" | jq -er '.signing_keys.gpg_public_keys[].ascii_armor')" \
+    || fail 'Use the signing key registered with Terraform.'
+  registered_fingerprints="$(gpg --quiet --batch --with-colons --show-keys <<<"$registered_keys" | awk -F: '$1 == "pub" { primary = 1 } $1 == "fpr" && primary { print $10; primary = 0 }')"
+  grep -Fxq "$GPG_FINGERPRINT" <<<"$registered_fingerprints" || fail 'Use the signing key registered with Terraform.'
+fi
+
+if [[ "$mode" == publish ]]; then
+  if [[ ! -f "$checksums.sig" ]]; then
+    if [[ "$(uname -s)" == Darwin ]]; then
+      : "${RELEASE_SIGNING_KEYCHAIN_SERVICE:?Set the existing signing-passphrase service name.}"
+      [[ "$-" != *x* ]] || { echo 'Disable shell tracing before signing.' >&2; exit 1; }
+      security find-generic-password -w -s "$RELEASE_SIGNING_KEYCHAIN_SERVICE" \
+        | gpg --quiet --batch --pinentry-mode loopback --passphrase-fd 0 --local-user "$GPG_FINGERPRINT" --output "$checksums.sig" --detach-sign "$checksums"
+    else
+      gpg --quiet --batch --local-user "$GPG_FINGERPRINT" --output "$checksums.sig" --detach-sign "$checksums"
+    fi
+  fi
+fi
+
+if [[ "$mode" != prepare ]]; then
+  : "${GPG_FINGERPRINT:?Set the registered public signing-key fingerprint.}"
+  signature="$(gpg --quiet --batch --status-fd 1 --verify "$checksums.sig" "$checksums")"
+  awk -v fingerprint="$GPG_FINGERPRINT" '$2 == "VALIDSIG" && ($3 == fingerprint || $NF == fingerprint) { valid = 1 } END { exit !valid }' <<<"$signature" \
+    || { echo 'Verify artifacts with the registered signing key.' >&2; exit 1; }
+fi
+
+if [[ "$mode" == publish ]]; then
+  [[ "$(git rev-parse HEAD)" == "$revision" && -z "$(git status --porcelain)" ]] || { echo 'Sources changed during signing.' >&2; exit 1; }
+  release="$(gh api --paginate --slurp "repos/$repository/releases?per_page=100" | jq -c --arg tag "$tag" '[.[][] | select(.tag_name == $tag)] | if length == 1 then .[0] elif length == 0 then null else error("Duplicate release tags.") end')"
+  if [[ "$release" == null ]]; then
+    gh release create "$tag" --repo "$repository" --verify-tag --draft --target "$revision" --title "Terraform provider $version" --notes-file CHANGELOG.md >&2
+    release="$(gh release view "$tag" --repo "$repository" --json isDraft,tagName,targetCommitish)"
+    jq -e --arg tag "$tag" --arg revision "$revision" '.isDraft == true and .tagName == $tag and .targetCommitish == $revision' <<<"$release" >/dev/null
+  else
+    jq -e --arg tag "$tag" --arg revision "$revision" '.tag_name == $tag and .target_commitish == $revision' <<<"$release" >/dev/null
+  fi
+  artifact_names+=("$(basename "$checksums")" "$(basename "$checksums.sig")")
+  expected_assets='[]'
+  for name in "${artifact_names[@]}"; do
+    digest="sha256:$(shasum -a 256 "$artifacts/$name" | cut -d ' ' -f 1)"
+    expected_assets="$(jq -c --arg name "$name" --arg digest "$digest" '. + [{name:$name,digest:$digest}]' <<<"$expected_assets")"
+  done
+  assets="$(gh release view "$tag" --repo "$repository" --json assets,isDraft)"
+  jq -e --argjson expected "$expected_assets" 'all(.assets[]; . as $asset | any($expected[]; . == $asset))' \
+    <<<"$(jq -c '.assets |= map({name,digest})' <<<"$assets")" >/dev/null \
+    || fail 'Conflicting release artifact: remote inventory differs.'
+  if ! jq -e --argjson expected "$expected_assets" '(.assets | map({name,digest}) | sort_by(.name)) == ($expected | sort_by(.name))' <<<"$assets" >/dev/null; then
+    jq -e '.isDraft == true' <<<"$assets" >/dev/null || fail 'Keep published release artifacts immutable.'
+    for name in "${artifact_names[@]}"; do
+      if ! jq -e --arg name "$name" 'any(.assets[]; .name == $name)' <<<"$assets" >/dev/null; then
+        gh release upload "$tag" "$artifacts/$name" --repo "$repository" >&2
+      fi
+    done
+  fi
+  assets="$(gh release view "$tag" --repo "$repository" --json assets,isDraft)"
+  jq -e --argjson expected "$expected_assets" '(.assets | map({name,digest}) | sort_by(.name)) == ($expected | sort_by(.name))' <<<"$assets" >/dev/null \
+    || fail 'Verify every uploaded artifact before publishing.'
+  if jq -e '.isDraft == true' <<<"$assets" >/dev/null; then
+    gh release edit "$tag" --repo "$repository" --draft=false --latest --verify-tag >&2
+  fi
+fi
+
+jq -n --arg action "$mode" --arg version "$version" --arg revision "$revision" --arg artifacts "$artifacts" \
+  '{status:"completed",action:$action,version:$version,commit:$revision,artifacts:$artifacts}'
