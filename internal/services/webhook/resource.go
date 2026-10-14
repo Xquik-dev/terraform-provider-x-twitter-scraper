@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// File generated from our OpenAPI spec. See CONTRIBUTING.md for details.
-
 package webhook
 
 import (
@@ -19,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.ResourceWithConfigure = (*WebhookResource)(nil)
 var _ resource.ResourceWithModifyPlan = (*WebhookResource)(nil)
 
@@ -27,7 +24,6 @@ func NewResource() resource.Resource {
 	return &WebhookResource{}
 }
 
-// WebhookResource defines the resource implementation.
 type WebhookResource struct {
 	client *xtwitterscraper.Client
 }

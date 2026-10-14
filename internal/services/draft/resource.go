@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// File generated from our OpenAPI spec. See CONTRIBUTING.md for details.
-
 package draft
 
 import (
@@ -21,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.ResourceWithConfigure = (*DraftResource)(nil)
 var _ resource.ResourceWithModifyPlan = (*DraftResource)(nil)
 var _ resource.ResourceWithImportState = (*DraftResource)(nil)
@@ -30,7 +27,6 @@ func NewResource() resource.Resource {
 	return &DraftResource{}
 }
 
-// DraftResource defines the resource implementation.
 type DraftResource struct {
 	client *xtwitterscraper.Client
 }
@@ -95,7 +91,6 @@ func (r *DraftResource) Create(ctx context.Context, req resource.CreateRequest, 
 }
 
 func (r *DraftResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Update is not supported for this resource
 }
 
 func (r *DraftResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {

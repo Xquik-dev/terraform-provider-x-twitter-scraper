@@ -38,7 +38,6 @@ go tool covdata textfmt \
   -i="$coverage_data_dir" \
   -o="$raw_coverage_profile"
 
-# Measure shipped code without test-only helpers.
 coverage_profile="$coverage_workspace/coverage.out"
 awk 'NR == 1 || $0 !~ /\/internal\/test_helpers\//' \
   "$raw_coverage_profile" >"$coverage_profile"

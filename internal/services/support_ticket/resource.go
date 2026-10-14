@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// File generated from our OpenAPI spec. See CONTRIBUTING.md for details.
-
 package support_ticket
 
 import (
@@ -19,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.ResourceWithConfigure = (*SupportTicketResource)(nil)
 var _ resource.ResourceWithModifyPlan = (*SupportTicketResource)(nil)
 
@@ -27,7 +24,6 @@ func NewResource() resource.Resource {
 	return &SupportTicketResource{}
 }
 
-// SupportTicketResource defines the resource implementation.
 type SupportTicketResource struct {
 	client *xtwitterscraper.Client
 }

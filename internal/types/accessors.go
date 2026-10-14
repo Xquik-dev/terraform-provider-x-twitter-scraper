@@ -22,7 +22,6 @@ func floatValue(value attr.Value) (bool, *big.Float) {
 	case basetypes.Float64Value:
 		return true, big.NewFloat(v.ValueFloat64())
 	case basetypes.NumberValue:
-		// ValueBigFloat returns nil when the value is null or unknown
 		if v.IsNull() || v.IsUnknown() {
 			return false, nil
 		}
@@ -44,7 +43,6 @@ func intValue(value attr.Value) (bool, *big.Int) {
 	case basetypes.Int64Value:
 		return true, big.NewInt((v.ValueInt64()))
 	case basetypes.NumberValue:
-		// ValueBigFloat returns nil when the value is null or unknown
 		if v.IsNull() || v.IsUnknown() {
 			return false, nil
 		}

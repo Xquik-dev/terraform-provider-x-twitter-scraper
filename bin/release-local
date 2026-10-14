@@ -4,32 +4,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# Releases the version in .release-please-manifest.json from a maintainer's
-# machine. A release is the annotated tag v<version> plus a GitHub release
-# that holds what the Terraform Registry reads. That is 1 zip per platform,
-# the registry manifest, the SHA256SUMS file and its binary GPG signature.
-# The registry picks the release up from GitHub.
-#
-# GoReleaser builds the zips and the SHA256SUMS file and signs nothing. This
-# script signs SHA256SUMS with the provider's GPG key. The key's passphrase
-# lives in the macOS Keychain item that RELEASE_SIGNING_KEYCHAIN_SERVICE
-# names, and it reaches gpg through a pipe, never through an argument. The
-# GitHub CLI login of whoever runs the script creates the release. On the
-# release machine, that is the owner's gh login.
-#
-# Pass --dry-run to run every check, build every release asset and print the
-# version, each asset with its size and checksum, the registry manifest and
-# the release notes. A dry run needs no Keychain variable, posts no commit
-# status and stops before signing, pushing the tag and the GitHub release.
-#
-# Go stamps the module version into each binary from the Git tag on HEAD, and
-# without a tag it stamps a pseudo-version. So both modes build with the local
-# annotated tag in place, the release ships binaries stamped with its version,
-# and a dry run's checksums equal the release's. A run removes a local tag it
-# created unless it pushed that tag.
-
 set -euo pipefail
-# Keep the passphrase out of trace output, even under bash -x.
 set +o xtrace
 
 cd -- "$(dirname -- "$0")/.."
@@ -146,9 +121,6 @@ gh auth status --hostname github.com >/dev/null 2>&1 ||
   refuse "The GitHub CLI is not signed in. Run gh auth login, then rerun."
 
 step "Checking GitHub releases for $tag"
-# GitHub's release list can leave out a published release, so the tag
-# endpoint answers whether one is published. It never returns drafts, so
-# drafts come from the list.
 published=false
 if lookup="$(gh api "repos/$repository/releases/tags/$tag" 2>&1)"; then
   [[ "$(jq -r '.draft' <<<"$lookup")" == true ]] || published=true
@@ -195,7 +167,6 @@ if [[ "$dry_run" == true ]]; then
 else
   [[ -n "$fingerprint" ]] ||
     refuse "GPG secret key $gpg_key_id is not in the keyring. Import it, then rerun."
-  # Without -w, security prints only the item's attributes, never the passphrase.
   security find-generic-password -s "$RELEASE_SIGNING_KEYCHAIN_SERVICE" >/dev/null 2>&1 ||
     refuse "The Keychain has no item named by RELEASE_SIGNING_KEYCHAIN_SERVICE. Add the GPG passphrase there, then rerun."
 fi
@@ -218,13 +189,10 @@ else
   remove_local_tag=true
 fi
 
-# The checks above end with GoReleaser snapshot builds. This build runs right
-# after them in the same tree, so a check that left files behind would show.
 step "Building the release assets for $tag with GoReleaser"
 GORELEASER_CURRENT_TAG="$tag" goreleaser release --clean --skip=publish,validate,sign ||
   refuse "The GoReleaser build failed. Fix the errors above, then rerun."
 ./bin/check-release-debug-info
-# GoReleaser lists the manifest in SHA256SUMS but leaves the file out of dist.
 install -m 0644 terraform-registry-manifest.json "dist/${project}_${version}_manifest.json"
 [[ -z "$(git status --porcelain)" ]] ||
   refuse "The build changed tracked files. Fix the build so it leaves the tree alone, then rerun."
@@ -237,8 +205,6 @@ if [[ "$dry_run" == true ]]; then
   exit 0
 fi
 
-# The passphrase goes from the Keychain to gpg through a pipe. An argument
-# would show in the process list.
 step "Signing ${checksums#dist/} with GPG key $gpg_key_id"
 security find-generic-password -s "$RELEASE_SIGNING_KEYCHAIN_SERVICE" -w |
   gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 \
@@ -247,9 +213,6 @@ security find-generic-password -s "$RELEASE_SIGNING_KEYCHAIN_SERVICE" -w |
 gpg --batch --status-fd 1 --verify "$signature" "$checksums" 2>/dev/null |
   awk -v fingerprint="$fingerprint" '$2 == "VALIDSIG" && $NF == fingerprint { found = 1 } END { exit !found }' ||
   refuse "The signature does not verify with GPG key $gpg_key_id. Check the key, then rerun."
-# The Terraform Registry reads only binary signatures. cmp compares the first 5
-# bytes in place, because a command substitution would drop the null bytes of a
-# binary signature and print a warning.
 if cmp -s -n 5 "$signature" <(printf '%s' '-----'); then
   refuse "gpg wrote an ASCII armored signature. Remove armor from the gpg configuration, then rerun."
 fi

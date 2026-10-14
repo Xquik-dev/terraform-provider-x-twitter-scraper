@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// File generated from our OpenAPI spec. See CONTRIBUTING.md for details.
-
 package monitor
 
 import (
@@ -21,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.ResourceWithConfigure = (*MonitorResource)(nil)
 var _ resource.ResourceWithModifyPlan = (*MonitorResource)(nil)
 var _ resource.ResourceWithImportState = (*MonitorResource)(nil)
@@ -30,7 +27,6 @@ func NewResource() resource.Resource {
 	return &MonitorResource{}
 }
 
-// MonitorResource defines the resource implementation.
 type MonitorResource struct {
 	client *xtwitterscraper.Client
 }

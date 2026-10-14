@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// File generated from our OpenAPI spec. See CONTRIBUTING.md for details.
-
 package internal
 
-const PackageVersion = "0.7.5" // x-release-please-version
+const PackageVersion = "0.7.5"

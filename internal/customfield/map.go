@@ -27,7 +27,6 @@ type MapLike interface {
 	KnownValue(ctx context.Context, T any) MapLike
 }
 
-// MapType represents a basetypes.MapType that declares the type of the element statically.
 type MapType[T attr.Value] struct {
 	basetypes.MapType
 }
@@ -109,9 +108,7 @@ func (t MapType[T]) NullValue(ctx context.Context) (attr.Value, diag.Diagnostics
 
 var _ MapLike = (*Map[basetypes.StringValue])(nil)
 
-// Map represents a basetypes.MapValue that is defined by a struct.
 type Map[T attr.Value] struct {
-	//lint:ignore U1000 the placeholder is for easy reflection-based-access
 	placeholder T
 	basetypes.MapValue
 }

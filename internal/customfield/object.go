@@ -20,7 +20,6 @@ var (
 	_ basetypes.ObjectValuable = (*NestedObject[struct{}])(nil)
 )
 
-// NestedObjectType represents a basetypes.ObjectType that is defined by a struct.
 type NestedObjectType[T any] struct {
 	basetypes.ObjectType
 }
@@ -129,16 +128,12 @@ type NestedObjectLike interface {
 
 var _ NestedObjectLike = (*NestedObject[struct{}])(nil)
 
-// NestedObject represents a basetypes.ObjectValue that is defined by a struct.
 type NestedObject[T any] struct {
-	//lint:ignore U1000 the placeholder is for easy reflection-based-access
 	placeholder T
 	basetypes.ObjectValue
 }
 
 func (v NestedObject[T]) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
-	// if the struct is initialized as the zero value, initialize the object type
-	// before returning.
 	if v.ObjectValue.AttributeTypes(ctx) == nil {
 		v.ObjectValue = NullObject[T](ctx).ObjectValue
 	}

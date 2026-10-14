@@ -28,27 +28,18 @@ import (
 	type_helpers "github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/types"
 )
 
-// decoders is a synchronized map with roughly the following type:
-// map[reflect.Type]decoderFunc
 var decoders sync.Map
 
-// Unmarshal is similar to [encoding/json.Unmarshal] and parses the JSON-encoded
-// data and stores it in the given pointer.
 func Unmarshal(raw []byte, to any) error {
 	d := &decoderBuilder{dateFormat: time.RFC3339, unmarshalComputedOnly: false}
 	return d.unmarshal(raw, to)
 }
 
-// UnmarshalComputed is similar to [Unmarshal], but leaves non-computed
-// properties (e.g. required and optional) unchanged.
 func UnmarshalComputed(raw []byte, to any) error {
 	d := &decoderBuilder{dateFormat: time.RFC3339, unmarshalComputedOnly: true}
 	return d.unmarshal(raw, to)
 }
 
-// UnmarshalRoot is like Unmarshal, but doesn't try to call MarshalJSON on the
-// root element. Useful if a struct's UnmarshalJSON is overrode to use the
-// behavior of this encoder versus the standard library.
 func UnmarshalRoot(raw []byte, to any) error {
 	d := &decoderBuilder{dateFormat: time.RFC3339, root: true}
 	return d.unmarshal(raw, to)
@@ -57,54 +48,32 @@ func UnmarshalRoot(raw []byte, to any) error {
 type TerraformUpdateBehavior int
 
 const (
-	// always update the property from JSON
 	Always TerraformUpdateBehavior = iota
 
-	// if the value is Null or Undefined, then update the value, otherwise skip
 	IfUnset
 
-	// always leave this property unchanged, but possibly update nested values
 	OnlyNested
 )
 
-// decoderBuilder contains the 'compile-time' state of the decoder.
 type decoderBuilder struct {
-	// Whether or not this is the first element and called by [UnmarshalRoot], see
-	// the documentation there to see why this is necessary.
-	root bool
-	// The dateFormat (a format string for [time.Format]) which is chosen by the
-	// last struct tag that was seen.
+	root       bool
 	dateFormat string
 
-	// Only updates computed properties on structs
 	unmarshalComputedOnly bool
 
-	// This is used to control decoding behavior for computed and computed_optional
-	// fields.
 	updateBehavior TerraformUpdateBehavior
 }
 
-// decoderState contains the 'run-time' state of the decoder.
 type decoderState struct {
 	strict    bool
 	exactness exactness
 }
 
-// Exactness refers to how close to the type the result was if deserialization
-// was successful. This is useful in deserializing unions, where you want to try
-// each entry, first with strict, then with looser validation, without actually
-// having to do a lot of redundant work by marshalling twice (or maybe even more
-// times).
 type exactness int8
 
 const (
-	// Some values had to fudged a bit, for example by converting a string to an
-	// int, or an enum with extra values.
 	loose exactness = iota
-	// Exactly right.
 	exact
-	// There are some extra arguments, but other wise it matches the union.
-	// extras
 )
 
 type decoderFunc func(node gjson.Result, value reflect.Value, state *decoderState) error
@@ -150,10 +119,6 @@ func (d *decoderBuilder) typeDecoder(t reflect.Type) decoderFunc {
 		return fi.(decoderFunc)
 	}
 
-	// To deal with recursive types, populate the map with an
-	// indirect func before we build it. This type waits on the
-	// real func (f) to be ready and then calls it. This indirect
-	// func is only used for recursive types.
 	var (
 		wg sync.WaitGroup
 		f  decoderFunc
@@ -167,7 +132,6 @@ func (d *decoderBuilder) typeDecoder(t reflect.Type) decoderFunc {
 		return fi.(decoderFunc)
 	}
 
-	// Compute the real decoder and replace the indirect func with it.
 	f = d.newTypeDecoder(t)
 	wg.Done()
 	decoders.Store(entry, f)
@@ -175,13 +139,11 @@ func (d *decoderBuilder) typeDecoder(t reflect.Type) decoderFunc {
 }
 
 func unmarshalerDecoder(n gjson.Result, v reflect.Value, state *decoderState) error {
-	// Check if we can get an addressable value that implements json.Unmarshaler
 	if v.CanAddr() {
 		if u, ok := v.Addr().Interface().(json.Unmarshaler); ok {
 			return u.UnmarshalJSON([]byte(n.Raw))
 		}
 	}
-	// Fallback to direct interface check
 	return v.Interface().(json.Unmarshaler).UnmarshalJSON([]byte(n.Raw))
 }
 
@@ -272,12 +234,10 @@ func (d *decoderBuilder) newMapDecoder(t reflect.Type) decoderFunc {
 	alwaysUpdateDecoder := d.alwaysUpdateDecoder(itemType)
 
 	return func(node gjson.Result, value reflect.Value, state *decoderState) (err error) {
-		// For IfUnset behavior, if the map already has values, don't update it
 		decoder := itemDecoder
 		if updateBehavior == IfUnset && !value.IsNil() {
 			return nil
 		} else if updateBehavior == IfUnset && value.IsNil() {
-			// When populating from null, use normal decoder for items
 			decoder = alwaysUpdateDecoder
 		}
 
@@ -287,7 +247,6 @@ func (d *decoderBuilder) newMapDecoder(t reflect.Type) decoderFunc {
 		var nonEmpty bool
 
 		if updateBehavior == OnlyNested {
-			// populate existing values regardless of whether they are coming from the API
 			for _, key := range value.MapKeys() {
 				nonEmpty = true
 				extraKeys[key.Interface()] = true
@@ -297,8 +256,6 @@ func (d *decoderBuilder) newMapDecoder(t reflect.Type) decoderFunc {
 		}
 
 		node.ForEach(func(key, jsonValue gjson.Result) bool {
-			// It's fine for us to just use `ValueOf` here because the key types will
-			// always be primitive types so we don't need to decode it using the standard pattern
 			keyValue := reflect.ValueOf(key.Value())
 			if !keyValue.IsValid() {
 				if err == nil {
@@ -314,7 +271,6 @@ func (d *decoderBuilder) newMapDecoder(t reflect.Type) decoderFunc {
 			}
 
 			if updateBehavior == OnlyNested && !extraKeys[key.Value()] {
-				// skip keys that aren't already in the map
 				return true
 			}
 
@@ -341,7 +297,6 @@ func (d *decoderBuilder) newMapDecoder(t reflect.Type) decoderFunc {
 			return err
 		}
 
-		// set additional keys not present in JSON to a zero value (or null)
 		for key, exists := range extraKeys {
 			if !exists {
 				continue
@@ -387,12 +342,10 @@ func (d *decoderBuilder) newArrayTypeDecoder(t reflect.Type) decoderFunc {
 		existingLen := value.Len()
 		var numItems int
 
-		// if we are only updating nested values, we won't change the length of the array
 		switch updateBehavior {
 		case OnlyNested:
 			numItems = existingLen
 		case IfUnset:
-			// For IfUnset, we only want to populate the array if the existing value is null
 			if value.IsNil() {
 				numItems = len(arrayNode)
 			} else {
@@ -404,7 +357,6 @@ func (d *decoderBuilder) newArrayTypeDecoder(t reflect.Type) decoderFunc {
 			numItems = len(arrayNode)
 		}
 
-		// populate the array with the existing values
 		arrayValue := reflect.MakeSlice(reflect.SliceOf(t.Elem()), numItems, numItems)
 		for i := 0; i < existingLen && i < numItems; i++ {
 			arrayValue.Index(i).Set(value.Index(i))
@@ -420,7 +372,6 @@ func (d *decoderBuilder) newArrayTypeDecoder(t reflect.Type) decoderFunc {
 			}
 		}
 
-		// set any additional values not in the JSON to a zero value (or null)
 		for i := len(arrayNode); i < numItems; i++ {
 			err = itemDecoder(gjson.Result{}, arrayValue.Index(i), state)
 			if err != nil {
@@ -477,7 +428,6 @@ func (d *decoderBuilder) newTerraformTypeDecoder(t reflect.Type) decoderFunc {
 
 	if (t == reflect.TypeOf(basetypes.Int64Value{})) {
 		return d.decodeTerraformPrimitive(func() any { return types.Int64Null() }, func(node gjson.Result, value reflect.Value, state *decoderState) error {
-			// use ParseFloat just to validate that it's a valid number
 			_, err := strconv.ParseFloat(node.Str, 64)
 			if node.Type == gjson.JSON || (node.Type == gjson.String && err != nil) {
 				return fmt.Errorf("apijson: failed to parse types.Int64Value")
@@ -571,15 +521,11 @@ func (d *decoderBuilder) newTerraformTypeDecoder(t reflect.Type) decoderFunc {
 			tuple := value.Interface().(basetypes.TupleValue)
 			elementTypes := tuple.ElementTypes(ctx)
 
-			// For IfUnset behavior, don't update if the tuple already has a value
-			// and the node is either empty (missing from JSON) or has actual data
 			if b == IfUnset && !tuple.IsNull() && !tuple.IsUnknown() {
 				return nil
 			}
 
 			if node.Type == gjson.Null {
-				// Only set to null if behavior is Always or tuple is already null/unknown
-				// For IfUnset with empty result (missing field), don't change existing value
 				if b == Always || (b == IfUnset && (tuple.IsNull() || tuple.IsUnknown())) {
 					value.Set(reflect.ValueOf(types.TupleNull(elementTypes)))
 				}
@@ -773,8 +719,6 @@ func (d *decoderBuilder) newTerraformTypeDecoder(t reflect.Type) decoderFunc {
 				}
 			}
 			if b == IfUnset && (existingObjectListValue.IsNull() || existingObjectListValue.IsUnknown()) {
-				// if the value is unset, we want to recursively populate the value from the JSON,
-				// not just the computed ones
 				dec = d.alwaysUpdateDecoder(structSliceType)
 			} else {
 				dec = originalDec
@@ -813,8 +757,6 @@ func (d *decoderBuilder) newTerraformTypeDecoder(t reflect.Type) decoderFunc {
 				}
 			}
 			if b == IfUnset && (objectListValue.IsNull() || objectListValue.IsUnknown()) {
-				// if the value is unset, we want to recursively populate the value from the JSON,
-				// not just the computed ones
 				dec = d.alwaysUpdateDecoder(sliceOfStruct)
 			} else {
 				dec = originalDec
@@ -851,8 +793,6 @@ func (d *decoderBuilder) newTerraformTypeDecoder(t reflect.Type) decoderFunc {
 			}
 
 			if b == IfUnset && (existingObjectMapValue.IsNull() || existingObjectMapValue.IsUnknown()) {
-				// if the value is unset, we want to recursively populate the value from the JSON,
-				// not just the computed ones
 				dec = d.alwaysUpdateDecoder(structMapType)
 			} else {
 				dec = originalDec
@@ -890,8 +830,6 @@ func (d *decoderBuilder) newTerraformTypeDecoder(t reflect.Type) decoderFunc {
 				}
 			}
 			if b == IfUnset && (objectMapValue.IsNull() || objectMapValue.IsUnknown()) {
-				// if the value is unset, we want to recursively populate the value from the JSON,
-				// not just the computed ones
 				dec = d.alwaysUpdateDecoder(mapOfStruct)
 			} else {
 				dec = originalDec
@@ -924,7 +862,6 @@ func (d *decoderBuilder) newTerraformTypeDecoder(t reflect.Type) decoderFunc {
 				return nil
 			}
 			if node.Type == gjson.Null && underlying == nil {
-				// special case of null means we don't have an underlying type
 				val := types.DynamicNull()
 				if bsValue {
 					value.Set(reflect.ValueOf(val))
@@ -935,8 +872,7 @@ func (d *decoderBuilder) newTerraformTypeDecoder(t reflect.Type) decoderFunc {
 			}
 			if underlying != nil {
 				underlyingValue := reflect.New(reflect.TypeOf(underlying)).Elem()
-				underlyingValue.Set(reflect.ValueOf(underlying)) // set any existing type information
-				// if we have an underlying value, we can use that type to decode
+				underlyingValue.Set(reflect.ValueOf(underlying))
 				dec := d.newTerraformTypeDecoder(reflect.TypeOf(underlying))
 				err := dec(node, underlyingValue, state)
 				if err != nil {
@@ -950,7 +886,6 @@ func (d *decoderBuilder) newTerraformTypeDecoder(t reflect.Type) decoderFunc {
 					value.Set(reflect.ValueOf(customfield.RawNormalizedDynamicValue(val)))
 				}
 			} else {
-				// just decode from the json itself
 				attr, err := d.inferTerraformAttrFromValue(node)
 				if err != nil {
 					return err
@@ -991,16 +926,12 @@ func (d *decoderBuilder) newTerraformTypeDecoder(t reflect.Type) decoderFunc {
 func shouldUpdateNested(value reflect.Value, behavior TerraformUpdateBehavior) bool {
 	switch behavior {
 	case IfUnset:
-		// even if the value is set, nested properties may be
-		// unset, so we still update recursively.
 		return true
 	case OnlyNested:
 		attr, ok := value.Interface().(attr.Value)
 		if ok && attr.IsNull() {
 			return false
 		}
-		// if the value is not null, we may have nested
-		// properties to update.
 		return true
 	case Always:
 		return true
@@ -1027,7 +958,6 @@ func shouldUpdatePrimitive(value reflect.Value, behavior TerraformUpdateBehavior
 }
 
 func (d *decoderBuilder) newStructTypeDecoder(t reflect.Type) decoderFunc {
-	// map of json field name to struct field decoders
 	decoderFields := map[string][]decoderField{}
 	extraDecoder := (*decoderField)(nil)
 	inlineDecoder := (*decoderField)(nil)
@@ -1036,9 +966,6 @@ func (d *decoderBuilder) newStructTypeDecoder(t reflect.Type) decoderFunc {
 		return d.newTerraformTypeDecoder(t)
 	}
 
-	// This helper allows us to recursively collect field encoders into a flat
-	// array. The parameter `index` keeps track of the access patterns necessary
-	// to get to some field.
 	var collectFieldDecoders func(r reflect.Type, index []int)
 	collectFieldDecoders = func(r reflect.Type, index []int) {
 		for i := 0; i < r.NumField(); i++ {
@@ -1047,43 +974,27 @@ func (d *decoderBuilder) newStructTypeDecoder(t reflect.Type) decoderFunc {
 			if !field.IsExported() {
 				continue
 			}
-			// If this is an embedded struct, traverse one level deeper to extract
-			// the fields and get their encoders as well.
 			if field.Anonymous {
 				collectFieldDecoders(field.Type, idx)
 				continue
 			}
-			// If json tag is not present, then we skip, which is intentionally
-			// different behavior from the stdlib.
 			ptag, ok := parseJSONStructTag(field)
 			if !ok {
 				continue
 			}
 
-			// sets the appropriate unmarshal behavior if we are only un-marshaling
-			// computed properties.
 			if d.unmarshalComputedOnly {
-				// always skip non-computed fields, but update nested fields
-				// if the value is not null
 				if ptag.required || ptag.optional {
 					d.updateBehavior = OnlyNested
 				} else if ptag.computed_optional {
-					// skip computed_optional fields only if they are non-null
 					d.updateBehavior = IfUnset
 				} else {
-					// if the value is computed, we always update it.
-					// note this is also set for untagged properties, so the default
-					// is to update.
 					d.updateBehavior = Always
 				}
 			} else if ptag.noRefresh {
-				// if no_refresh is set and we're doing a refresh, then skip the value
 				continue
 			}
 
-			// We only want to support unexported fields if they're tagged with
-			// `extras` because that field shouldn't be part of the public API. We
-			// also want to only keep the top level extras
 			if ptag.extras && len(index) == 0 {
 				extraDecoder = &decoderField{ptag, d.typeDecoder(field.Type.Elem()), idx, field.Name}
 				continue
@@ -1108,7 +1019,7 @@ func (d *decoderBuilder) newStructTypeDecoder(t reflect.Type) decoderFunc {
 			}
 			decoderFields[ptag.name] = append(decoderFields[ptag.name], decoderField{ptag, d.typeDecoder(field.Type), idx, field.Name})
 			d.dateFormat = oldFormat
-			d.updateBehavior = Always // reset the flag
+			d.updateBehavior = Always
 		}
 	}
 	collectFieldDecoders(t, []int{})
@@ -1163,9 +1074,6 @@ func (d *decoderBuilder) newStructTypeDecoder(t reflect.Type) decoderFunc {
 			}
 		}
 
-		// Handle struct fields that are not present in the JSON
-		// this is in case they should be initialized to a "null" value
-		// that is different from the zero value
 		for fieldName, dfs := range decoderFields {
 			if _, existsInJson := nodeMap[fieldName]; existsInJson {
 				continue
@@ -1174,9 +1082,6 @@ func (d *decoderBuilder) newStructTypeDecoder(t reflect.Type) decoderFunc {
 				fn := df.fn
 				dest := value.FieldByIndex(df.idx)
 
-				// note that we don't include pointers to structs, because
-				// that could be recursive and would cause an infinite loop.
-				// if dest.IsValid() && dest.Kind() == reflect.Struct {
 				if dest.IsValid() {
 					_ = fn(gjson.Result{}, dest, state)
 				}
@@ -1198,7 +1103,6 @@ func (d *decoderBuilder) newPrimitiveTypeDecoder(t reflect.Type) decoderFunc {
 			if guardStrict(state, n.Type != gjson.String) {
 				return fmt.Errorf("apijson: failed to parse string strictly")
 			}
-			// Everything that is not an object can be loosely stringified.
 			if n.Type == gjson.JSON {
 				return fmt.Errorf("apijson: failed to parse string")
 			}
@@ -1213,8 +1117,6 @@ func (d *decoderBuilder) newPrimitiveTypeDecoder(t reflect.Type) decoderFunc {
 			if guardStrict(state, n.Type != gjson.True && n.Type != gjson.False) {
 				return fmt.Errorf("apijson: failed to parse bool strictly")
 			}
-			// Numbers and strings that are either 'true' or 'false' can be loosely
-			// deserialized as bool.
 			if n.Type == gjson.String && (n.Raw != "true" && n.Raw != "false") || n.Type == gjson.JSON {
 				return fmt.Errorf("apijson: failed to parse bool")
 			}
@@ -1229,8 +1131,6 @@ func (d *decoderBuilder) newPrimitiveTypeDecoder(t reflect.Type) decoderFunc {
 			if guardStrict(state, n.Type != gjson.Number || n.Num != float64(int(n.Num))) {
 				return fmt.Errorf("apijson: failed to parse int strictly")
 			}
-			// Numbers, booleans, and strings that maybe look like numbers can be
-			// loosely deserialized as numbers.
 			if n.Type == gjson.JSON || (n.Type == gjson.String && !canParseAsNumber(n.Str)) {
 				return fmt.Errorf("apijson: failed to parse int")
 			}
@@ -1245,8 +1145,6 @@ func (d *decoderBuilder) newPrimitiveTypeDecoder(t reflect.Type) decoderFunc {
 			if guardStrict(state, n.Type != gjson.Number || n.Num != float64(int(n.Num)) || n.Num < 0) {
 				return fmt.Errorf("apijson: failed to parse uint strictly")
 			}
-			// Numbers, booleans, and strings that maybe look like numbers can be
-			// loosely deserialized as uint.
 			if n.Type == gjson.JSON || (n.Type == gjson.String && !canParseAsNumber(n.Str)) {
 				return fmt.Errorf("apijson: failed to parse uint")
 			}
@@ -1261,8 +1159,6 @@ func (d *decoderBuilder) newPrimitiveTypeDecoder(t reflect.Type) decoderFunc {
 			if guardStrict(state, n.Type != gjson.Number) {
 				return fmt.Errorf("apijson: failed to parse float strictly")
 			}
-			// Numbers, booleans, and strings that maybe look like numbers can be
-			// loosely deserialized as floats.
 			if n.Type == gjson.JSON || (n.Type == gjson.String && !canParseAsNumber(n.Str)) {
 				return fmt.Errorf("apijson: failed to parse float")
 			}
@@ -1389,14 +1285,12 @@ func (d *decoderBuilder) inferTerraformAttrFromValue(node gjson.Result) (attr.Va
 		if node.IsArray() {
 			isHomogeneous, elementType, attributes, elementTypes := d.analyzeArrayTypes(node)
 			if isHomogeneous {
-				// Create ListValue for homogeneous arrays
 				newVal, diags := basetypes.NewListValue(elementType, attributes)
 				if diags.HasError() {
 					return nil, errorFromDiagnostics(diags)
 				}
 				return newVal, nil
 			} else {
-				// Create TupleValue for heterogeneous arrays
 				newVal, diags := basetypes.NewTupleValue(elementTypes, attributes)
 				if diags.HasError() {
 					return nil, errorFromDiagnostics(diags)
@@ -1431,8 +1325,6 @@ func (d *decoderBuilder) inferTerraformAttrFromValue(node gjson.Result) (attr.Va
 	return nil, fmt.Errorf("apijson: cannot infer terraform attribute from value")
 }
 
-// analyzeArrayTypes analyzes a JSON array and determines if it's homogeneous or heterogeneous
-// Returns: (isHomogeneous, elementType, attributes, elementTypes)
 func (d *decoderBuilder) analyzeArrayTypes(node gjson.Result) (bool, attr.Type, []attr.Value, []attr.Type) {
 	ctx := context.TODO()
 	attributes := []attr.Value{}

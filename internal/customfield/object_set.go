@@ -19,7 +19,6 @@ var (
 	_ basetypes.SetValuable = (*NestedObjectSet[basetypes.StringValue])(nil)
 )
 
-// NestedObjectSetType represents a basetypes.SetType that declares the type of the nested data statically.
 type NestedObjectSetType[T any] struct {
 	basetypes.SetType
 }
@@ -104,9 +103,7 @@ func (t NestedObjectSetType[T]) NullValue(ctx context.Context) (attr.Value, diag
 
 var _ NestedObjectListLike = (*NestedObjectSet[basetypes.StringValue])(nil)
 
-// NestedObjectSet represents a basetypes.SetValue that is defined by a struct.
 type NestedObjectSet[T any] struct {
-	//lint:ignore U1000 the placeholder is for easy reflection-based-access
 	placeholder T
 	basetypes.SetValue
 }

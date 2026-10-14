@@ -132,5 +132,4 @@ func (r *writeResource) Update(_ context.Context, _ resource.UpdateRequest, resp
 }
 
 func (r *writeResource) Delete(_ context.Context, _ resource.DeleteRequest, _ *resource.DeleteResponse) {
-	// Write actions are immutable audit records. Destroy removes only Terraform state.
 }

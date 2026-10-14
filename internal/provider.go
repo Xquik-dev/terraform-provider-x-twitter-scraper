@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// File generated from our OpenAPI spec. See CONTRIBUTING.md for details.
-
 package internal
 
 import (
@@ -37,15 +35,10 @@ import (
 
 var _ provider.ProviderWithConfigValidators = (*XTwitterScraperProvider)(nil)
 
-// XTwitterScraperProvider defines the provider implementation.
 type XTwitterScraperProvider struct {
-	// version is set to the provider version on release, "dev" when the
-	// provider is built and ran locally, and "test" when running acceptance
-	// testing.
 	version string
 }
 
-// XTwitterScraperProviderModel describes the provider data model.
 type XTwitterScraperProviderModel struct {
 	BaseURL     types.String `tfsdk:"base_url" json:"base_url,optional"`
 	APIKey      types.String `tfsdk:"api_key" json:"api_key,optional"`
