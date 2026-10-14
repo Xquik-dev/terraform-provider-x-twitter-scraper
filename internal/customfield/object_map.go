@@ -19,7 +19,6 @@ var (
 	_ basetypes.MapValuable = (*NestedObjectMap[basetypes.StringValue])(nil)
 )
 
-// NestedObjectMapType represents a basetypes.MapType that declares the type of the nested data statically.
 type NestedObjectMapType[T any] struct {
 	basetypes.MapType
 }
@@ -112,9 +111,7 @@ type NestedObjectMapLike interface {
 
 var _ NestedObjectMapLike = (*NestedObjectMap[basetypes.StringValue])(nil)
 
-// NestedObjectMap represents a basetypes.MapValue that is defined by a struct.
 type NestedObjectMap[T any] struct {
-	//lint:ignore U1000 the placeholder is for easy reflection-based-access
 	placeholder T
 	basetypes.MapValue
 }

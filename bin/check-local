@@ -4,16 +4,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# Runs every repository check in the order the deleted CI ran them and stops
-# at the first failure with 1 line that names the check and the next step.
-# REUSE and CodeQL are required. REUSE runs at a pinned version through uv.
-# Posts the xquik-local-checks commit status for a clean, pushed HEAD through
-# the gh login of whoever runs it. On the release machine, that is the owner's
-# login. The success text lists only the checks that ran and passed, and it
-# comes only after every check passed.
-# Pass --no-status to skip the status.
-# FUZZ_TIME sets the fuzzing time, 15s by default. Use 2m for a full campaign.
-
 set -euo pipefail
 
 cd -- "$(dirname -- "$0")/.."
@@ -78,11 +68,8 @@ pass_check() {
   fi
 }
 
-# Builds a GoReleaser snapshot and prints the path of its checksums file.
 snapshot_checksums() {
   local checksums
-  # Build logs go to stderr, because callers read the path from stdout. A
-  # command substitution ignores set -e, so a failed build returns here.
   goreleaser release --snapshot --clean --skip=sign >&2 || return 1
   checksums="$(find dist -maxdepth 1 -type f -name '*_SHA256SUMS' -print -quit)"
   if [[ -z "$checksums" ]]; then
@@ -168,8 +155,6 @@ case "$exceptions" in
 esac
 pass_check
 
-# The Terraform Registry reads the manifest to learn the plugin protocol. The
-# provider serves protocol 6 through the plugin framework.
 start_check "Release configuration" "" "Fix .goreleaser.yml, or make terraform-registry-manifest.json name protocol 6.0 only."
 goreleaser check
 jq -e '.version == 1 and .metadata.protocol_versions == ["6.0"]' terraform-registry-manifest.json >/dev/null

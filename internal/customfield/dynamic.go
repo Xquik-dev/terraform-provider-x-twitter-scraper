@@ -91,9 +91,6 @@ func (v NormalizedDynamicValue) ToDynamicValue(ctx context.Context) (types.Dynam
 	return v.Dynamic, nil
 }
 
-/**
- * need to maintain the invariant that `.ElemType` is never nil
- */
 func (v NormalizedDynamicValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
 	if v.IsNull() {
 		return tftypes.NewValue(tftypes.DynamicPseudoType, nil), nil
@@ -133,9 +130,6 @@ func semanticEquals(ctx context.Context, lhs attr.Value, rhs attr.Value) (eq boo
 		return true, nil
 	}
 
-	// At this point at most one side is null or unknown, so the two values
-	// cannot be semantically equal. Returning early also protects the value
-	// accessors below from dereferencing null values.
 	if lhs.IsNull() || lhs.IsUnknown() || rhs.IsNull() || rhs.IsUnknown() {
 		return false, nil
 	}
@@ -168,8 +162,6 @@ func semanticEquals(ctx context.Context, lhs attr.Value, rhs attr.Value) (eq boo
 		}
 	}
 
-	// in terraform a list of primitives below a certain length is considered a tuple
-	// tuple: `[1, 2]`, list `tolist([1, 2])`, set `toset([1, 2])`
 	if ok, lvalues := t.ChildItems(lhs); ok {
 		if ok, rvalues := t.ChildItems(rhs); ok {
 			eq := slices.EqualFunc(lvalues, rvalues,
@@ -185,7 +177,6 @@ func semanticEquals(ctx context.Context, lhs attr.Value, rhs attr.Value) (eq boo
 		}
 	}
 
-	// object value `{a = 2}` and map value `tomap({ a = 2 })` should be similar to how tuple and lists behave
 	if ok, lvalues := t.ChildAttributes(lhs); ok {
 		if ok, rvalues := t.ChildAttributes(rhs); ok {
 			eq := maps.EqualFunc(lvalues, rvalues,

@@ -19,7 +19,6 @@ var (
 	_ basetypes.ListValuable = (*List[basetypes.StringValue])(nil)
 )
 
-// ListType represents a basetypes.ListType that declares the type of the element statically.
 type ListType[T attr.Value] struct {
 	basetypes.ListType
 }
@@ -105,9 +104,7 @@ type ListLike interface {
 
 var _ ListLike = (*List[basetypes.StringValue])(nil)
 
-// List represents a basetypes.ListValue that is defined by a struct.
 type List[T attr.Value] struct {
-	//lint:ignore U1000 the placeholder is for easy reflection-based-access
 	placeholder T
 	basetypes.ListValue
 }

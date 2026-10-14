@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// File generated from our OpenAPI spec. See CONTRIBUTING.md for details.
-
 package guest_wallet
 
 import (
@@ -19,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.ResourceWithConfigure = (*GuestWalletResource)(nil)
 var _ resource.ResourceWithModifyPlan = (*GuestWalletResource)(nil)
 
@@ -27,7 +24,6 @@ func NewResource() resource.Resource {
 	return &GuestWalletResource{}
 }
 
-// GuestWalletResource defines the resource implementation.
 type GuestWalletResource struct {
 	client *xtwitterscraper.Client
 }
@@ -95,7 +91,6 @@ func (r *GuestWalletResource) Create(ctx context.Context, req resource.CreateReq
 }
 
 func (r *GuestWalletResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Update is not supported for this resource
 }
 
 func (r *GuestWalletResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {

@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// File generated from our OpenAPI spec. See CONTRIBUTING.md for details.
-
 package compose
 
 import (
@@ -19,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.ResourceWithConfigure = (*ComposeResource)(nil)
 var _ resource.ResourceWithModifyPlan = (*ComposeResource)(nil)
 
@@ -27,7 +24,6 @@ func NewResource() resource.Resource {
 	return &ComposeResource{}
 }
 
-// ComposeResource defines the resource implementation.
 type ComposeResource struct {
 	client *xtwitterscraper.Client
 }
@@ -92,7 +88,6 @@ func (r *ComposeResource) Create(ctx context.Context, req resource.CreateRequest
 }
 
 func (r *ComposeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Update is not supported for this resource
 }
 
 func (r *ComposeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {

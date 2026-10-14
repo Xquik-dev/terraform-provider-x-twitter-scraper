@@ -14,15 +14,11 @@ const formStructTag = "form"
 const formatStructTag = "format"
 
 type parsedStructTag struct {
-	name     string
-	required bool
-	extras   bool
-	metadata bool
-	computed bool
-	// Don't skip this value, even if it's computed (no-op for computed optional fields)
-	// If encodeStateForUnknown is set on a computed field, this flag should also be set;
-	// otherwise this flag will have no effect
-	// NOTE: won't work if update behavior is 'patch'
+	name        string
+	required    bool
+	extras      bool
+	metadata    bool
+	computed    bool
 	forceEncode bool
 }
 

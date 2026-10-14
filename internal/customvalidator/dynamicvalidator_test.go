@@ -29,13 +29,13 @@ var testcases = map[string](struct {
 			basetypes.NewInt32Value(0),
 			basetypes.NewInt64Value(0),
 			basetypes.NewInt32Value(-42),
-			basetypes.NewInt64Value(9223372036854775807), // max int64
+			basetypes.NewInt64Value(9223372036854775807),
 			basetypes.NewFloat32Value(0),
 			basetypes.NewFloat64Value(0),
-			basetypes.NewFloat32Value(42.0),   // whole number float
-			basetypes.NewFloat64Value(-100.0), // whole number float
+			basetypes.NewFloat32Value(42.0),
+			basetypes.NewFloat64Value(-100.0),
 			basetypes.NewNumberValue(big.NewFloat(0)),
-			basetypes.NewNumberValue(big.NewFloat(123)), // whole number
+			basetypes.NewNumberValue(big.NewFloat(123)),
 		},
 		[]attr.Value{
 			basetypes.NewFloat32Value(0.1),
@@ -57,7 +57,7 @@ var testcases = map[string](struct {
 			basetypes.NewFloat64Value(0),
 			basetypes.NewFloat32Value(3.14159),
 			basetypes.NewFloat64Value(-2.71828),
-			basetypes.NewFloat32Value(1e6), // scientific notation
+			basetypes.NewFloat32Value(1e6),
 			basetypes.NewFloat64Value(-1.23e-4),
 			basetypes.NewNumberValue(big.NewFloat(0)),
 			basetypes.NewNumberValue(big.NewFloat(999.999)),
@@ -399,7 +399,7 @@ var testcases = map[string](struct {
 		[]attr.Value{
 			basetypes.NewObjectValueMust(
 				map[string]attr.Type{
-					"name":    basetypes.Int64Type{}, // wrong type
+					"name":    basetypes.Int64Type{},
 					"count":   basetypes.Int64Type{},
 					"enabled": basetypes.BoolType{},
 					"score":   basetypes.Float64Type{},
@@ -415,7 +415,6 @@ var testcases = map[string](struct {
 				map[string]attr.Type{
 					"name":  basetypes.StringType{},
 					"count": basetypes.Int64Type{},
-					// missing required fields
 				},
 				map[string]attr.Value{
 					"name":  basetypes.NewStringValue("incomplete"),
@@ -468,11 +467,11 @@ var testcases = map[string](struct {
 				map[string]attr.Type{
 					"meta": basetypes.ObjectType{
 						AttrTypes: map[string]attr.Type{
-							"id":   basetypes.Int32Type{}, // compatible numeric type
+							"id":   basetypes.Int32Type{},
 							"name": basetypes.StringType{},
 						},
 					},
-					"data": basetypes.SetType{ElemType: basetypes.StringType{}}, // compatible collection type
+					"data": basetypes.SetType{ElemType: basetypes.StringType{}},
 				},
 				map[string]attr.Value{
 					"meta": basetypes.NewObjectValueMust(
@@ -495,7 +494,7 @@ var testcases = map[string](struct {
 		[]attr.Value{
 			basetypes.NewObjectValueMust(
 				map[string]attr.Type{
-					"meta": basetypes.StringType{}, // wrong nested type
+					"meta": basetypes.StringType{},
 					"data": basetypes.ListType{ElemType: basetypes.StringType{}},
 				},
 				map[string]attr.Value{

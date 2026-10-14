@@ -147,7 +147,6 @@ func TestPlanReadAndWrite(t *testing.T) {
 
 		var initial *NestedStruct
 
-		// get the struct from the plan
 		diags := plan.Get(ctx, &initial)
 		EnsurePlanEquals(t, diags, &expected, initial)
 
@@ -160,11 +159,9 @@ func TestPlanReadAndWrite(t *testing.T) {
 		initial.StructList = customfield.NewObjectListMust(ctx, []NestedInnerStruct{{C: types.StringValue("qux")}})
 		initial.StructSet = customfield.NewObjectSetMust(ctx, []NestedIntStruct{{D: types.Int64Value(42)}})
 
-		// expect that we can save back into the plan
 		diags = plan.Set(ctx, initial)
 		ExpectNoDiagnostics(t, diags)
 
-		// expect that we can get it back out correctly
 		var updated *NestedStruct
 		diags = plan.Get(ctx, &updated)
 		EnsurePlanEquals(t, diags, initial, updated)

@@ -29,35 +29,24 @@ import (
 )
 
 var explicitJsonNull = []byte("null")
-var encoders sync.Map // map[encoderEntry]encoderFunc
+var encoders sync.Map
 
-// If we want to set a literal key value into JSON using sjson, we need to make sure it doesn't have
-// special characters that sjson interprets as a path.
 var EscapeSJSONKey = strings.NewReplacer("\\", "\\\\", "|", "\\|", "#", "\\#", "@", "\\@", "*", "\\*", ".", "\\.", ":", "\\:", "?", "\\?").Replace
 
-// CustomMarshaler allows types to override their JSON encoding behavior while supporting
-// plan/state diffing for Terraform operations. This is checked before standard encoding.
 type CustomMarshaler interface {
 	MarshalJSONWithState(plan any, state any) ([]byte, error)
 }
 
-// Marshals the given data to a JSON string.
-// For null values, omits the property entirely.
 func Marshal(value any) ([]byte, error) {
 	e := &encoder{dateFormat: time.RFC3339}
 	return e.marshal(value, value)
 }
 
-// Marshals the given plan data to a JSON string.
-// For null values, omits the property unless the corresponding state value was set.
 func MarshalForUpdate(plan any, state any) ([]byte, error) {
 	e := &encoder{root: true, dateFormat: time.RFC3339}
 	return e.marshal(plan, state)
 }
 
-// Marshals the given plan data to a JSON string.
-// Only serializes properties that changed from the state.
-// https://datatracker.ietf.org/doc/html/rfc7386
 func MarshalForPatch(plan any, state any) ([]byte, error) {
 	e := &encoder{root: true, dateFormat: time.RFC3339, patch: true}
 	return e.marshal(plan, state)
@@ -127,10 +116,6 @@ func (e *encoder) typeEncoder(t reflect.Type) encoderFunc {
 		return fi.(encoderFunc)
 	}
 
-	// To deal with recursive types, populate the map with an
-	// indirect func before we build it. This type waits on the
-	// real func (f) to be ready and then calls it. This indirect
-	// func is only used for recursive types.
 	var (
 		wg sync.WaitGroup
 		f  encoderFunc
@@ -144,7 +129,6 @@ func (e *encoder) typeEncoder(t reflect.Type) encoderFunc {
 		return fi.(encoderFunc)
 	}
 
-	// Compute the real encoder and replace the indirect func with it.
 	f = e.newTypeEncoder(t)
 	wg.Done()
 	encoders.Store(entry, f)
@@ -154,7 +138,6 @@ func (e *encoder) typeEncoder(t reflect.Type) encoderFunc {
 func (e *encoder) newTypeEncoder(t reflect.Type) encoderFunc {
 	isRoot := e.root
 
-	// Check if type implements CustomMarshaler interface
 	customMarshalerType := reflect.TypeOf((*CustomMarshaler)(nil)).Elem()
 	if t.Implements(customMarshalerType) {
 		return func(plan reflect.Value, state reflect.Value) ([]byte, error) {
@@ -196,26 +179,20 @@ func (e *encoder) newTypeEncoder(t reflect.Type) encoderFunc {
 		}
 
 		return func(p reflect.Value, s reflect.Value) ([]byte, error) {
-			// if we end up accessing missing fields/properties, we might end up with an invalid
-			// reflect value. In that case, we just initialize it to a nil pointer of that type.
 			if !s.IsValid() {
 				s = reflect.Zero(reflect.PointerTo(inner))
 			}
 			if !p.IsValid() {
 				p = reflect.Zero(reflect.PointerTo(inner))
 			}
-			// if state and plan are both nil, then don't marshal the field
 			if s.IsNil() && p.IsNil() {
 				return nil, nil
 			}
 
-			// if plan is nil but state isn't, then marshal the field as an explicit null
 			if !s.IsNil() && p.IsNil() {
 				return explicitJsonNull, nil
 			}
 
-			// If state is nil, then there is no value to unset. We still have to pass some value in for state, so
-			// we pass in the plan value so it marshals as-is.
 			if s.IsNil() {
 				s = reflect.New(p.Type().Elem())
 				return fullInnerEncoder(p.Elem(), s.Elem())
@@ -244,8 +221,6 @@ func (e *encoder) newTypeEncoder(t reflect.Type) encoderFunc {
 
 func (e *encoder) newPrimitiveTypeEncoder(t reflect.Type) encoderFunc {
 	switch t.Kind() {
-	// Note that we could use `gjson` to encode these types but it would complicate our
-	// code more and this current code shouldn't cause any issues
 	case reflect.String:
 		return func(p reflect.Value, s reflect.Value) ([]byte, error) {
 			if e.patch && s.IsValid() && p.String() == s.String() {
@@ -299,8 +274,6 @@ func (e *encoder) newPrimitiveTypeEncoder(t reflect.Type) encoderFunc {
 }
 
 func (e *encoder) newArrayTypeEncoder(t reflect.Type) encoderFunc {
-	// patch behavior for arrays is that the whole thing gets encoded if there are any updates within it, so
-	// we set patch to false for the inner encoder.
 	arrayPatch := e.patch
 	itemEncoderBuilder := *e
 	itemEncoderBuilder.patch = false
@@ -314,7 +287,6 @@ func (e *encoder) newArrayTypeEncoder(t reflect.Type) encoderFunc {
 		} else if planNil {
 			return explicitJsonNull, nil
 		} else if !stateNil && arrayPatch && reflect.DeepEqual(plan.Interface(), state.Interface()) {
-			// if they are equal, then omit the whole array from the output
 			return nil, nil
 		}
 
@@ -328,8 +300,6 @@ func (e *encoder) newArrayTypeEncoder(t reflect.Type) encoderFunc {
 				return nil, err
 			}
 			if value == nil {
-				// Assume that empty items should be inserted as `null` so that the output array
-				// will be the same length as the input array
 				value = explicitJsonNull
 			}
 			json, err = sjson.SetRawBytes(json, "-1", value)
@@ -416,8 +386,6 @@ func (e encoder) handleNullAndUndefined(innerFunc func(attr.Value, attr.Value) (
 	}
 }
 
-// safeCollectionElements safely extracts elements from List, Tuple, or Set values
-// This prevents panics when plan and state have different collection types
 func UnwrapTerraformAttrValue(ctx context.Context, value attr.Value) (out any, diags diag.Diagnostics) {
 	if value == nil {
 		return nil, diags
@@ -473,7 +441,6 @@ func UnwrapTerraformAttrValue(ctx context.Context, value attr.Value) (out any, d
 func (e encoder) newTerraformTypeEncoder(t reflect.Type) encoderFunc {
 	ctx := context.TODO()
 
-	// Note that we use pointers for primitives so that we can distinguish between a zero and omitted value.
 	if t == reflect.TypeOf(basetypes.BoolValue{}) {
 		return e.terraformUnwrappedEncoder(reflect.PointerTo(reflect.TypeOf(true)), func(value attr.Value) (any, diag.Diagnostics) {
 			return UnwrapTerraformAttrValue(ctx, value)
@@ -574,9 +541,6 @@ func (e *encoder) newStructTypeEncoder(t reflect.Type, isRoot bool) encoderFunc 
 	encoderFields := []encoderField{}
 	extraEncoder := (*encoderField)(nil)
 
-	// This helper allows us to recursively collect field encoders into a flat
-	// array. The parameter `index` keeps track of the access patterns necessary
-	// to get to some field.
 	var collectEncoderFields func(r reflect.Type, index []int)
 	collectEncoderFields = func(r reflect.Type, index []int) {
 		for i := 0; i < r.NumField(); i++ {
@@ -585,21 +549,14 @@ func (e *encoder) newStructTypeEncoder(t reflect.Type, isRoot bool) encoderFunc 
 			if !field.IsExported() {
 				continue
 			}
-			// If this is an embedded struct, traverse one level deeper to extract
-			// the field and get their encoders as well.
 			if field.Anonymous {
 				collectEncoderFields(field.Type, idx)
 				continue
 			}
-			// If json tag is not present, then we skip, which is intentionally
-			// different behavior from the stdlib.
 			ptag, ok := parseJSONStructTag(field)
 			if !ok {
 				continue
 			}
-			// We only want to support unexported field if they're tagged with
-			// `extras` because that field shouldn't be part of the public API. We
-			// also want to only keep the top level extras
 			if ptag.extras && len(index) == 0 {
 				extraEncoder = &encoderField{ptag, e.typeEncoder(field.Type.Elem()), idx}
 				continue
@@ -607,7 +564,6 @@ func (e *encoder) newStructTypeEncoder(t reflect.Type, isRoot bool) encoderFunc 
 			if ptag.name == "-" {
 				continue
 			}
-			// Computed fields come from the server
 			if ptag.computed && !ptag.forceEncode {
 				continue
 			}
@@ -630,7 +586,6 @@ func (e *encoder) newStructTypeEncoder(t reflect.Type, isRoot bool) encoderFunc 
 	}
 	collectEncoderFields(t, []int{})
 
-	// Ensure deterministic output by sorting by lexicographic order
 	sort.Slice(encoderFields, func(i, j int) bool {
 		return encoderFields[i].tag.name < encoderFields[j].tag.name
 	})
@@ -672,13 +627,6 @@ func (e *encoder) newStructTypeEncoder(t reflect.Type, isRoot bool) encoderFunc 
 		}
 
 		if !someFieldsSet && e.patch {
-			// At the root level, return an empty object rather than nil so the
-			// caller always has a valid JSON body to send. This matters when all
-			// serializable fields are either unchanged (omitted by patch diffing)
-			// or computed_optional unknowns (omitted by handleNullAndUndefined).
-			// Returning nil here would produce an empty request body which most
-			// APIs reject with 400. Nested sub-objects still return nil so they
-			// are omitted from the parent object as expected.
 			if isRoot {
 				return []byte("{}"), nil
 			}
@@ -740,8 +688,6 @@ func encodeKey(key reflect.Value, keyEncoder encoderFunc) (string, error) {
 	return string(encodedKeyBytes), nil
 }
 
-// Given a []byte of json (may either be an empty object or an object that already contains entries)
-// encode all of the entries in the map to the json byte array.
 func (e *encoder) encodeMapEntries(json []byte, plan reflect.Value, state reflect.Value) ([]byte, error) {
 	type mapPair struct {
 		key   []byte
@@ -772,8 +718,6 @@ func (e *encoder) encodeMapEntries(json []byte, plan reflect.Value, state reflec
 		pairs = append(pairs, mapPair{key: encodedKey, plan: iter.Value(), state: state.MapIndex(iter.Key())})
 	}
 
-	// When patching a map, we also have to consider keys in the state that aren't in the plan. These keys
-	// should be deleted.
 	if e.patch {
 		iter = state.MapRange()
 		for iter.Next() {
@@ -783,7 +727,6 @@ func (e *encoder) encodeMapEntries(json []byte, plan reflect.Value, state reflec
 			}
 
 			if _, ok := pairKeys[encodedKeyString]; ok {
-				// We already handled this key when iterating over the plan's keys.
 				continue
 			}
 
@@ -793,7 +736,6 @@ func (e *encoder) encodeMapEntries(json []byte, plan reflect.Value, state reflec
 		}
 	}
 
-	// Ensure deterministic output
 	sort.Slice(pairs, func(i, j int) bool {
 		return bytes.Compare(pairs[i].key, pairs[j].key) < 0
 	})
@@ -804,23 +746,18 @@ func (e *encoder) encodeMapEntries(json []byte, plan reflect.Value, state reflec
 
 		if pair.plan.IsValid() && pair.state.IsValid() {
 			if e.patch && reflect.DeepEqual(pair.plan.Interface(), pair.state.Interface()) {
-				// We are patching and this key's value didn't change so we can omit it.
 				continue
 			}
 			encodedValue, err = elementEncoder(pair.plan, pair.state)
 		} else if pair.plan.IsValid() {
-			// This key exists in the plan, but it doesn't exist in the state. Just encode the full value associated
-			// with this key in the plan.
 			encodedValue, err = fullElementEncoder(pair.plan, pair.plan)
 		} else {
-			// This key exists in the state, but not the plan, so we should delete it by sending null (see below).
 			encodedValue = nil
 		}
 		if err != nil {
 			return nil, err
 		}
 		if encodedValue == nil {
-			// encode a nil for the property rather than omitting the key entirely
 			encodedValue = explicitJsonNull
 		}
 		json, err = sjson.SetRawBytes(json, EscapeSJSONKey(string(pair.key)), encodedValue)

@@ -120,13 +120,9 @@ type InlineArray struct {
 }
 
 type EncodeStateForUnknownStruct struct {
-	NormalField types.String `tfsdk:"normal_field" json:"normal_field"`
-	// force_encode flag: don't skip this field even though it's computed
-	ComputedWithForceEncode types.String `tfsdk:"computed_force_encode" json:"computed_force_encode,computed,force_encode"`
-	// force_encode+encode_state_for_unknown: don't skip this field even though it's computed,
-	// AND encode value from state if value from plan is unknown
-	ComputedWithStateEncode types.String `tfsdk:"computed_state_encode" json:"computed_state_encode,computed,force_encode,encode_state_for_unknown"`
-	// encode_state_for_unknown: encode value from state if value from plan is unknown
+	NormalField                     types.String `tfsdk:"normal_field" json:"normal_field"`
+	ComputedWithForceEncode         types.String `tfsdk:"computed_force_encode" json:"computed_force_encode,computed,force_encode"`
+	ComputedWithStateEncode         types.String `tfsdk:"computed_state_encode" json:"computed_state_encode,computed,force_encode,encode_state_for_unknown"`
 	ComputedOptionalWithStateEncode types.String `tfsdk:"computed_optional_state_encode" json:"computed_optional_state_encode,computed_optional,encode_state_for_unknown"`
 	ComputedRegular                 types.String `tfsdk:"computed_regular" json:"computed_regular,computed"`
 	ComputedOptionalRegular         types.String `tfsdk:"computed_optional_regular" json:"computed_optional_regular,computed_optional"`
@@ -606,7 +602,6 @@ func TestEncode(t *testing.T) {
 				var expected, actual string
 				errExpected := formatJson(test.buf, &expected)
 				if errExpected != nil {
-					// invalid json in the expected string is a test error so we panic
 					panic(fmt.Sprintf("invalid expected JSON:\n%s\n%v", test.buf, errExpected))
 				}
 				errActual := formatJson(string(raw), &actual)
@@ -691,7 +686,6 @@ var updateTests = map[string]struct {
 	"dynamic int update":                    {types.DynamicValue(types.Int64Value(4)), types.DynamicValue(types.Int64Value(5)), "5", "5"},
 	"dynamic int unchanged":                 {types.DynamicValue(types.Int64Value(4)), types.DynamicValue(types.Int64Value(4)), "4", ""},
 
-	// Test case for dynamic type conversion: state has ListValue, plan has TupleValue
 	"dynamic list to tuple conversion": {
 		types.DynamicValue(types.ListValueMust(types.StringType, []attr.Value{types.StringValue("foo"), types.StringValue("bar")})),
 		types.DynamicValue(types.TupleValueMust([]attr.Type{types.StringType, types.StringType}, []attr.Value{types.StringValue("foo"), types.StringValue("bar")})),
@@ -706,7 +700,6 @@ var updateTests = map[string]struct {
 		``,
 	},
 
-	// Test case for reverse scenario: state has TupleValue, plan has ListValue
 	"dynamic tuple to list conversion": {
 		types.DynamicValue(types.TupleValueMust([]attr.Type{types.StringType, types.StringType}, []attr.Value{types.StringValue("foo"), types.StringValue("bar")})),
 		types.DynamicValue(types.ListValueMust(types.StringType, []attr.Value{types.StringValue("foo"), types.StringValue("bar")})),
@@ -721,7 +714,6 @@ var updateTests = map[string]struct {
 		``,
 	},
 
-	// Test case for heterogeneous tuple vs homogeneous list
 	"dynamic list to heterogeneous tuple": {
 		types.DynamicValue(types.ListValueMust(types.StringType, []attr.Value{types.StringValue("hello"), types.StringValue("world")})),
 		types.DynamicValue(types.TupleValueMust([]attr.Type{types.StringType, types.Int64Type}, []attr.Value{types.StringValue("hello"), types.Int64Value(42)})),
@@ -1057,8 +1049,6 @@ var updateTests = map[string]struct {
 			},
 		},
 		`{"bool_value":true,"data":{"embedded_int":17,"embedded_string":"embedded_string_value"},"float_value":3.14,"optional_array":["hi","there"],"string_value":"string_value"}`,
-		// MarshalForPatch returns {} (not nil) at the root when nothing changed,
-		// so the caller always has a valid JSON body to send.
 		`{}`,
 	},
 
@@ -1123,7 +1113,7 @@ var updateTests = map[string]struct {
 			{
 				EmbeddedString: types.StringValue("string value2"),
 				DataObject: customfield.NewObjectMust(ctx, &DoubleNestedStruct{
-					NestedInt: types.Int64Value(20), // only changed this property
+					NestedInt: types.Int64Value(20),
 				}),
 			},
 		}),
@@ -1290,11 +1280,7 @@ var updateTests = map[string]struct {
 			ComputedOptionalRegular:         types.StringUnknown(),
 			ComputedRegular:                 types.StringUnknown(),
 		},
-		// Expected result: only values with "encode_state_for_unknown" are encoded
 		`{"computed_optional_state_encode":"computed optional from state","computed_state_encode":"computed value 2"}`,
-		// MarshalForPatch returns {} (not nil) at the root when all fields are unknown,
-		// so the caller always has a valid JSON body to send.
-		// NOTE: force_encode should probably override patch behavior, but we don't support that for now
 		`{}`,
 	},
 
@@ -1315,10 +1301,7 @@ var updateTests = map[string]struct {
 			ComputedOptionalRegular:         types.StringValue("plan D"),
 			ComputedRegular:                 types.StringValue("plan E"),
 		},
-		// Expected result: we use value from plan for all computed optional fields
-		// & for computed fields with force_encode state
 		`{"computed_force_encode":"plan A","computed_optional_regular":"plan D","computed_optional_state_encode":"plan C","computed_state_encode":"plan B","normal_field":"plan normal"}`,
-		// These show up even w/ patch b/c plan and state values are different; in reality, computed value shouldn't differ b/t plan and state
 		`{"computed_force_encode":"plan A","computed_optional_regular":"plan D","computed_optional_state_encode":"plan C","computed_state_encode":"plan B","normal_field":"plan normal"}`},
 
 	"encode_state_for_unknown with null state": {
@@ -1338,10 +1321,7 @@ var updateTests = map[string]struct {
 			ComputedOptionalRegular:         types.StringUnknown(),
 			ComputedRegular:                 types.StringUnknown(),
 		},
-		// Don't copy null fields from state
 		`{}`,
-		// MarshalForPatch returns {} (not nil) at the root when all fields are unknown,
-		// so the caller always has a valid JSON body to send.
 		`{}`,
 	},
 }
@@ -1371,17 +1351,7 @@ func TestUpdateEncoding(t *testing.T) {
 	}
 }
 
-// TestMarshalForPatch_AllFieldsUnknown tests that MarshalForPatch returns an
-// empty JSON object (not nil) when every serializable field in the plan is
-// unknown. This situation arises during Terraform applies where the only
-// pending diff is a computed_optional field that is "known after apply" — no
-// real user change has been made, but Terraform still calls Update. Returning
-// nil bytes would produce an empty HTTP request body and cause a 400 from the
-// API. Returning "{}" lets the server treat it as a no-op PATCH.
 func TestMarshalForPatch_AllFieldsUnknown(t *testing.T) {
-	// EncodeStateForUnknownStruct has computed_optional fields (ComputedOptionalRegular,
-	// ComputedOptionalWithStateEncode) alongside a normal field and computed fields.
-	// Set every field to unknown in the plan, leaving the state with real values.
 	plan := EncodeStateForUnknownStruct{
 		NormalField:                     types.StringUnknown(),
 		ComputedWithForceEncode:         types.StringUnknown(),
@@ -1581,7 +1551,6 @@ var decode_from_value_tests = map[string]struct {
 		),
 	},
 
-	// note it creates a list this time because the dynamic doesn't contain type information
 	"tfsdk_dynamic_object_without_attributes": {
 		`{"baz":4,"foo":["bar","baz"]}`,
 		types.DynamicNull(),
@@ -1593,7 +1562,6 @@ var decode_from_value_tests = map[string]struct {
 		),
 	},
 
-	// Test case for heterogeneous JSON array inference - should create TupleValue, not ListValue
 	"tfsdk_dynamic_heterogeneous_array_inference": {
 		`["hello",42]`,
 		types.DynamicNull(),
@@ -1612,7 +1580,6 @@ var decode_from_value_tests = map[string]struct {
 		)),
 	},
 
-	// Test case for homogeneous JSON array inference - should still create ListValue
 	"tfsdk_dynamic_homogeneous_array_inference": {
 		`["hello","world"]`,
 		types.DynamicNull(),
@@ -1842,7 +1809,6 @@ type tupleExample struct {
 	TupleVal types.Tuple `tfsdk:"tuple_val" json:"tuple_val,computed_optional"`
 }
 
-// Test types for computed_optional collections bug reproduction
 type ComputedOptionalCollectionsExample struct {
 	Name        types.String                              `tfsdk:"name" json:"name,required"`
 	Tags        customfield.List[types.String]            `tfsdk:"tags" json:"tags,computed_optional"`
@@ -2009,7 +1975,6 @@ var decode_computed_only_tests = map[string]struct {
 			),
 		},
 	},
-	// Tests for collections starting from unknown state
 	"computed_optional_list_from_unknown": {
 		`{"str_list":["alpha","beta","gamma"]}`,
 		primitiveListExample{
@@ -2088,7 +2053,6 @@ var decode_computed_only_tests = map[string]struct {
 			),
 		},
 	},
-	// Nested collections from unknown
 	"computed_optional_list_of_lists_from_unknown": {
 		`{"list_of_lists":[["a","b"],["c","d","e"],["f"]]}`,
 		listOfListsExample{
@@ -2128,7 +2092,6 @@ var decode_computed_only_tests = map[string]struct {
 			}),
 		},
 	},
-	// Complex test: all collections starting from unknown
 	"computed_optional_all_collections_from_unknown": {
 		`{"name":"test-unknown","tags":["tag-u1","tag-u2","tag-u3"],"metadata":{"env":"prod","tier":"premium"},"ports":[3000,3001,3002],"coordinates":[51.5074,-0.1278],"rules":[{"priority":10,"action":"deny"},{"priority":20,"action":"allow"}],"status":"pending"}`,
 		ComputedOptionalCollectionsExample{
@@ -2141,8 +2104,7 @@ var decode_computed_only_tests = map[string]struct {
 			Status:      types.StringUnknown(),
 		},
 		ComputedOptionalCollectionsExample{
-			Name: types.StringValue("test-unknown"),
-			// BUG: These should be populated from the API response when starting from unknown
+			Name:        types.StringValue("test-unknown"),
 			Tags:        customfield.NewListMust[types.String](ctx, []attr.Value{types.StringValue("tag-u1"), types.StringValue("tag-u2"), types.StringValue("tag-u3")}),
 			Metadata:    customfield.NewMapMust[types.String](ctx, map[string]types.String{"env": types.StringValue("prod"), "tier": types.StringValue("premium")}),
 			Ports:       customfield.NewSetMust[types.Int64](ctx, []attr.Value{types.Int64Value(3000), types.Int64Value(3001), types.Int64Value(3002)}),
@@ -2157,37 +2119,35 @@ var decode_computed_only_tests = map[string]struct {
 					Action:   types.StringValue("allow"),
 				},
 			}),
-			Status: types.StringValue("pending"), // Primitive computed_optional works correctly from unknown
+			Status: types.StringValue("pending"),
 		},
 	},
-	// Mixed test: some fields unknown, some configured, some null
 	"computed_optional_mixed_unknown_configured_null": {
 		`{"name":"test-mixed","tags":["api-tag1","api-tag2"],"metadata":{"source":"api"},"ports":[9000,9001],"coordinates":[35.6762,139.6503],"rules":[{"priority":5,"action":"log"}],"status":"processing"}`,
 		ComputedOptionalCollectionsExample{
 			Name:        types.StringValue("test-mixed"),
-			Tags:        customfield.UnknownList[types.String](ctx),                                                                                                              // Unknown - should be populated
-			Metadata:    customfield.NewMapMust[types.String](ctx, map[string]types.String{"user": types.StringValue("admin")}),                                                  // User configured - should be preserved
-			Ports:       customfield.UnknownSet[types.Int64](ctx),                                                                                                                // Unknown - should be populated
-			Coordinates: types.TupleValueMust([]attr.Type{types.Float64Type, types.Float64Type}, []attr.Value{type_helpers.NewFloat64Value(0), type_helpers.NewFloat64Value(0)}), // User configured - should be preserved
-			Rules:       customfield.NullObjectList[RuleExample](ctx),                                                                                                            // Null - should be populated
-			Status:      types.StringUnknown(),                                                                                                                                   // Unknown - should be populated
+			Tags:        customfield.UnknownList[types.String](ctx),
+			Metadata:    customfield.NewMapMust[types.String](ctx, map[string]types.String{"user": types.StringValue("admin")}),
+			Ports:       customfield.UnknownSet[types.Int64](ctx),
+			Coordinates: types.TupleValueMust([]attr.Type{types.Float64Type, types.Float64Type}, []attr.Value{type_helpers.NewFloat64Value(0), type_helpers.NewFloat64Value(0)}),
+			Rules:       customfield.NullObjectList[RuleExample](ctx),
+			Status:      types.StringUnknown(),
 		},
 		ComputedOptionalCollectionsExample{
 			Name:        types.StringValue("test-mixed"),
-			Tags:        customfield.NewListMust[types.String](ctx, []attr.Value{types.StringValue("api-tag1"), types.StringValue("api-tag2")}),                                  // Should populate from API
-			Metadata:    customfield.NewMapMust[types.String](ctx, map[string]types.String{"user": types.StringValue("admin")}),                                                  // Should preserve user value
-			Ports:       customfield.NewSetMust[types.Int64](ctx, []attr.Value{types.Int64Value(9000), types.Int64Value(9001)}),                                                  // Should populate from API
-			Coordinates: types.TupleValueMust([]attr.Type{types.Float64Type, types.Float64Type}, []attr.Value{type_helpers.NewFloat64Value(0), type_helpers.NewFloat64Value(0)}), // Should preserve user value
-			Rules: customfield.NewObjectListMust(ctx, []RuleExample{ // Should populate from API
+			Tags:        customfield.NewListMust[types.String](ctx, []attr.Value{types.StringValue("api-tag1"), types.StringValue("api-tag2")}),
+			Metadata:    customfield.NewMapMust[types.String](ctx, map[string]types.String{"user": types.StringValue("admin")}),
+			Ports:       customfield.NewSetMust[types.Int64](ctx, []attr.Value{types.Int64Value(9000), types.Int64Value(9001)}),
+			Coordinates: types.TupleValueMust([]attr.Type{types.Float64Type, types.Float64Type}, []attr.Value{type_helpers.NewFloat64Value(0), type_helpers.NewFloat64Value(0)}),
+			Rules: customfield.NewObjectListMust(ctx, []RuleExample{
 				{
 					Priority: types.Int64Value(5),
 					Action:   types.StringValue("log"),
 				},
 			}),
-			Status: types.StringValue("processing"), // Should populate from API
+			Status: types.StringValue("processing"),
 		},
 	},
-	// Bug reproduction: computed_optional collection fields should be populated from API when null
 	"computed_optional_collections_bug_list": {
 		`{"name":"test-instance","tags":["auto-tag1","auto-tag2"],"metadata":{"created_by":"system","version":"1.0"},"ports":[8080,8443],"coordinates":[40.7128,-74.006],"rules":[{"priority":1,"action":"allow"}],"status":"active"}`,
 		ComputedOptionalCollectionsExample{
@@ -2200,37 +2160,8 @@ var decode_computed_only_tests = map[string]struct {
 			Status:      types.StringNull(),
 		},
 		ComputedOptionalCollectionsExample{
-			Name: types.StringValue("test-instance"),
-			// BUG: These should be populated from the API response
-			Tags:        customfield.NewListMust[types.String](ctx, []attr.Value{types.StringValue("auto-tag1"), types.StringValue("auto-tag2")}),
-			Metadata:    customfield.NewMapMust[types.String](ctx, map[string]types.String{"created_by": types.StringValue("system"), "version": types.StringValue("1.0")}),
-			Ports:       customfield.NewSetMust[types.Int64](ctx, []attr.Value{types.Int64Value(8080), types.Int64Value(8443)}),
-			Coordinates: types.TupleValueMust([]attr.Type{types.Float64Type, types.Float64Type}, []attr.Value{type_helpers.NewFloat64ValueFromStringUnsafe("40.7128"), type_helpers.NewFloat64ValueFromStringUnsafe("-74.006")}),
-			Rules: customfield.NewObjectListMust(ctx, []RuleExample{
-				{
-					Priority: types.Int64Value(1),
-					Action:   types.StringValue("allow"),
-				},
-			}),
-			Status: types.StringValue("active"), // Primitive computed_optional works correctly
-		},
-	},
-	// Test with some fields configured by user, others should be computed
-	"computed_optional_collections_mixed": {
-		`{"name":"test-instance","tags":["user-tag"],"metadata":{"created_by":"system","version":"1.0"},"ports":[8080,8443],"coordinates":[40.7128,-74.006],"rules":[{"priority":1,"action":"allow"}],"status":"active"}`,
-		ComputedOptionalCollectionsExample{
 			Name:        types.StringValue("test-instance"),
-			Tags:        customfield.NewListMust[types.String](ctx, []attr.Value{types.StringValue("user-tag")}), // User configured
-			Metadata:    customfield.NullMap[types.String](ctx),
-			Ports:       customfield.NullSet[types.Int64](ctx),
-			Coordinates: types.TupleNull([]attr.Type{types.Float64Type, types.Float64Type}),
-			Rules:       customfield.NullObjectList[RuleExample](ctx),
-			Status:      types.StringNull(),
-		},
-		ComputedOptionalCollectionsExample{
-			Name: types.StringValue("test-instance"),
-			Tags: customfield.NewListMust[types.String](ctx, []attr.Value{types.StringValue("user-tag")}), // Should preserve user value
-			// BUG: These unconfigured fields should be populated from API
+			Tags:        customfield.NewListMust[types.String](ctx, []attr.Value{types.StringValue("auto-tag1"), types.StringValue("auto-tag2")}),
 			Metadata:    customfield.NewMapMust[types.String](ctx, map[string]types.String{"created_by": types.StringValue("system"), "version": types.StringValue("1.0")}),
 			Ports:       customfield.NewSetMust[types.Int64](ctx, []attr.Value{types.Int64Value(8080), types.Int64Value(8443)}),
 			Coordinates: types.TupleValueMust([]attr.Type{types.Float64Type, types.Float64Type}, []attr.Value{type_helpers.NewFloat64ValueFromStringUnsafe("40.7128"), type_helpers.NewFloat64ValueFromStringUnsafe("-74.006")}),
@@ -2243,99 +2174,123 @@ var decode_computed_only_tests = map[string]struct {
 			Status: types.StringValue("active"),
 		},
 	},
-	// Tests for empty collections (not null) - should NOT be overwritten by JSON
+	"computed_optional_collections_mixed": {
+		`{"name":"test-instance","tags":["user-tag"],"metadata":{"created_by":"system","version":"1.0"},"ports":[8080,8443],"coordinates":[40.7128,-74.006],"rules":[{"priority":1,"action":"allow"}],"status":"active"}`,
+		ComputedOptionalCollectionsExample{
+			Name:        types.StringValue("test-instance"),
+			Tags:        customfield.NewListMust[types.String](ctx, []attr.Value{types.StringValue("user-tag")}),
+			Metadata:    customfield.NullMap[types.String](ctx),
+			Ports:       customfield.NullSet[types.Int64](ctx),
+			Coordinates: types.TupleNull([]attr.Type{types.Float64Type, types.Float64Type}),
+			Rules:       customfield.NullObjectList[RuleExample](ctx),
+			Status:      types.StringNull(),
+		},
+		ComputedOptionalCollectionsExample{
+			Name:        types.StringValue("test-instance"),
+			Tags:        customfield.NewListMust[types.String](ctx, []attr.Value{types.StringValue("user-tag")}),
+			Metadata:    customfield.NewMapMust[types.String](ctx, map[string]types.String{"created_by": types.StringValue("system"), "version": types.StringValue("1.0")}),
+			Ports:       customfield.NewSetMust[types.Int64](ctx, []attr.Value{types.Int64Value(8080), types.Int64Value(8443)}),
+			Coordinates: types.TupleValueMust([]attr.Type{types.Float64Type, types.Float64Type}, []attr.Value{type_helpers.NewFloat64ValueFromStringUnsafe("40.7128"), type_helpers.NewFloat64ValueFromStringUnsafe("-74.006")}),
+			Rules: customfield.NewObjectListMust(ctx, []RuleExample{
+				{
+					Priority: types.Int64Value(1),
+					Action:   types.StringValue("allow"),
+				},
+			}),
+			Status: types.StringValue("active"),
+		},
+	},
 	"computed_optional_empty_list_preserved": {
 		`{"str_list":["from","api","response"]}`,
 		primitiveListExample{
-			StrList: customfield.NewListMust[types.String](ctx, []attr.Value{}), // Empty list
+			StrList: customfield.NewListMust[types.String](ctx, []attr.Value{}),
 		},
 		primitiveListExample{
-			StrList: customfield.NewListMust[types.String](ctx, []attr.Value{}), // Should remain empty, not overwritten
+			StrList: customfield.NewListMust[types.String](ctx, []attr.Value{}),
 		},
 	},
 	"computed_optional_empty_set_preserved": {
 		`{"str_set":["api","values","here"]}`,
 		primitiveSetExample{
-			StrSet: customfield.NewSetMust[types.String](ctx, []attr.Value{}), // Empty set
+			StrSet: customfield.NewSetMust[types.String](ctx, []attr.Value{}),
 		},
 		primitiveSetExample{
-			StrSet: customfield.NewSetMust[types.String](ctx, []attr.Value{}), // Should remain empty, not overwritten
+			StrSet: customfield.NewSetMust[types.String](ctx, []attr.Value{}),
 		},
 	},
 	"computed_optional_empty_map_preserved": {
 		`{"str_map":{"api_key":"api_value","another":"value"}}`,
 		primitiveMapExample{
-			StrMap: customfield.NewMapMust[types.String](ctx, map[string]types.String{}), // Empty map
+			StrMap: customfield.NewMapMust[types.String](ctx, map[string]types.String{}),
 		},
 		primitiveMapExample{
-			StrMap: customfield.NewMapMust[types.String](ctx, map[string]types.String{}), // Should remain empty, not overwritten
+			StrMap: customfield.NewMapMust[types.String](ctx, map[string]types.String{}),
 		},
 	},
 	"computed_optional_empty_nested_object_list_preserved": {
 		`{"obj_list":[{"computed_map":{"from_api":1.0}},{"computed_map":{"also_api":2.0}}]}`,
 		nestedObjectListExample{
-			ObjList: customfield.NewObjectListMust(ctx, []computedMapStruct{}), // Empty object list
+			ObjList: customfield.NewObjectListMust(ctx, []computedMapStruct{}),
 		},
 		nestedObjectListExample{
-			ObjList: customfield.NewObjectListMust(ctx, []computedMapStruct{}), // Should remain empty, not overwritten
+			ObjList: customfield.NewObjectListMust(ctx, []computedMapStruct{}),
 		},
 	},
 	"computed_optional_empty_nested_object_set_preserved": {
 		`{"obj_set":[{"computed_map":{"api_x":10.0}},{"computed_map":{"api_y":20.0}}]}`,
 		nestedObjectSetExample{
-			ObjSet: customfield.NewObjectSetMust(ctx, []computedMapStruct{}), // Empty object set
+			ObjSet: customfield.NewObjectSetMust(ctx, []computedMapStruct{}),
 		},
 		nestedObjectSetExample{
-			ObjSet: customfield.NewObjectSetMust(ctx, []computedMapStruct{}), // Should remain empty, not overwritten
+			ObjSet: customfield.NewObjectSetMust(ctx, []computedMapStruct{}),
 		},
 	},
 	"computed_optional_empty_nested_list_of_lists_preserved": {
 		`{"list_of_lists":[["api1","api2"],["api3","api4","api5"],["api6"]]}`,
 		listOfListsExample{
-			ListOfLists: customfield.NewListMust[customfield.List[types.String]](ctx, []attr.Value{}), // Empty list of lists
+			ListOfLists: customfield.NewListMust[customfield.List[types.String]](ctx, []attr.Value{}),
 		},
 		listOfListsExample{
-			ListOfLists: customfield.NewListMust[customfield.List[types.String]](ctx, []attr.Value{}), // Should remain empty, not overwritten
+			ListOfLists: customfield.NewListMust[customfield.List[types.String]](ctx, []attr.Value{}),
 		},
 	},
 	"computed_optional_empty_nested_set_of_sets_preserved": {
 		`{"set_of_sets":[[10,20],[30,40,50],[60]]}`,
 		setOfSetsExample{
-			SetOfSets: customfield.NewSetMust[customfield.Set[types.Int64]](ctx, []attr.Value{}), // Empty set of sets
+			SetOfSets: customfield.NewSetMust[customfield.Set[types.Int64]](ctx, []attr.Value{}),
 		},
 		setOfSetsExample{
-			SetOfSets: customfield.NewSetMust[customfield.Set[types.Int64]](ctx, []attr.Value{}), // Should remain empty, not overwritten
+			SetOfSets: customfield.NewSetMust[customfield.Set[types.Int64]](ctx, []attr.Value{}),
 		},
 	},
 	"computed_optional_empty_map_with_list_preserved": {
 		`{"map_with_list":{"api_key1":["api_val1","api_val2"],"api_key2":["api_val3","api_val4","api_val5"]}}`,
 		mapWithListExample{
-			MapWithList: customfield.NewMapMust[customfield.List[types.String]](ctx, map[string]customfield.List[types.String]{}), // Empty map with lists
+			MapWithList: customfield.NewMapMust[customfield.List[types.String]](ctx, map[string]customfield.List[types.String]{}),
 		},
 		mapWithListExample{
-			MapWithList: customfield.NewMapMust[customfield.List[types.String]](ctx, map[string]customfield.List[types.String]{}), // Should remain empty, not overwritten
+			MapWithList: customfield.NewMapMust[customfield.List[types.String]](ctx, map[string]customfield.List[types.String]{}),
 		},
 	},
-	// Test with all collections empty (not null) - comprehensive test
 	"computed_optional_all_empty_collections_preserved": {
 		`{"name":"test-empty","tags":["api-tag1","api-tag2","api-tag3"],"metadata":{"api":"data","more":"stuff"},"ports":[4000,4001,4002],"coordinates":[12.34,56.78],"rules":[{"priority":100,"action":"block"},{"priority":200,"action":"permit"}],"status":"running"}`,
 		ComputedOptionalCollectionsExample{
 			Name:        types.StringValue("test-empty"),
-			Tags:        customfield.NewListMust[types.String](ctx, []attr.Value{}),                                                                                              // Empty list
-			Metadata:    customfield.NewMapMust[types.String](ctx, map[string]types.String{}),                                                                                    // Empty map
-			Ports:       customfield.NewSetMust[types.Int64](ctx, []attr.Value{}),                                                                                                // Empty set
-			Coordinates: types.TupleValueMust([]attr.Type{types.Float64Type, types.Float64Type}, []attr.Value{type_helpers.NewFloat64Value(0), type_helpers.NewFloat64Value(0)}), // User configured tuple
-			Rules:       customfield.NewObjectListMust(ctx, []RuleExample{}),                                                                                                     // Empty object list
-			Status:      types.StringValue("configured"),                                                                                                                         // User configured
+			Tags:        customfield.NewListMust[types.String](ctx, []attr.Value{}),
+			Metadata:    customfield.NewMapMust[types.String](ctx, map[string]types.String{}),
+			Ports:       customfield.NewSetMust[types.Int64](ctx, []attr.Value{}),
+			Coordinates: types.TupleValueMust([]attr.Type{types.Float64Type, types.Float64Type}, []attr.Value{type_helpers.NewFloat64Value(0), type_helpers.NewFloat64Value(0)}),
+			Rules:       customfield.NewObjectListMust(ctx, []RuleExample{}),
+			Status:      types.StringValue("configured"),
 		},
 		ComputedOptionalCollectionsExample{
 			Name:        types.StringValue("test-empty"),
-			Tags:        customfield.NewListMust[types.String](ctx, []attr.Value{}),                                                                                              // Should remain empty
-			Metadata:    customfield.NewMapMust[types.String](ctx, map[string]types.String{}),                                                                                    // Should remain empty
-			Ports:       customfield.NewSetMust[types.Int64](ctx, []attr.Value{}),                                                                                                // Should remain empty
-			Coordinates: types.TupleValueMust([]attr.Type{types.Float64Type, types.Float64Type}, []attr.Value{type_helpers.NewFloat64Value(0), type_helpers.NewFloat64Value(0)}), // Should remain as configured
-			Rules:       customfield.NewObjectListMust(ctx, []RuleExample{}),                                                                                                     // Should remain empty
-			Status:      types.StringValue("configured"),                                                                                                                         // Should remain as configured
+			Tags:        customfield.NewListMust[types.String](ctx, []attr.Value{}),
+			Metadata:    customfield.NewMapMust[types.String](ctx, map[string]types.String{}),
+			Ports:       customfield.NewSetMust[types.Int64](ctx, []attr.Value{}),
+			Coordinates: types.TupleValueMust([]attr.Type{types.Float64Type, types.Float64Type}, []attr.Value{type_helpers.NewFloat64Value(0), type_helpers.NewFloat64Value(0)}),
+			Rules:       customfield.NewObjectListMust(ctx, []RuleExample{}),
+			Status:      types.StringValue("configured"),
 		},
 	},
 	"nested_map_unchanged": {
@@ -2437,8 +2392,6 @@ var decode_computed_only_tests = map[string]struct {
 				CompStr:    types.StringUnknown(),
 				CompOptInt: types.Int64Unknown(),
 			},
-			// when the value is nested and optional/required, we don't currently convert from unknown to null
-			// this is because optional/required properties cannot be unknown
 			NestedCust:        customfield.NullObject[NestedStructWithComputedFields](ctx),
 			CompOptNestedCust: customfield.UnknownObject[NestedStructWithComputedFields](ctx),
 		},
@@ -2742,8 +2695,6 @@ func TestDecodeComputedOnly(t *testing.T) {
 }
 
 func TestNoStateBetweenDecoders(t *testing.T) {
-	// If there is global state between the decoders, these tests will pass individually but fail when run in the same
-	// test here. This can happen if our cache key does not capture all the information needed to make these two decoders unique.
 	TestDecodeComputedOnly(t)
 	TestDecodeFromValue(t)
 }
@@ -2786,10 +2737,7 @@ func merge[T any](test_array ...map[string]T) map[string]T {
 	out := make(map[string]T)
 	for _, tests := range test_array {
 		for name, t := range tests {
-			// panic if there are duplicates because otherwise we'd silently
-			// skip some tests
 			if _, existing := out[name]; existing {
-				//panic(fmt.Sprintf("duplicate test name: %s", name))
 				fmt.Printf("duplicate test name: %s", name)
 			}
 			out[name] = t
@@ -2809,14 +2757,12 @@ func formatJson(jsonString string, out *string) error {
 	return nil
 }
 
-// Test types for CustomMarshaler interface
 type customMarshalerBasic struct {
 	Value string
 	State string
 }
 
 func (c customMarshalerBasic) MarshalJSONWithState(plan any, state any) ([]byte, error) {
-	// Transform the value based on whether state exists
 	planVal, ok := plan.(customMarshalerBasic)
 	if !ok {
 		if ptr, ok := plan.(*customMarshalerBasic); ok && ptr != nil {
@@ -2835,7 +2781,6 @@ func (c customMarshalerBasic) MarshalJSONWithState(plan any, state any) ([]byte,
 	return json.Marshal(result)
 }
 
-// Test type with nested JSON transformation (similar to PolicyResources)
 type customMarshalerNested map[string]string
 
 func (c customMarshalerNested) MarshalJSONWithState(plan any, state any) ([]byte, error) {
@@ -2850,7 +2795,6 @@ func (c customMarshalerNested) MarshalJSONWithState(plan any, state any) ([]byte
 
 	result := make(map[string]any)
 	for key, val := range planMap {
-		// Try to unmarshal as JSON object
 		var nestedObj map[string]string
 		if err := json.Unmarshal([]byte(val), &nestedObj); err == nil {
 			result[key] = nestedObj
@@ -2861,14 +2805,12 @@ func (c customMarshalerNested) MarshalJSONWithState(plan any, state any) ([]byte
 	return json.Marshal(result)
 }
 
-// Test struct containing a CustomMarshaler field
 type structWithCustomField struct {
 	Name   string                 `json:"name"`
 	Custom customMarshalerBasic   `json:"custom"`
 	Nested *customMarshalerNested `json:"nested,omitempty"`
 }
 
-// TestCustomMarshaler tests the CustomMarshaler interface implementation
 func TestCustomMarshaler(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -2878,12 +2820,12 @@ func TestCustomMarshaler(t *testing.T) {
 		{
 			name:     "basic custom marshaler with MarshalRoot",
 			value:    customMarshalerBasic{Value: "test"},
-			expected: `{"value":"test","had_state":"true"}`, // MarshalRoot passes same value for plan and state
+			expected: `{"value":"test","had_state":"true"}`,
 		},
 		{
 			name:     "pointer to custom marshaler",
 			value:    &customMarshalerBasic{Value: "ptr_test"},
-			expected: `{"value":"ptr_test","had_state":"true"}`, // MarshalRoot passes same value for plan and state
+			expected: `{"value":"ptr_test","had_state":"true"}`,
 		},
 		{
 			name: "nested JSON transformation",
@@ -2917,13 +2859,11 @@ func TestCustomMarshaler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Test MarshalRoot (which passes same value for plan and state)
 			result, err := MarshalRoot(tt.value)
 			if err != nil {
 				t.Fatalf("MarshalRoot failed: %v", err)
 			}
 
-			// Compare JSON output (order-independent)
 			var expectedJSON, actualJSON any
 			if err := json.Unmarshal([]byte(tt.expected), &expectedJSON); err != nil {
 				t.Fatalf("Failed to unmarshal expected JSON: %v", err)
@@ -2932,7 +2872,6 @@ func TestCustomMarshaler(t *testing.T) {
 				t.Fatalf("Failed to unmarshal actual JSON: %v", err)
 			}
 
-			// Re-marshal both to normalize order
 			expectedBytes, _ := json.MarshalIndent(expectedJSON, "", "  ")
 			actualBytes, _ := json.MarshalIndent(actualJSON, "", "  ")
 
@@ -2943,7 +2882,6 @@ func TestCustomMarshaler(t *testing.T) {
 	}
 }
 
-// TestCustomMarshalerForUpdate tests CustomMarshaler with MarshalForUpdate
 func TestCustomMarshalerForUpdate(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -2972,7 +2910,6 @@ func TestCustomMarshalerForUpdate(t *testing.T) {
 				t.Fatalf("MarshalForUpdate failed: %v", err)
 			}
 
-			// Compare JSON output
 			var expectedJSON, actualJSON any
 			if err := json.Unmarshal([]byte(tt.expected), &expectedJSON); err != nil {
 				t.Fatalf("Failed to unmarshal expected JSON: %v", err)

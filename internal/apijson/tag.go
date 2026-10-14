@@ -13,27 +13,16 @@ const jsonStructTag = "json"
 const formatStructTag = "format"
 
 type parsedStructTag struct {
-	name              string
-	extras            bool
-	metadata          bool
-	inline            bool
-	required          bool
-	optional          bool
-	computed          bool
-	computed_optional bool
-	noRefresh         bool
-	// Don't skip this value, even if it's computed (no-op for computed optional fields)
-	// If encodeStateForUnknown is set on a computed field, this flag should also be set;
-	// otherwise this flag will have no effect
-	// NOTE: won't work if update behavior is 'patch'
-	forceEncode bool
-	// If the value in the plan is unknown,
-	// encode the value from the state instead
-	// This is similar to the UseStateForUnknown plan modifier,
-	// but it only impacts serialization of request bodies, not planning.
-	// NOTE #1: only use this for computed/computed_optional values that may be changed by the server;
-	// otherwise just use the UseStateForUnknown plan modifier
-	// NOTE #2: won't work if update behavior is 'patch'
+	name                            string
+	extras                          bool
+	metadata                        bool
+	inline                          bool
+	required                        bool
+	optional                        bool
+	computed                        bool
+	computed_optional               bool
+	noRefresh                       bool
+	forceEncode                     bool
 	encodeStateValueWhenPlanUnknown bool
 }
 

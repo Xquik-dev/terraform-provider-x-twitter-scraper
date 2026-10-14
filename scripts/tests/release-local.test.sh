@@ -4,14 +4,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# Runs bin/release-local in a throwaway repository whose origin is a local
-# bare repository. Stubs stand in for bin/check-local and the audit. A fake
-# GoReleaser builds 2 small zips and a SHA256SUMS file, fake gpg and security
-# commands stand in for the GPG keyring and the Keychain, a fake curl answers
-# for the Terraform Registry, and a fake GitHub CLI keeps the draft release in
-# the logs folder. No test reaches GitHub, the registry, the keyring or the
-# Keychain.
-
 set -euo pipefail
 
 # shellcheck source=scripts/tests/support.sh
@@ -23,24 +15,20 @@ readonly test_service="test-signing-item"
 readonly test_passphrase="test-passphrase-for-release-local"
 readonly test_fingerprint="0000111122223333444455556666777788889999"
 
-# Builds a releasable repository at the given version, 1.2.3 by default.
 prepare_release() {
   local version="${1:-1.2.3}"
   copy_file bin/release-local
   copy_file scripts/release-listing
   stub bin/check-local <<'EOF'
 #!/usr/bin/env bash
-# Stands in for bin/check-local. It records its arguments.
 echo "check-local${*:+ $*}" >>"$FAKE_LOGS/order"
 EOF
   stub scripts/audit <<'EOF'
 #!/usr/bin/env bash
-# Stands in for scripts/audit.
 echo "audit" >>"$FAKE_LOGS/order"
 EOF
   stub bin/check-release-debug-info <<'EOF'
 #!/usr/bin/env bash
-# Stands in for bin/check-release-debug-info.
 echo "check-release-debug-info" >>"$FAKE_LOGS/order"
 EOF
   write_file .release-please-manifest.json <<EOF
@@ -49,7 +37,7 @@ EOF
   write_file internal/version.go <<EOF
 package internal
 
-const PackageVersion = "$version" // x-release-please-version
+const PackageVersion = "$version"
 EOF
   write_file terraform-registry-manifest.json <<'EOF'
 {
@@ -77,18 +65,10 @@ dist/
 EOF
   fake go <<'EOF'
 #!/bin/sh
-# Stands in for go. bin/release-local only checks that it exists.
 exit 0
 EOF
   fake goreleaser <<'EOF'
 #!/bin/sh
-# Stands in for GoReleaser. Each run builds a Linux and a Windows zip and a
-# SHA256SUMS file that lists them and the registry manifest, as the real
-# checksum section does. Like Go, it stamps each binary with the tag on HEAD,
-# or with a pseudo-version when HEAD has no tag.
-# FAKE_SUMS_WITHOUT_MANIFEST leaves the manifest out,
-# FAKE_WRONG_BINARY names the Linux binary wrongly and FAKE_DIRTY_BUILD
-# changes a tracked file.
 {
   printf 'goreleaser %s' "$*"
   [ -n "${GORELEASER_CURRENT_TAG:-}" ] && printf ' with GORELEASER_CURRENT_TAG=%s' "$GORELEASER_CURRENT_TAG"
@@ -128,8 +108,6 @@ JSON
 EOF
   fake curl <<'EOF'
 #!/bin/sh
-# Stands in for curl against the Terraform Registry. FAKE_REGISTRY_VERSIONS
-# sets the versions it serves, and FAKE_REGISTRY_FAILS makes it fail.
 echo "curl $*" >>"$FAKE_LOGS/order"
 [ -z "${FAKE_REGISTRY_FAILS:-}" ] || exit 22
 versions="${FAKE_REGISTRY_VERSIONS:-}"
@@ -138,9 +116,6 @@ echo "{\"versions\": [$versions]}"
 EOF
   fake security <<'EOF'
 #!/bin/sh
-# Stands in for the macOS security command. It records its arguments. With
-# -w it prints the test passphrase, as the real command prints a password.
-# FAKE_NO_KEYCHAIN_ITEM makes the item missing.
 echo "security $*" >>"$FAKE_LOGS/order"
 echo "$*" >>"$FAKE_LOGS/security-arguments"
 [ -z "${FAKE_NO_KEYCHAIN_ITEM:-}" ] || exit 44
@@ -151,11 +126,6 @@ esac
 EOF
   fake gpg <<'EOF'
 #!/bin/sh
-# Stands in for gpg. It records its arguments and what it reads on standard
-# input. It lists 1 secret key unless FAKE_NO_KEY is set, writes a binary
-# signature unless FAKE_ARMORED is set, and verifies it unless
-# FAKE_BAD_SIGNATURE is set. The binary signature starts with the header
-# bytes of a real one, which hold a null byte.
 echo "gpg $*" >>"$FAKE_LOGS/order"
 echo "$*" >>"$FAKE_LOGS/gpg-arguments"
 fingerprint="0000111122223333444455556666777788889999"
@@ -191,12 +161,6 @@ esac
 EOF
   fake gh <<'EOF'
 #!/bin/sh
-# Stands in for the GitHub CLI. FAKE_RELEASES holds the releases GitHub
-# lists, and FAKE_PUBLISHED makes the tag endpoint return a published
-# release. GitHub's list can leave out a published release, so the tests
-# keep it out of FAKE_RELEASES. FAKE_TAG_LOOKUP_FAILS makes the tag endpoint
-# fail. The draft's assets live in the logs folder, unless FAKE_VIEW_ASSETS
-# or FAKE_DOWNLOADED_SUMS override what GitHub returns.
 echo "gh $*" >>"$FAKE_LOGS/order"
 case "$1 $2" in
   "api repos/Xquik-dev/terraform-provider-x-twitter-scraper/releases/tags/"*)
@@ -260,7 +224,6 @@ order_without_paths() {
   log_of order | sed "s|$sandbox|SANDBOX|g; s|--notes-file [^ ]*|--notes-file NOTES|g; s|--dir [^ ]*|--dir DRAFT|g"
 }
 
-# The steps before bin/check-local that every run takes.
 readonly lookups="gh auth status --hostname github.com
 gh api repos/$repository/releases/tags/v1.2.3
 gh api --paginate --slurp repos/$repository/releases?per_page=100
@@ -388,8 +351,6 @@ test_a_real_run_with_an_empty_keychain_variable_stops_at_once() {
   assert_equal "" "$(log_of order)" "the steps"
 }
 
-# Puts the 2 commands of 1 pipeline in pipeline order. The shell starts both
-# at once, so either may record its call first.
 pipeline_in_order() {
   awk -v first="$1" -v second="$2" '
     held != "" && index($0, first) == 1 { print; print held; held = ""; next }
@@ -681,7 +642,7 @@ test_a_version_file_that_disagrees_stops_the_run() {
   write_file internal/version.go <<'EOF'
 package internal
 
-const PackageVersion = "1.2.2" // x-release-please-version
+const PackageVersion = "1.2.2"
 EOF
   sandbox_git commit --quiet --all --message "Old version"
   sandbox_git push --quiet origin main

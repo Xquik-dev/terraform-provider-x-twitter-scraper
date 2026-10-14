@@ -4,15 +4,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# Prints what a release would publish, from the GoReleaser output in dist,
-# and checks it against what the Terraform Registry reads. The registry wants
-# 1 zip per platform that holds terraform-provider-<name>_v<version>, the
-# registry manifest, a SHA256SUMS file that covers the zips and the manifest,
-# and a binary GPG signature of that file. bin/release-local makes the
-# signature after this listing.
-#
-# Usage: scripts/release-listing <version> <notes file>
-
 set -euo pipefail
 
 cd -- "$(dirname -- "$0")/.."
@@ -45,7 +36,6 @@ protocols="$(jq -er 'select(.version == 1) | .metadata.protocol_versions | join(
 zips="$(jq -r '[.[] | select(.type == "Archive") | .path] | sort | .[]' "$artifacts")"
 [[ -n "$zips" ]] || refuse "$artifacts lists no zips. Check the archives section of .goreleaser.yml."
 
-# The checksums file must cover exactly the zips and the manifest.
 expected_names="$(
   {
     while IFS= read -r path; do basename -- "$path"; done <<<"$zips"

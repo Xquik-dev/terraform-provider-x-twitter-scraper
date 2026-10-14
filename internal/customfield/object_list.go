@@ -21,7 +21,6 @@ var (
 	_ basetypes.ListValuable = (*NestedObjectList[basetypes.StringValue])(nil)
 )
 
-// NestedObjectListType represents a basetypes.ListType that declares the type of the nested data statically.
 type NestedObjectListType[T any] struct {
 	basetypes.ListType
 }
@@ -118,9 +117,7 @@ type NestedObjectListLike interface {
 
 var _ NestedObjectListLike = (*NestedObjectList[basetypes.StringValue])(nil)
 
-// NestedObjectList represents a basetypes.ListValue that is defined by a struct.
 type NestedObjectList[T any] struct {
-	//lint:ignore U1000 the placeholder is for easy reflection-based-access
 	placeholder T
 	basetypes.ListValue
 }

@@ -29,11 +29,9 @@ trap cleanup EXIT
 
 export GOCOVE_META_DIR="$branch_meta"
 export GOCACHE="$branch_cache"
-# TestMain returns normally and flushes observations. gocove cannot detect it.
 export GOCOVE_NO_WARN=1
 
 echo "==> Check 80% branch coverage"
-# Rebuild every package. gocove does not emit catalogs for Go cache hits.
 go run "github.com/srvgit/gocove/cmd/gocove@${gocove_version}" \
   test \
   -a \

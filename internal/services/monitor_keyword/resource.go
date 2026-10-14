@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// File generated from our OpenAPI spec. See CONTRIBUTING.md for details.
-
 package monitor_keyword
 
 import (
@@ -21,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
 var _ resource.ResourceWithConfigure = (*MonitorKeywordResource)(nil)
 var _ resource.ResourceWithImportState = (*MonitorKeywordResource)(nil)
 
@@ -29,7 +26,6 @@ func NewResource() resource.Resource {
 	return &MonitorKeywordResource{}
 }
 
-// MonitorKeywordResource defines the resource implementation.
 type MonitorKeywordResource struct {
 	client *xtwitterscraper.Client
 }

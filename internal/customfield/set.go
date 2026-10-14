@@ -19,7 +19,6 @@ var (
 	_ basetypes.SetValuable = (*Set[basetypes.StringValue])(nil)
 )
 
-// SetType represents a basetypes.SetType that declares the type of the element statically.
 type SetType[T attr.Value] struct {
 	basetypes.SetType
 }
@@ -96,9 +95,7 @@ func (t SetType[T]) NullValue(ctx context.Context) (attr.Value, diag.Diagnostics
 
 var _ ListLike = (*Set[basetypes.StringValue])(nil)
 
-// Set represents a basetypes.SetValue that is defined by a struct.
 type Set[T attr.Value] struct {
-	//lint:ignore U1000 the placeholder is for easy reflection-based-access
 	placeholder T
 	basetypes.SetValue
 }
