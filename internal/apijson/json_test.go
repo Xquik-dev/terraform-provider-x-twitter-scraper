@@ -208,12 +208,12 @@ var tests = map[string]struct {
 	"date_time_nano_missing_t_coerce":         {`"2007-03-01 13:03:05.123456789Z"`, time.Date(2007, time.March, 1, 13, 3, 5, 123456789, time.UTC)},
 
 	"date_time_custom":             {`"2007-03-01T13:00:00Z"`, time2time(time.Date(2007, time.March, 1, 13, 0, 0, 0, time.UTC))},
-	"date_time_custom_nano_coerce": {`"2007-03-01T13:03:05.123456789Z"`, time2time(time.Date(2007, time.March, 1, 13, 3, 5, 123456789, time.UTC))},
+	"date_time_custom_nano_coerce": {`"2007-03-01T13:03:05.123456789Z"`, timetypes.NewRFC3339ValueMust("2007-03-01T13:03:05.123456789Z")},
 
 	"date_time_custom_missing_t_coerce":              {`"2007-03-01 13:03:05Z"`, time2time(time.Date(2007, time.March, 1, 13, 3, 5, 0, time.UTC))},
 	"date_time_custom_missing_timezone_coerce":       {`"2007-03-01T13:03:05"`, time2time(time.Date(2007, time.March, 1, 13, 3, 5, 0, time.UTC))},
 	"date_time_custom_missing_timezone_colon_coerce": {`"2007-03-01T13:03:05+0100"`, time2time(time.Date(2007, time.March, 1, 13, 3, 5, 0, time.FixedZone("", 60*60)))},
-	"date_time_custom_nano_missing_t_coerce":         {`"2007-03-01 13:03:05.123456789Z"`, time2time(time.Date(2007, time.March, 1, 13, 3, 5, 123456789, time.UTC))},
+	"date_time_custom_nano_missing_t_coerce":         {`"2007-03-01 13:03:05.123456789Z"`, timetypes.NewRFC3339ValueMust("2007-03-01T13:03:05.123456789Z")},
 
 	"map_string":                       {`{"foo":"bar"}`, map[string]string{"foo": "bar"}},
 	"map_string_with_sjson_path_chars": {`{":a.b.c*:d*-1e.f":"bar"}`, map[string]string{":a.b.c*:d*-1e.f": "bar"}},
@@ -416,6 +416,46 @@ var decode_only_tests = map[string]struct {
 	buf string
 	val any
 }{
+	"datetime_custom_struct_fractional_seconds": {
+		`{"date":"2006-01-02","date-time":"2006-01-02T15:04:05.036Z"}`,
+		DateTimeCustom{
+			DateCustom:     time2time(time.Date(2006, time.January, 2, 0, 0, 0, 0, time.UTC)),
+			DateTimeCustom: timetypes.NewRFC3339ValueMust("2006-01-02T15:04:05.036Z"),
+		},
+	},
+
+	"datetime_custom_struct_trailing_zeros": {
+		`{"date":"2006-01-02","date-time":"2006-01-02T15:04:05.500+00:00"}`,
+		DateTimeCustom{
+			DateCustom:     time2time(time.Date(2006, time.January, 2, 0, 0, 0, 0, time.UTC)),
+			DateTimeCustom: timetypes.NewRFC3339ValueMust("2006-01-02T15:04:05.500+00:00"),
+		},
+	},
+
+	"datetime_custom_struct_comma_fraction": {
+		`{"date":"2006-01-02","date-time":"2006-01-02T15:04:05,5Z"}`,
+		DateTimeCustom{
+			DateCustom:     time2time(time.Date(2006, time.January, 2, 0, 0, 0, 0, time.UTC)),
+			DateTimeCustom: timetypes.NewRFC3339ValueMust("2006-01-02T15:04:05.5Z"),
+		},
+	},
+
+	"datetime_custom_struct_lenient_fraction_offset": {
+		`{"date":"2006-01-02","date-time":"2006-01-02 15:04:05.5+0100"}`,
+		DateTimeCustom{
+			DateCustom:     time2time(time.Date(2006, time.January, 2, 0, 0, 0, 0, time.UTC)),
+			DateTimeCustom: timetypes.NewRFC3339ValueMust("2006-01-02T15:04:05.5+01:00"),
+		},
+	},
+
+	"datetime_custom_struct_offset": {
+		`{"date":"2006-01-02","date-time":"2006-01-02T18:04:05.5+03:00"}`,
+		DateTimeCustom{
+			DateCustom:     time2time(time.Date(2006, time.January, 2, 0, 0, 0, 0, time.UTC)),
+			DateTimeCustom: timetypes.NewRFC3339ValueMust("2006-01-02T18:04:05.5+03:00"),
+		},
+	},
+
 	"tfsdk_struct_decode": {
 		`{"result":{"c":"7887590e1967befa70f48ffe9f61ce80","a":"88281d6015751d6172e7313b0c665b5e","extra":"property","another":2,"b":"http://example.com/example.html\t20"}}`,
 		ResultEnvelope{RecordsModel{
