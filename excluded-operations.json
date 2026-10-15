@@ -95,7 +95,7 @@
     ]
   },
   {
-    "reason": "Reads that stainless.yml names other than retrieve, such as translations, insights, embeds, replays and relationship checks. The provider gives a data source only to each retrieve method, the rule its generated data sources follow.",
+    "reason": "Reads that the Stainless generator config names other than retrieve, such as translations, insights, embeds, replays and relationship checks. The provider gives a data source only to each retrieve method, the rule its generated data sources follow.",
     "operations": [
       "GET /api/v1/x/tweets/{id}/embed",
       "GET /api/v1/x/tweets/{id}/insights",
@@ -131,7 +131,7 @@
     ]
   },
   {
-    "reason": "Streams server-sent events without end, and a Terraform read must finish. stainless.yml skips Terraform for events.stream.",
+    "reason": "Streams server-sent events without end, and a Terraform read must finish. The Stainless generator config skips Terraform for events.stream.",
     "operations": [
       "GET /api/v1/events/stream"
     ]
@@ -145,7 +145,7 @@
     ]
   },
   {
-    "reason": "Runs paid one-off jobs, such as extractions, cost estimates and AI analysis, that Terraform cannot plan or keep in state. stainless.yml skips Terraform for extractions and x.analysis.",
+    "reason": "Runs paid one-off jobs, such as extractions, cost estimates and AI analysis, that Terraform cannot plan or keep in state. The Stainless generator config skips Terraform for extractions and x.analysis.",
     "operations": [
       "POST /api/v1/extractions",
       "POST /api/v1/extractions/estimate",
@@ -161,7 +161,7 @@
     ]
   },
   {
-    "reason": "Connects, signs in again or removes X accounts through an interactive login with challenges. stainless.yml keeps x.accounts a read-only data source and skips Terraform for these steps.",
+    "reason": "Connects, signs in again or removes X accounts through an interactive login with challenges. The Stainless generator config keeps x.accounts a read-only data source and skips Terraform for these steps.",
     "operations": [
       "POST /api/v1/x/accounts",
       "DELETE /api/v1/x/accounts/{id}",
@@ -172,7 +172,7 @@
     ]
   },
   {
-    "reason": "Starts a hosted checkout or reads a balance. A checkout needs a person to confirm and pay, a balance changes with every paid call, and stainless.yml skips Terraform for subscribe.",
+    "reason": "Starts a hosted checkout or reads a balance. A checkout needs a person to confirm and pay, a balance changes with every paid call, and the Stainless generator config skips Terraform for subscribe.",
     "operations": [
       "POST /api/v1/subscribe",
       "POST /api/v1/credits/topup",
@@ -183,7 +183,7 @@
     ]
   },
   {
-    "reason": "One-off actions that no resource covers, such as running a draw, analyzing a style, replying to a ticket, testing or resuming a webhook, downloading media and deleting a DM. They leave no object for Terraform to read back. stainless.yml skips Terraform for webhooks.create_telegram_link.",
+    "reason": "One-off actions that no resource covers, such as running a draw, analyzing a style, replying to a ticket, testing or resuming a webhook, downloading media and deleting a DM. They leave no object for Terraform to read back. The Stainless generator config skips Terraform for webhooks.create_telegram_link.",
     "operations": [
       "POST /api/v1/draws",
       "POST /api/v1/styles",

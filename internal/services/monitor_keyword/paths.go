@@ -12,5 +12,5 @@ import (
 const monitorKeywordCollectionPath = "monitors/keywords"
 
 func monitorKeywordItemPath(id string) string {
-	return fmt.Sprintf("monitors/keywords/%s", url.PathEscape(id))
+	return fmt.Sprintf(monitorKeywordCollectionPath+"/%s", url.PathEscape(id))
 }

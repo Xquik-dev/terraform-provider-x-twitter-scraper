@@ -7,13 +7,14 @@ package apicoverage
 import (
 	"fmt"
 	"io"
-	"io/fs"
 	"net/http"
+	"os"
 	"slices"
+	"strings"
 )
 
 const (
-	DefaultSpecSource = "https://xquik.com/openapi.json"
+	defaultSpecSource = "https://xquik.com/openapi.json"
 	SpecVariable      = "XQUIK_OPENAPI_SPEC"
 	SDKModule         = "github.com/Xquik-dev/x-twitter-scraper-go"
 	exclusionFile     = "excluded-operations.json"
@@ -21,27 +22,32 @@ const (
 	missingNextStep   = "Add a resource or data source for each operation above, or list it in excluded-operations.json with a reason."
 )
 
-func check(provider, sdkSource fs.FS, source string, client *http.Client) ([]string, string, error) {
-	excluded, err := readExclusions(provider)
+func check(root, source string, client *http.Client) ([]string, string, error) {
+	excluded, err := readExclusions(os.DirFS(root))
 	if err != nil {
 		return nil, "", err
-	}
-	index, err := readSDK(sdkSource)
-	if err != nil {
-		return nil, "", err
-	}
-	requests, unreadable, err := providerRequests(provider, index)
-	if err != nil || len(unreadable) > 0 {
-		return unreadable, "", err
-	}
-	implemented := operations{}
-	for _, found := range requests {
-		full := joinPath(index.basePath, found.path)
-		implemented[operationKey(found.method, full)] = found.method + " " + full
 	}
 	api, err := specOperations(source, client)
 	if err != nil {
 		return nil, "", err
+	}
+	directory, err := sdkDir(root)
+	if err != nil {
+		return nil, "", err
+	}
+	index, err := readSDK(os.DirFS(directory))
+	if err != nil {
+		return nil, "", err
+	}
+	requests, problems, err := providerRequests(root, index)
+	if err != nil || len(problems) > 0 {
+		return problems, "", err
+	}
+	implemented := operations{}
+	for _, found := range requests {
+		target, _, _ := strings.Cut(found.path, "?")
+		full := joinPath(index.basePath, target)
+		implemented[operationKey(found.method, full)] = found.method + " " + full
 	}
 	var missing, stale []string
 	for key, label := range api {
@@ -69,11 +75,11 @@ func check(provider, sdkSource fs.FS, source string, client *http.Client) ([]str
 	return nil, fmt.Sprintf("The provider covers %d of %d API operations, and %s lists the other %d.", covered, len(api), exclusionFile, len(excluded)), nil
 }
 
-func Run(source string, provider, sdkSource fs.FS, client *http.Client, out, failures io.Writer) int {
+func Run(source, root string, client *http.Client, out, failures io.Writer) int {
 	if source == "" {
-		source = DefaultSpecSource
+		source = defaultSpecSource
 	}
-	lines, summary, err := check(provider, sdkSource, source, client)
+	lines, summary, err := check(root, source, client)
 	if err != nil {
 		lines = append(lines, err.Error())
 	}

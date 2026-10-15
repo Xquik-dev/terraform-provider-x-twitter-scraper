@@ -111,22 +111,25 @@ The check reads the spec from https://xquik.com/openapi.json. Set
 `XQUIK_OPENAPI_SPEC` to a local file path or another URL to read another copy.
 The spec must be JSON.
 
-It reads every Go file under `internal/services` except tests, and finds the
-calls on a field, parameter or variable of type `*xtwitterscraper.Client`.
+It loads the Go packages under `internal/services` with their types, as the
+compiler sees them. Tests and `testdata` folders stay out.
 
-- A Go SDK service method, such as `r.client.X.Tweets.Get`, counts as the
-  request it sends. The check reads that method in the Go SDK source of the
-  version in `go.mod`, by the rules of the Go SDK's own check in
-  `cmd/api-coverage`.
+- Every use of a Go SDK method on `Client` or on a `Service` type must call it.
+  A call through a variable, an embedded client or a function literal counts.
+- A service method, such as `r.client.X.Tweets.Get`, counts as the request it
+  sends. The check reads that method in the Go SDK source of the version in
+  `go.mod`, by the rules of the Go SDK's own check in `cmd/api-coverage`.
 - A raw call, such as `r.client.Get` or `client.Execute`, needs a readable
-  path. That is a path string, a `fmt.Sprintf` format with a value for each
-  verb, a local variable assigned once to 1 of those, a package string
-  constant, or a package function whose body returns 1 of those in 1 line.
-  `Execute` also needs an `http.Method` constant.
-- `client.Execute(ctx, op.method, op.path(id), ...)` reads every literal of
-  the type of `op` in its package. Each literal sets `method` to an
-  `http.Method` constant and `pathTemplate` to a path string or format. The
-  `x_write` operation table works this way.
+  path. That is a constant, a `fmt.Sprintf` call with a constant format and a
+  value for each verb, a variable assigned once to 1 of those, or a package
+  function whose body returns 1 of those in 1 line. `Execute` also needs a
+  constant HTTP method. The check drops a query string after `?`.
+- `client.Execute(ctx, op.method, op.path(id), ...)` reads an operation table.
+  The method comes from a field of `op`. The path comes from a field of `op`,
+  or from a method of `op` whose every return gives 1 field, alone or as the
+  `fmt.Sprintf` format. Every literal of that type in the package needs a
+  constant HTTP method and a constant path format in those fields. The
+  `x_write` operations work this way.
 
 The check puts the path of the Go SDK's default base URL, from
 `option.WithEnvironmentProduction`, before each path. It fails on a call it
@@ -151,9 +154,10 @@ a space and the absolute path from the spec. List each operation once.
 ]
 ```
 
-The group that names Go SDK 0.19.2 lists retrieve methods that the Go SDK
-adds in 0.20.0. The provider gives each a data source when it moves to that
-version, and removes the group.
+The group that names Go SDK 0.19.2 lists retrieve methods that this Go SDK
+lacks. [Issue 82](https://github.com/Xquik-dev/x-twitter-scraper-go/issues/82)
+of the Go SDK adds them. The provider then gives each a data source and
+removes the group.
 
 ## Release
 
