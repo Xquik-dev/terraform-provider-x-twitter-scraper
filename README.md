@@ -130,7 +130,7 @@ Changing the request replaces the resource. Give the new write a new key.
 
 ## Reliability & security
 
-`bin/check-local` checks formatting, licenses, race safety, Windows builds, coverage, reproducible builds, fuzzing, CodeQL findings & known vulnerabilities.
+`bin/check-local` checks API coverage, formatting, licenses, race safety, Windows builds, coverage, reproducible builds, fuzzing, CodeQL findings & known vulnerabilities.
 Maintainers publish releases with `bin/release-local`, which signs the checksums with the provider's GPG key.
 
 See [OpenSSF evidence](OPENSSF.md) for the current criteria assessment.

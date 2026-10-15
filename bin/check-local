@@ -115,6 +115,10 @@ for tool in cmp codeql git go goreleaser jq objdump pgrep shellcheck tar unzip u
   fi
 done
 
+start_check "API coverage" "API coverage" "Follow the lines above, then rerun."
+go run ./scripts/api_coverage.go
+pass_check
+
 start_check "Module download and integrity" "modules" "Run go clean -modcache, then rerun."
 SKIP_BREW=1 ./scripts/bootstrap
 pass_check
@@ -150,8 +154,8 @@ start_check "Dependency audit" "audit" "Upgrade each blocked module above, or ra
 exceptions="$(sed -nE 's/^Dependency audit passed with ([0-9]+) reviewed exceptions?\.$/\1/p' "$workspace/audit.log")"
 case "$exceptions" in
   "") ;;
-  1) check_label="audit with 1 reviewed exception" ;;
-  *) check_label="audit with $exceptions reviewed exceptions" ;;
+  1) check_label="audit (1 exception)" ;;
+  *) check_label="audit ($exceptions exceptions)" ;;
 esac
 pass_check
 
@@ -193,7 +197,7 @@ for index in "${!passed_checks[@]}"; do
   if ((index == 0)); then
     summary="${passed_checks[$index]}"
   elif ((index == last_index)); then
-    summary="$summary and ${passed_checks[$index]}"
+    summary="$summary & ${passed_checks[$index]}"
   else
     summary="$summary, ${passed_checks[$index]}"
   fi

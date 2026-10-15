@@ -9,7 +9,8 @@ set -euo pipefail
 # shellcheck source=scripts/tests/support.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/support.sh"
 
-readonly check_order="bootstrap
+readonly check_order="api coverage
+bootstrap
 uvx
 lint
 shellcheck
@@ -22,7 +23,7 @@ goreleaser release --snapshot --clean --skip=sign
 check-release-debug-info
 go test fuzz
 codeql"
-readonly passed_line="Passed modules, REUSE, lint, shellcheck, script tests, Go tests, audit, reproducible build, fuzzing and CodeQL."
+readonly passed_line="Passed API coverage, modules, REUSE, lint, shellcheck, script tests, Go tests, audit, reproducible build, fuzzing & CodeQL."
 readonly status_endpoint="repos/Xquik-dev/terraform-provider-x-twitter-scraper/statuses"
 
 prepare_checks() {
@@ -84,6 +85,12 @@ esac
 EOF
   fake go <<'EOF'
 #!/bin/sh
+if [ "$1" = "run" ]; then
+  echo "api coverage" >>"$FAKE_LOGS/order"
+  echo "$*" >>"$FAKE_LOGS/go-run"
+  [ "${FAKE_FAILING_CHECK:-}" != "api coverage" ]
+  exit $?
+fi
 echo "go test fuzz" >>"$FAKE_LOGS/order"
 echo "$*" >>"$FAKE_LOGS/go"
 [ "${FAKE_FAILING_CHECK:-}" != "fuzz" ]
@@ -136,6 +143,7 @@ test_a_passing_run_lists_the_checks_in_order_and_runs_reuse_through_uvx() {
   assert_contains "$run_stdout" "Commit status not posted because --no-status was passed." "stdout"
   assert_equal "$check_order" "$(log_of order)" "the order of the checks"
   assert_equal "--from reuse==6.2.0 reuse lint" "$(log_of uvx)" "the uvx call"
+  assert_equal "run ./scripts/api_coverage.go" "$(log_of go-run)" "the API coverage call"
   assert_equal "" "$(log_of gh)" "the posted statuses"
 }
 
@@ -189,7 +197,7 @@ test_the_success_status_names_the_reviewed_audit_exceptions() {
   run_in_repo bin/check-local
 
   assert_equal 0 "$run_status" "the exit code"
-  assert_ends_with "$(log_of gh)" "$status_endpoint/$head success Passed modules, REUSE, lint, shellcheck, script tests, Go tests, audit with 2 reviewed exceptions, reproducible build, fuzzing and CodeQL." "the success status"
+  assert_ends_with "$(log_of gh)" "$status_endpoint/$head success Passed API coverage, modules, REUSE, lint, shellcheck, script tests, Go tests, audit (2 exceptions), reproducible build, fuzzing & CodeQL." "the success status"
 }
 
 test_a_working_tree_with_changes_gets_no_status() {
@@ -255,7 +263,8 @@ test_a_failing_check_stops_the_run_and_posts_a_failure_status_that_names_it() {
 
   assert_equal 1 "$run_status" "the exit code"
   assert_equal "Check failed at Go tests and coverage. Fix the failing test or add coverage, then rerun." "$run_stderr" "stderr"
-  assert_equal "bootstrap
+  assert_equal "api coverage
+bootstrap
 uvx
 lint
 shellcheck
@@ -263,6 +272,33 @@ test-scripts
 test" "$(log_of order)" "the checks that ran"
   assert_equal "$status_endpoint/$head pending Local checks are running.
 $status_endpoint/$head failure Failed at Go tests and coverage." "$(log_of gh)" "the posted statuses"
+}
+
+test_the_success_status_names_a_single_audit_exception() {
+  local head
+  prepare_checks
+  head="$(sandbox_git rev-parse HEAD)"
+  run_env=("FAKE_EXCEPTIONS=1")
+
+  run_in_repo bin/check-local
+
+  assert_equal 0 "$run_status" "the exit code"
+  assert_ends_with "$(log_of gh)" "$status_endpoint/$head success Passed API coverage, modules, REUSE, lint, shellcheck, script tests, Go tests, audit (1 exception), reproducible build, fuzzing & CodeQL." "the success status"
+}
+
+test_an_api_coverage_failure_stops_the_run_before_the_other_checks() {
+  local head
+  prepare_checks
+  head="$(sandbox_git rev-parse HEAD)"
+  run_env=("FAKE_FAILING_CHECK=api coverage")
+
+  run_in_repo bin/check-local
+
+  assert_equal 1 "$run_status" "the exit code"
+  assert_equal "Check failed at API coverage. Follow the lines above, then rerun." "$run_stderr" "stderr"
+  assert_equal "api coverage" "$(log_of order)" "the checks that ran"
+  assert_equal "$status_endpoint/$head pending Local checks are running.
+$status_endpoint/$head failure Failed at API coverage." "$(log_of gh)" "the posted statuses"
 }
 
 test_a_codeql_failure_posts_a_failure_status_and_no_success() {

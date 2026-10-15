@@ -145,8 +145,7 @@ func executeWrite(ctx context.Context, client *xtwitterscraper.Client, op operat
 
 func pollUntilTerminal(ctx context.Context, client *xtwitterscraper.Client, op operation, action writeAction) (writeAction, error) {
 	for !action.Terminal {
-		path, err := canonicalPollPath(action.StatusURL, action.WriteActionID)
-		if err != nil {
+		if err := verifyStatusURL(action.StatusURL, action.WriteActionID); err != nil {
 			return action, err
 		}
 		if err := waitForPoll(ctx, action.PollAfterMs); err != nil {
@@ -155,7 +154,7 @@ func pollUntilTerminal(ctx context.Context, client *xtwitterscraper.Client, op o
 		var nextAction writeAction
 		if err := client.Get(
 			ctx,
-			path,
+			writeActionPath(action.WriteActionID),
 			nil,
 			&nextAction,
 		); err != nil {
@@ -224,16 +223,19 @@ func validIdempotencyKey(key string) bool {
 	return true
 }
 
-func canonicalPollPath(statusURL string, writeActionID string) (string, error) {
+func writeActionPath(writeActionID string) string {
+	return fmt.Sprintf("x/write-actions/%s", url.PathEscape(writeActionID))
+}
+
+func verifyStatusURL(statusURL string, writeActionID string) error {
 	parsed, err := url.Parse(statusURL)
 	if err != nil {
-		return "", fmt.Errorf("statusUrl is invalid for write %s: %w", writeActionID, err)
+		return fmt.Errorf("statusUrl is invalid for write %s: %w", writeActionID, err)
 	}
-	expectedSuffix := "/x/write-actions/" + url.PathEscape(writeActionID)
-	if !strings.HasSuffix(parsed.EscapedPath(), expectedSuffix) {
-		return "", fmt.Errorf("statusUrl for write %s does not match its canonical polling URL", writeActionID)
+	if !strings.HasSuffix(parsed.EscapedPath(), "/"+writeActionPath(writeActionID)) {
+		return fmt.Errorf("statusUrl for write %s does not match its canonical polling URL", writeActionID)
 	}
-	return strings.TrimPrefix(expectedSuffix, "/"), nil
+	return nil
 }
 
 func waitForPoll(ctx context.Context, pollAfterMs int64) error {

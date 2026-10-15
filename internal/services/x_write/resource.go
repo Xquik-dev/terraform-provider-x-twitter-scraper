@@ -103,12 +103,12 @@ func (r *writeResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	}
 
 	action := writeAction{WriteActionID: data.WriteActionID.ValueString(), StatusURL: data.StatusURL.ValueString()}
-	path, err := canonicalPollPath(action.StatusURL, action.WriteActionID)
+	err := verifyStatusURL(action.StatusURL, action.WriteActionID)
 	if err != nil {
 		resp.Diagnostics.AddError("write state is invalid", err.Error())
 		return
 	}
-	if err := r.client.Get(ctx, path, nil, &action); err != nil {
+	if err := r.client.Get(ctx, writeActionPath(action.WriteActionID), nil, &action); err != nil {
 		resp.Diagnostics.AddError("write status check failed", err.Error())
 		return
 	}

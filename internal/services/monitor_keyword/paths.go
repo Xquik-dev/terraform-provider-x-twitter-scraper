@@ -4,10 +4,13 @@
 
 package monitor_keyword
 
-import "net/url"
+import (
+	"fmt"
+	"net/url"
+)
 
 const monitorKeywordCollectionPath = "monitors/keywords"
 
 func monitorKeywordItemPath(id string) string {
-	return monitorKeywordCollectionPath + "/" + url.PathEscape(id)
+	return fmt.Sprintf(monitorKeywordCollectionPath+"/%s", url.PathEscape(id))
 }
