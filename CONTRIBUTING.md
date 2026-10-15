@@ -49,23 +49,25 @@ bin/check-local
 
 It runs these checks in order.
 
-1. `./scripts/bootstrap` to download and verify modules
-2. `reuse lint` 6.2.0 through `uvx` for license metadata
-3. `./scripts/lint` for formatting, module metadata, `go vet` and builds
-4. ShellCheck on every bash script
-5. `./scripts/test-scripts`, the tests of the scripts in `bin/` and `scripts/`
-6. `./scripts/test` for race detection, 90% statement and 80% branch
+1. `go run ./scripts/api_coverage.go`, the [API coverage](#api-coverage)
+   check
+2. `./scripts/bootstrap` to download and verify modules
+3. `reuse lint` 6.2.0 through `uvx` for license metadata
+4. `./scripts/lint` for formatting, module metadata, `go vet` and builds
+5. ShellCheck on every bash script
+6. `./scripts/test-scripts`, the tests of the scripts in `bin/` and `scripts/`
+7. `./scripts/test` for race detection, 90% statement and 80% branch
    coverage, and Windows compilation
-7. `./scripts/audit`, the dependency audit
-8. `goreleaser check` and the Terraform Registry manifest, which must name
+8. `./scripts/audit`, the dependency audit
+9. `goreleaser check` and the Terraform Registry manifest, which must name
    protocol 6.0
-9. 2 GoReleaser snapshot builds whose checksums must match, and a DWARF debug
-   information check
-10. Go fuzzing of the multipart encoder for 15 seconds, or for `FUZZ_TIME`,
+10. 2 GoReleaser snapshot builds whose checksums must match, and a DWARF debug
+    information check
+11. Go fuzzing of the multipart encoder for 15 seconds, or for `FUZZ_TIME`,
     such as `FUZZ_TIME=2m`
-11. CodeQL with the Go `security-extended` queries on a copy of the tree,
+12. CodeQL with the Go `security-extended` queries on a copy of the tree,
     which fails on any result and on any file CodeQL could not read
-12. A check that no step changed the working tree
+13. A check that no step changed the working tree
 
 It stops at the first failure and says what to fix.
 
@@ -96,6 +98,62 @@ with an isolated account.
 ```sh
 TF_ACC=1 ./scripts/test
 ```
+
+## API coverage
+
+`bin/check-local` starts with `go run ./scripts/api_coverage.go`. It compares
+the operations in the public API spec with the requests that resources and data
+sources send. It fails when the API has an operation that the provider neither
+sends nor lists in `excluded-operations.json`. An operation that the provider
+sends and the spec lacks is fine.
+
+The check reads the spec from https://xquik.com/openapi.json. Set
+`XQUIK_OPENAPI_SPEC` to a local file path or another URL to read another copy.
+The spec must be JSON.
+
+It reads every Go file under `internal/services` except tests, and finds the
+calls on a field, parameter or variable of type `*xtwitterscraper.Client`.
+
+- A Go SDK service method, such as `r.client.X.Tweets.Get`, counts as the
+  request it sends. The check reads that method in the Go SDK source of the
+  version in `go.mod`, by the rules of the Go SDK's own check in
+  `cmd/api-coverage`.
+- A raw call, such as `r.client.Get` or `client.Execute`, needs a readable
+  path. That is a path string, a `fmt.Sprintf` format with a value for each
+  verb, a local variable assigned once to 1 of those, a package string
+  constant, or a package function whose body returns 1 of those in 1 line.
+  `Execute` also needs an `http.Method` constant.
+- `client.Execute(ctx, op.method, op.path(id), ...)` reads every literal of
+  the type of `op` in its package. Each literal sets `method` to an
+  `http.Method` constant and `pathTemplate` to a path string or format. The
+  `x_write` operation table works this way.
+
+The check puts the path of the Go SDK's default base URL, from
+`option.WithEnvironmentProduction`, before each path. It fails on a call it
+cannot read and names its file and line. Path parameter names do not matter,
+so `{id}` matches `{tweetId}`.
+
+Fix a failure by adding a resource or data source that sends the missing
+operation. An operation that the provider should not send goes in
+`excluded-operations.json` with a reason. Remove an entry when the API drops
+its operation or the provider sends it. The check fails on a stale entry.
+
+`excluded-operations.json` is a list of groups. Each group has a non-empty
+`reason` and at least 1 operation. Write an operation as an upper case method,
+a space and the absolute path from the spec. List each operation once.
+
+```json
+[
+  {
+    "reason": "Searches the Xquik docs at https://xquik.com/ask, outside the SDK base URL https://xquik.com/api/v1.",
+    "operations": ["GET /ask", "POST /ask"]
+  }
+]
+```
+
+The group that names Go SDK 0.19.2 lists retrieve methods that the Go SDK
+adds in 0.20.0. The provider gives each a data source when it moves to that
+version, and removes the group.
 
 ## Release
 

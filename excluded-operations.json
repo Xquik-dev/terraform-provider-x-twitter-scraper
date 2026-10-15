@@ -1,0 +1,212 @@
+[
+  {
+    "reason": "Searches the Xquik docs at https://xquik.com/ask, outside the SDK base URL https://xquik.com/api/v1.",
+    "operations": [
+      "GET /ask",
+      "POST /ask"
+    ]
+  },
+  {
+    "reason": "Needs a dashboard sign-in cookie, which API keys and bearer tokens cannot use.",
+    "operations": [
+      "GET /api/v1/api-keys",
+      "POST /api/v1/api-keys",
+      "DELETE /api/v1/api-keys/{id}",
+      "POST /api/v1/credits/quick-topup"
+    ]
+  },
+  {
+    "reason": "Not in Go SDK 0.19.2, which the provider builds with. https://github.com/Xquik-dev/x-twitter-scraper-go/issues/82 adds these retrieve methods, and the provider then gives each a data source.",
+    "operations": [
+      "GET /api/v1/x/lists/{id}",
+      "GET /api/v1/x/jobs/{id}",
+      "GET /api/v1/x/spaces/{id}",
+      "GET /api/v1/x/broadcasts/{id}"
+    ]
+  },
+  {
+    "reason": "Lists, searches, feeds and trends of live X data. Their results change on every call, so Terraform state cannot hold them.",
+    "operations": [
+      "GET /api/v1/x/tweets",
+      "GET /api/v1/x/tweets/search",
+      "GET /api/v1/x/tweets/top",
+      "GET /api/v1/x/tweets/{id}/favoriters",
+      "GET /api/v1/x/tweets/{id}/quotes",
+      "GET /api/v1/x/tweets/{id}/replies",
+      "GET /api/v1/x/tweets/{id}/retweeters",
+      "GET /api/v1/x/tweets/{id}/retweeter-ids",
+      "GET /api/v1/x/tweets/{id}/thread",
+      "GET /api/v1/x/tweets/{id}/hidden-replies",
+      "GET /api/v1/x/users/search",
+      "GET /api/v1/x/users/batch",
+      "GET /api/v1/x/users/batch/tweets",
+      "GET /api/v1/x/users/{id}/tweets",
+      "GET /api/v1/x/users/{id}/likes",
+      "GET /api/v1/x/users/{id}/replies",
+      "GET /api/v1/x/users/{id}/media",
+      "GET /api/v1/x/users/{id}/highlights",
+      "GET /api/v1/x/users/{id}/articles",
+      "GET /api/v1/x/users/{id}/affiliates",
+      "GET /api/v1/x/users/{id}/subscriptions",
+      "GET /api/v1/x/users/{id}/lists",
+      "GET /api/v1/x/users/{id}/list-memberships",
+      "GET /api/v1/x/users/{id}/followers",
+      "GET /api/v1/x/users/{id}/following",
+      "GET /api/v1/x/users/{id}/follower-ids",
+      "GET /api/v1/x/users/{id}/following-ids",
+      "GET /api/v1/x/users/{id}/followers-you-know",
+      "GET /api/v1/x/users/{id}/verified-followers",
+      "GET /api/v1/x/users/{id}/mentions",
+      "GET /api/v1/x/users/{id}/similar",
+      "GET /api/v1/x/communities/search",
+      "GET /api/v1/x/communities/find",
+      "GET /api/v1/x/communities/popular",
+      "GET /api/v1/x/communities/suggested",
+      "GET /api/v1/x/communities/topics",
+      "GET /api/v1/x/communities/tweets",
+      "GET /api/v1/x/communities/{id}/tweets",
+      "GET /api/v1/x/communities/{id}/media",
+      "GET /api/v1/x/communities/{id}/members",
+      "GET /api/v1/x/communities/{id}/members/search",
+      "GET /api/v1/x/communities/{id}/moderators",
+      "GET /api/v1/x/lists/search",
+      "GET /api/v1/x/lists/{id}/followers",
+      "GET /api/v1/x/lists/{id}/members",
+      "GET /api/v1/x/lists/{id}/tweets",
+      "GET /api/v1/x/bookmarks",
+      "GET /api/v1/x/bookmarks/folders",
+      "GET /api/v1/x/notifications",
+      "GET /api/v1/x/timeline",
+      "GET /api/v1/x/dm/{userId}/history",
+      "GET /api/v1/x/jobs/search",
+      "GET /api/v1/x/jobs/locations",
+      "GET /api/v1/x/spaces/search",
+      "GET /api/v1/x/community-notes/contributors/{alias}/notes",
+      "GET /api/v1/x/community-notes/contributors/{alias}/deleted-notes",
+      "GET /api/v1/x/news/{id}/versions",
+      "GET /api/v1/x/search/autocomplete",
+      "GET /api/v1/x/hashflags",
+      "GET /api/v1/x/places/search",
+      "GET /api/v1/x/trends",
+      "GET /api/v1/x/trends/history",
+      "GET /api/v1/x/trends/locations",
+      "GET /api/v1/trends",
+      "GET /api/v1/radar"
+    ]
+  },
+  {
+    "reason": "Reads that stainless.yml names other than retrieve, such as translations, insights, embeds, replays and relationship checks. The provider gives a data source only to each retrieve method, the rule its generated data sources follow.",
+    "operations": [
+      "GET /api/v1/x/tweets/{id}/embed",
+      "GET /api/v1/x/tweets/{id}/insights",
+      "GET /api/v1/x/tweets/{id}/translation",
+      "GET /api/v1/x/tweets/{id}/subtitles",
+      "GET /api/v1/x/tweets/{id}/retweeters/check",
+      "GET /api/v1/x/links/resolve",
+      "GET /api/v1/x/articles/{tweetId}",
+      "GET /api/v1/x/users/{id}/insights",
+      "GET /api/v1/x/users/{id}/translation",
+      "GET /api/v1/x/users/{id}/live",
+      "GET /api/v1/x/followers/check",
+      "GET /api/v1/x/communities/{id}/info",
+      "GET /api/v1/x/community-notes/contributors/{alias}",
+      "GET /api/v1/x/spaces/{id}/replay",
+      "GET /api/v1/styles/compare",
+      "GET /api/v1/styles/{id}/performance"
+    ]
+  },
+  {
+    "reason": "Lists of your Xquik objects and their history, such as drafts, monitors, webhook deliveries and events. The provider reads 1 object by ID through its data sources and has no list data sources.",
+    "operations": [
+      "GET /api/v1/drafts",
+      "GET /api/v1/styles",
+      "GET /api/v1/monitors",
+      "GET /api/v1/monitors/keywords",
+      "GET /api/v1/events",
+      "GET /api/v1/draws",
+      "GET /api/v1/webhooks",
+      "GET /api/v1/webhooks/{id}/deliveries",
+      "GET /api/v1/support/tickets",
+      "GET /api/v1/x/accounts"
+    ]
+  },
+  {
+    "reason": "Streams server-sent events without end, and a Terraform read must finish. stainless.yml skips Terraform for events.stream.",
+    "operations": [
+      "GET /api/v1/events/stream"
+    ]
+  },
+  {
+    "reason": "Returns a file download, not a JSON object that Terraform state can hold.",
+    "operations": [
+      "GET /api/v1/draws/{id}/export",
+      "GET /api/v1/extractions/{id}/export",
+      "GET /api/v1/support/attachments/{id}"
+    ]
+  },
+  {
+    "reason": "Runs paid one-off jobs, such as extractions, cost estimates and AI analysis, that Terraform cannot plan or keep in state. stainless.yml skips Terraform for extractions and x.analysis.",
+    "operations": [
+      "POST /api/v1/extractions",
+      "POST /api/v1/extractions/estimate",
+      "GET /api/v1/extractions",
+      "GET /api/v1/extractions/{id}",
+      "DELETE /api/v1/extractions/{id}",
+      "POST /api/v1/x/analysis/sentiment",
+      "POST /api/v1/x/analysis/viral-score",
+      "POST /api/v1/x/analysis/brand",
+      "POST /api/v1/x/analysis/news",
+      "POST /api/v1/x/analysis/market-signals",
+      "POST /api/v1/x/analysis/classify"
+    ]
+  },
+  {
+    "reason": "Connects, signs in again or removes X accounts through an interactive login with challenges. stainless.yml keeps x.accounts a read-only data source and skips Terraform for these steps.",
+    "operations": [
+      "POST /api/v1/x/accounts",
+      "DELETE /api/v1/x/accounts/{id}",
+      "POST /api/v1/x/accounts/{id}/reauth",
+      "POST /api/v1/x/accounts/bulk-retry",
+      "POST /api/v1/x/account-connection-challenges/{id}/submit",
+      "GET /api/v1/x/account-connection-attempts/{id}"
+    ]
+  },
+  {
+    "reason": "Starts a hosted checkout or reads a balance. A checkout needs a person to confirm and pay, a balance changes with every paid call, and stainless.yml skips Terraform for subscribe.",
+    "operations": [
+      "POST /api/v1/subscribe",
+      "POST /api/v1/credits/topup",
+      "GET /api/v1/credits",
+      "GET /api/v1/credits/topup/status",
+      "POST /api/v1/guest-wallets/topups",
+      "GET /api/v1/guest-wallets/status"
+    ]
+  },
+  {
+    "reason": "One-off actions that no resource covers, such as running a draw, analyzing a style, replying to a ticket, testing or resuming a webhook, downloading media and deleting a DM. They leave no object for Terraform to read back. stainless.yml skips Terraform for webhooks.create_telegram_link.",
+    "operations": [
+      "POST /api/v1/draws",
+      "POST /api/v1/styles",
+      "POST /api/v1/support/tickets/{id}/messages",
+      "POST /api/v1/webhooks/{id}/test",
+      "POST /api/v1/webhooks/{id}/resume",
+      "POST /api/v1/webhooks/telegram",
+      "POST /api/v1/x/media/download",
+      "DELETE /api/v1/x/dm/{userId}/messages/{messageId}"
+    ]
+  },
+  {
+    "reason": "Updates account settings. The account is a read-only data source, so no resource sends these updates.",
+    "operations": [
+      "PATCH /api/v1/account",
+      "PUT /api/v1/account/x-identity"
+    ]
+  },
+  {
+    "reason": "The monitor and webhook resources keep their API object when Terraform destroys them and warn about it in the plan, so they never deactivate it.",
+    "operations": [
+      "DELETE /api/v1/monitors/{id}",
+      "DELETE /api/v1/webhooks/{id}"
+    ]
+  }
+]

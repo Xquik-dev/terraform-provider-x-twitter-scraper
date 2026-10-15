@@ -223,7 +223,7 @@ func TestWritePayloadAttributesAreSensitive(t *testing.T) {
 	}
 }
 
-func TestCanonicalPollPathPreservesSDKBasePath(t *testing.T) {
+func TestWriteActionPathPreservesSDKBasePath(t *testing.T) {
 	const writeActionID = "write-action-123"
 	var requestedPath string
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
@@ -233,10 +233,10 @@ func TestCanonicalPollPathPreservesSDKBasePath(t *testing.T) {
 	}))
 	defer server.Close()
 
-	path, err := canonicalPollPath(server.URL+"/api/v1/x/write-actions/"+writeActionID, writeActionID)
-	if err != nil {
-		t.Fatalf("canonicalPollPath: %v", err)
+	if err := verifyStatusURL(server.URL+"/api/v1/x/write-actions/"+writeActionID, writeActionID); err != nil {
+		t.Fatalf("verifyStatusURL: %v", err)
 	}
+	path := writeActionPath(writeActionID)
 	client := xtwitterscraper.NewClient(option.WithBaseURL(server.URL + "/api/v1/"))
 	var response map[string]any
 	if err := client.Get(context.Background(), path, nil, &response, option.WithMaxRetries(0)); err != nil {
@@ -282,8 +282,8 @@ func TestStableStatePreservesRequestAndResponseAccountsSeparately(t *testing.T) 
 	assertEqual(t, "request payload", model.PayloadJSON.ValueString(), `{"text":"hello"}`)
 }
 
-func TestCanonicalPollPathRejectsDifferentWrite(t *testing.T) {
-	_, err := canonicalPollPath("https://xquik.com/api/v1/x/write-actions/other", "expected")
+func TestStatusURLCheckRejectsDifferentWrite(t *testing.T) {
+	err := verifyStatusURL("https://xquik.com/api/v1/x/write-actions/other", "expected")
 	if err == nil {
 		t.Fatal("expected mismatched polling URL error")
 	}
@@ -448,12 +448,12 @@ func TestPollRejectsInvalidCanonicalResponse(t *testing.T) {
 	}
 }
 
-func TestCanonicalPollPathRejectsMalformedURL(t *testing.T) {
+func TestStatusURLCheckRejectsMalformedURL(t *testing.T) {
 	t.Parallel()
 
-	_, err := canonicalPollPath("https://example.com/%", "write-action-123")
+	err := verifyStatusURL("https://example.com/%", "write-action-123")
 	if err == nil || !strings.Contains(err.Error(), "statusUrl is invalid") {
-		t.Fatalf("canonicalPollPath() error = %v", err)
+		t.Fatalf("verifyStatusURL() error = %v", err)
 	}
 }
 
