@@ -1228,8 +1228,11 @@ func (d *decoderBuilder) newCustomTimeTypeDecoder(t reflect.Type) decoderFunc {
 		}
 		parsed, err := decodeTime(format, n.Str, state)
 		if err == nil {
-			val := timetypes.NewRFC3339TimePointerValue(parsed)
-			v.Set(reflect.ValueOf(val).Convert(t))
+			text := parsed.Format(time.RFC3339Nano)
+			if _, strictErr := time.Parse(time.RFC3339, n.Str); strictErr == nil {
+				text = n.Str
+			}
+			v.Set(reflect.ValueOf(timetypes.NewRFC3339ValueMust(text)).Convert(t))
 		}
 		return err
 	}
