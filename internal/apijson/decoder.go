@@ -13,6 +13,7 @@ import (
 	"math/big"
 	"reflect"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 	"unsafe"
@@ -1229,7 +1230,7 @@ func (d *decoderBuilder) newCustomTimeTypeDecoder(t reflect.Type) decoderFunc {
 		parsed, err := decodeTime(format, n.Str, state)
 		if err == nil {
 			text := parsed.Format(time.RFC3339Nano)
-			if _, strictErr := time.Parse(time.RFC3339, n.Str); strictErr == nil {
+			if _, strictErr := time.Parse(time.RFC3339, n.Str); strictErr == nil && !strings.Contains(n.Str, ",") {
 				text = n.Str
 			}
 			v.Set(reflect.ValueOf(timetypes.NewRFC3339ValueMust(text)).Convert(t))

@@ -424,6 +424,30 @@ var decode_only_tests = map[string]struct {
 		},
 	},
 
+	"datetime_custom_struct_trailing_zeros": {
+		`{"date":"2006-01-02","date-time":"2006-01-02T15:04:05.500+00:00"}`,
+		DateTimeCustom{
+			DateCustom:     time2time(time.Date(2006, time.January, 2, 0, 0, 0, 0, time.UTC)),
+			DateTimeCustom: timetypes.NewRFC3339ValueMust("2006-01-02T15:04:05.500+00:00"),
+		},
+	},
+
+	"datetime_custom_struct_comma_fraction": {
+		`{"date":"2006-01-02","date-time":"2006-01-02T15:04:05,5Z"}`,
+		DateTimeCustom{
+			DateCustom:     time2time(time.Date(2006, time.January, 2, 0, 0, 0, 0, time.UTC)),
+			DateTimeCustom: timetypes.NewRFC3339ValueMust("2006-01-02T15:04:05.5Z"),
+		},
+	},
+
+	"datetime_custom_struct_lenient_fraction_offset": {
+		`{"date":"2006-01-02","date-time":"2006-01-02 15:04:05.5+0100"}`,
+		DateTimeCustom{
+			DateCustom:     time2time(time.Date(2006, time.January, 2, 0, 0, 0, 0, time.UTC)),
+			DateTimeCustom: timetypes.NewRFC3339ValueMust("2006-01-02T15:04:05.5+01:00"),
+		},
+	},
+
 	"datetime_custom_struct_offset": {
 		`{"date":"2006-01-02","date-time":"2006-01-02T18:04:05.5+03:00"}`,
 		DateTimeCustom{
