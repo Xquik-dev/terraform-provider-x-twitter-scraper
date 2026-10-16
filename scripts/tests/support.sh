@@ -36,6 +36,7 @@ create_sandbox() {
 }
 
 remove_sandbox() {
+  chmod -R u+w "${sandbox:?}"
   rm -rf -- "${sandbox:?}"
 }
 

@@ -29,6 +29,7 @@ readonly status_endpoint="repos/Xquik-dev/terraform-provider-x-twitter-scraper/s
 prepare_checks() {
   local name
   copy_file bin/check-local
+  copy_file scripts/temp-paths
   for name in bootstrap lint test-scripts test codeql; do
     stub "scripts/$name" <<EOF
 #!/usr/bin/env bash
@@ -171,7 +172,7 @@ EOF
   run_in_repo bin/check-local --no-status
 
   assert_equal 0 "$run_status" "the exit code"
-  assert_equal "--external-sources bin/check-local bin/check-release-debug-info scripts/audit scripts/bootstrap scripts/codeql scripts/lint scripts/test scripts/test-scripts scripts/tests/sample.test.sh" \
+  assert_equal "--external-sources bin/check-local bin/check-release-debug-info scripts/audit scripts/bootstrap scripts/codeql scripts/lint scripts/temp-paths scripts/test scripts/test-scripts scripts/tests/sample.test.sh" \
     "$(log_of shellcheck)" "the shellcheck call"
 }
 

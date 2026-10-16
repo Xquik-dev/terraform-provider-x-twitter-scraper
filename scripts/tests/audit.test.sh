@@ -19,6 +19,7 @@ day() {
 
 prepare_audit() {
   copy_file scripts/audit
+  copy_file scripts/temp-paths
   write_file audit-exceptions.json
   : >"$sandbox/report.json"
   fake go <<EOF

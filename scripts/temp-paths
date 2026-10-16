@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2026 Xquik contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
+temp_paths=()
+background_child=""
+
+make_temp() {
+  local variable="$1" name="$2" root="${TMPDIR:-/tmp}" created
+  shift 2
+  created="$(mktemp "$@" "${root%/}/xquik-terraform-$name.XXXXXX")"
+  temp_paths+=("$created")
+  printf -v "$variable" '%s' "$created"
+}
+
+stop_process_tree() {
+  local child
+  for child in $(pgrep -P "$1" 2>/dev/null || true); do
+    stop_process_tree "$child"
+  done
+  kill "$1" 2>/dev/null || true
+}
+
+remove_temp_paths() {
+  local path
+  if [[ -n "$background_child" ]]; then
+    stop_process_tree "$background_child"
+    wait "$background_child" 2>/dev/null || true
+    background_child=""
+  fi
+  for path in ${temp_paths[@]+"${temp_paths[@]}"}; do
+    chmod -R u+w "$path" 2>/dev/null || true
+    rm -rf -- "$path"
+  done
+  temp_paths=()
+}
+
+exit_on_signals() {
+  trap 'exit 130' INT
+  trap 'exit 143' TERM
+  trap 'exit 129' HUP
+}

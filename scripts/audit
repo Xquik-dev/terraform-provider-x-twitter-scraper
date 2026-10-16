@@ -8,11 +8,16 @@ set -euo pipefail
 
 cd -- "$(dirname -- "$0")/.."
 
+# shellcheck source=scripts/temp-paths
+source scripts/temp-paths
+
 readonly govulncheck="golang.org/x/vuln/cmd/govulncheck@v1.9.0"
 readonly exceptions_file="audit-exceptions.json"
 
-report="$(mktemp "${TMPDIR:-/tmp}/xquik-terraform-govulncheck.XXXXXX")"
-trap 'rm -f -- "$report"' EXIT
+trap remove_temp_paths EXIT
+exit_on_signals
+report=""
+make_temp report govulncheck
 
 echo "==> Verifying module checksums"
 go mod verify
