@@ -6,11 +6,11 @@ package internal
 
 import (
 	"context"
+	"embed"
 	"math/big"
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"path/filepath"
+	"path"
 	"strconv"
 	"strings"
 	"testing"
@@ -21,6 +21,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
+
+//go:embed testdata/data_sources
+var dataSourceFixtures embed.FS
 
 func TestDataSourcesReadTheSpecExamples(t *testing.T) {
 	t.Parallel()
@@ -96,7 +99,7 @@ func TestDataSourcesReadTheSpecExamples(t *testing.T) {
 		t.Run(test.typeName, func(t *testing.T) {
 			t.Parallel()
 
-			fixture, err := os.ReadFile(filepath.Join("testdata", "data_sources", test.fixture))
+			fixture, err := dataSourceFixtures.ReadFile(path.Join("testdata", "data_sources", test.fixture))
 			if err != nil {
 				t.Fatal(err)
 			}
