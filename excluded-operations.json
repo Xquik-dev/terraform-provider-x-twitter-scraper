@@ -16,15 +16,6 @@
     ]
   },
   {
-    "reason": "Not in Go SDK 0.19.2, which the provider builds with. https://github.com/Xquik-dev/x-twitter-scraper-go/issues/82 adds these retrieve methods, and the provider then gives each a data source.",
-    "operations": [
-      "GET /api/v1/x/lists/{id}",
-      "GET /api/v1/x/jobs/{id}",
-      "GET /api/v1/x/spaces/{id}",
-      "GET /api/v1/x/broadcasts/{id}"
-    ]
-  },
-  {
     "reason": "Lists, searches, feeds and trends of live X data. Their results change on every call, so Terraform state cannot hold them.",
     "operations": [
       "GET /api/v1/x/tweets",
