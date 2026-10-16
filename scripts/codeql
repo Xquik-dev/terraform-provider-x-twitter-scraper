@@ -8,6 +8,9 @@ set -euo pipefail
 
 cd -- "$(dirname -- "$0")/.."
 
+# shellcheck source=scripts/temp-paths
+source scripts/temp-paths
+
 readonly pack_name="codeql/go-queries"
 readonly pack_version="1.6.12"
 readonly suite_path="codeql-suites/go-security-extended.qls"
@@ -20,9 +23,10 @@ readonly download_limit="${CODEQL_DOWNLOAD_SECONDS:-300}"
   exit 2
 }
 
-temp_root="${TMPDIR:-/tmp}"
-workspace="$(mktemp -d "${temp_root%/}/xquik-terraform-codeql.XXXXXX")"
-trap 'rm -rf -- "${workspace:?}"' EXIT
+trap remove_temp_paths EXIT
+exit_on_signals
+workspace=""
+make_temp workspace codeql -d
 workspace="$(cd -- "$workspace" && pwd -P)"
 readonly source_root="$workspace/source"
 readonly packs="$workspace/packs"
@@ -30,29 +34,23 @@ readonly caches="$workspace/caches"
 readonly database="$workspace/database"
 readonly results="$workspace/results.sarif"
 
-stop_tree() {
-  local child
-  for child in $(pgrep -P "$1" 2>/dev/null || true); do
-    stop_tree "$child"
-  done
-  kill "$1" 2>/dev/null || true
-}
-
 run_with_limit() {
-  local limit="$1" waited=0 status=0 pid
+  local limit="$1" waited=0 status=0
   shift
   "$@" &
-  pid=$!
-  while kill -0 "$pid" 2>/dev/null; do
+  background_child=$!
+  while kill -0 "$background_child" 2>/dev/null; do
     if ((waited >= limit)); then
-      stop_tree "$pid"
-      wait "$pid" 2>/dev/null || true
+      stop_process_tree "$background_child"
+      wait "$background_child" 2>/dev/null || true
+      background_child=""
       return 124
     fi
     sleep 1
     waited=$((waited + 1))
   done
-  wait "$pid" || status=$?
+  wait "$background_child" || status=$?
+  background_child=""
   return "$status"
 }
 

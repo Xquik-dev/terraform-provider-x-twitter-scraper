@@ -8,6 +8,9 @@ set -euo pipefail
 
 cd -- "$(dirname -- "$0")/.."
 
+# shellcheck source=scripts/temp-paths
+source scripts/temp-paths
+
 readonly repository="Xquik-dev/terraform-provider-x-twitter-scraper"
 readonly status_context="xquik-local-checks"
 readonly status_limit=139
@@ -25,13 +28,11 @@ for argument in "$@"; do
 done
 
 readonly fuzz_time="${FUZZ_TIME:-15s}"
-temp_root="${TMPDIR:-/tmp}"
 check_name="Startup"
 check_label=""
 check_hint="Fix the error above, then rerun."
 passed_checks=()
 status_sha=""
-workspace="$(mktemp -d "${temp_root%/}/xquik-terraform-check.XXXXXX")"
 
 post_status() {
   if [[ -z "$status_sha" ]]; then
@@ -47,13 +48,16 @@ post_status() {
 
 finish() {
   local status=$?
-  rm -rf -- "${workspace:?}"
+  remove_temp_paths
   if ((status != 0)); then
     echo "Check failed at $check_name. $check_hint" >&2
     post_status failure "Failed at $check_name."
   fi
 }
 trap finish EXIT
+exit_on_signals
+workspace=""
+make_temp workspace check -d
 
 start_check() {
   check_name="$1"

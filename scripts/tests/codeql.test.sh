@@ -11,6 +11,7 @@ source "$(dirname -- "${BASH_SOURCE[0]}")/support.sh"
 
 prepare_codeql() {
   copy_file scripts/codeql
+  copy_file scripts/temp-paths
   write_file main.go <<'EOF'
 package main
 EOF
