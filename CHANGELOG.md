@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.0 (2026-10-16)
+
+[Full changelog from v0.8.0 to v0.9.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.8.0...v0.9.0)
+
+### Features
+
+* The `x_tweet` and `x_user` data sources gain a `json` attribute with the full API response. Read any field with `jsondecode`, including fields the typed attributes leave out, such as `jsondecode(data.x-twitter-scraper_x_tweet.example.json).tweet.isPinned`.
+
 ## 0.8.0 (2026-10-16)
 
 [Full changelog from v0.7.5 to v0.8.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.7.5...v0.8.0)

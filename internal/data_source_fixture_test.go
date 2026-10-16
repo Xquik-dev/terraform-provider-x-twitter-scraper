@@ -7,6 +7,7 @@ package internal
 import (
 	"context"
 	"embed"
+	"encoding/json"
 	"math/big"
 	"net/http"
 	"net/http/httptest"
@@ -123,6 +124,109 @@ func TestDataSourcesReadTheSpecExamples(t *testing.T) {
 				assertState(t, state, attributePath, want)
 			}
 		})
+	}
+}
+
+func TestDataSourcesKeepTheFullResponseAsJSON(t *testing.T) {
+	t.Parallel()
+
+	for _, test := range []struct {
+		typeName string
+		id       string
+		path     string
+		fixture  string
+		typed    map[string]any
+		decoded  map[string]any
+	}{
+		{"x-twitter-scraper_x_tweet", "2102882545427714266", "/api/v1/x/tweets/2102882545427714266", "x_tweet.json", map[string]any{
+			"tweet.id":        "2102882545427714266",
+			"author.username": "NASA",
+		}, map[string]any{
+			"tweet.id":              "2102882545427714266",
+			"tweet.isPinned":        false,
+			"tweet.isRetweet":       false,
+			"tweet.viewState":       "EnabledWithCount",
+			"tweet.media.0.type":    "photo",
+			"author.username":       "NASA",
+			"author.birthdate.year": int64(1958),
+		}},
+		{"x-twitter-scraper_x_user", "NASA", "/api/v1/x/users/NASA", "x_user.json", map[string]any{
+			"username": "NASA",
+		}, map[string]any{
+			"username":                              "NASA",
+			"birthdate.year":                        int64(1958),
+			"contactInfo.links.0.network":           "website",
+			"verificationReason.entities.0.urlType": "ExternalUrl",
+		}},
+	} {
+		t.Run(test.typeName, func(t *testing.T) {
+			t.Parallel()
+
+			fixture, err := dataSourceFixtures.ReadFile(path.Join("testdata", "data_sources", test.fixture))
+			if err != nil {
+				t.Fatal(err)
+			}
+			var requested string
+			server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+				requested = request.Method + " " + request.URL.Path
+				writer.Header().Set("Content-Type", "application/json")
+				_, _ = writer.Write(fixture)
+			}))
+			t.Cleanup(server.Close)
+			client := xtwitterscraper.NewClient(
+				option.WithAPIKey("test-api-key"),
+				option.WithBaseURL(server.URL+"/api/v1/"),
+				option.WithMaxRetries(0),
+			)
+
+			state := readDataSource(t, dataSourceNamed(t, test.typeName), &client, test.id)
+
+			assertEqual(t, "request", requested, "GET "+test.path)
+			for attributePath, want := range test.typed {
+				assertState(t, state, attributePath, want)
+			}
+			var text string
+			found, _, err := tftypes.WalkAttributePath(state, tftypes.NewAttributePath().WithAttributeName("json"))
+			if err != nil {
+				t.Fatalf("json is not in the state: %v", err)
+			}
+			if err := found.(tftypes.Value).As(&text); err != nil {
+				t.Fatalf("json is not a string: %v", err)
+			}
+			var decoded any
+			if err := json.Unmarshal([]byte(text), &decoded); err != nil {
+				t.Fatalf("json does not decode: %v", err)
+			}
+			for jsonPath, want := range test.decoded {
+				assertDecoded(t, decoded, jsonPath, want)
+			}
+		})
+	}
+}
+
+func assertDecoded(t *testing.T, decoded any, jsonPath string, want any) {
+	t.Helper()
+	value := decoded
+	for _, step := range strings.Split(jsonPath, ".") {
+		if index, err := strconv.Atoi(step); err == nil {
+			list, ok := value.([]any)
+			if !ok || index >= len(list) {
+				t.Fatalf("%s has no element %d", jsonPath, index)
+			}
+			value = list[index]
+			continue
+		}
+		object, ok := value.(map[string]any)
+		if !ok {
+			t.Fatalf("%s has no field %s", jsonPath, step)
+		}
+		value = object[step]
+	}
+	if whole, ok := want.(int64); ok {
+		want = float64(whole)
+	}
+	if value != want {
+		t.Fatalf("jsondecode(json).%s = %v, want %v", jsonPath, value, want)
 	}
 }
 

@@ -12,6 +12,7 @@ import (
 
 type XTweetDataSourceModel struct {
 	ID     types.String                                          `tfsdk:"id" path:"id,required"`
+	JSON   jsontypes.Normalized                                  `tfsdk:"json"`
 	Author customfield.NestedObject[XTweetAuthorDataSourceModel] `tfsdk:"author" json:"author,computed"`
 	Tweet  customfield.NestedObject[XTweetTweetDataSourceModel]  `tfsdk:"tweet" json:"tweet,computed"`
 }

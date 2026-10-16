@@ -13,6 +13,7 @@ import (
 
 type XUserDataSourceModel struct {
 	ID                              types.String                                                             `tfsdk:"id" path:"id,required"`
+	JSON                            jsontypes.Normalized                                                     `tfsdk:"json"`
 	Name                            types.String                                                             `tfsdk:"name" json:"name,computed"`
 	Username                        types.String                                                             `tfsdk:"username" json:"username,computed"`
 	AccountBasedIn                  customfield.NestedObject[XUserAccountBasedInDataSourceModel]             `tfsdk:"account_based_in" json:"accountBasedIn,computed"`

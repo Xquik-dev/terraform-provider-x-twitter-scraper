@@ -26,6 +26,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 			"id": schema.StringAttribute{
 				Required: true,
 			},
+			"json": schema.StringAttribute{
+				Description: "Full API response as JSON, with every field the API sends, typed here or not. Read it with jsondecode.",
+				Computed:    true,
+				CustomType:  jsontypes.NormalizedType{},
+			},
 			"author": schema.SingleNestedAttribute{
 				Description: "Tweet author profile. The lookup route always includes follower count and verification state. Other profile fields appear when available.",
 				Computed:    true,
