@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+# SPDX-FileCopyrightText: 2026 Xquik contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
+temp_paths=()
+
+make_temp() {
+  local variable="$1" name="$2" root="${TMPDIR:-/tmp}" created
+  shift 2
+  created="$(mktemp "$@" "${root%/}/xquik-terraform-$name.XXXXXX")"
+  temp_paths+=("$created")
+  printf -v "$variable" '%s' "$created"
+}
+
+remove_temp_paths() {
+  local path
+  for path in ${temp_paths[@]+"${temp_paths[@]}"}; do
+    chmod -R u+w "$path" 2>/dev/null || true
+    rm -rf -- "$path"
+  done
+  temp_paths=()
+}
+
+exit_on_signals() {
+  trap 'trap - INT; kill -INT "$$"' INT
+  trap 'exit 143' TERM
+  trap 'exit 129' HUP
+}

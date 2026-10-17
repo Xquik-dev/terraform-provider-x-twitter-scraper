@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Chores
+
+* The check and release scripts remove their temporary files and folders on every exit, including a failed step and a signal.
+
 ## 0.7.5 (2026-10-13)
 
 [Full changelog from v0.7.4 to v0.7.5](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.7.4...v0.7.5)
@@ -32,7 +38,7 @@ Full Changelog: [v0.7.3...v0.7.4](https://github.com/Xquik-dev/terraform-provide
 
 ### Documentation
 
-* tighten Terraform provider copy ([#43](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/43)) ([b124bab](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/b124babbfade9d62da29ed657e3d879c1526ca65))
+* tighten Terraform provider copy ([b124bab](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/b124babbfade9d62da29ed657e3d879c1526ca65))
 
 ## 0.7.3 (2026-08-20)
 
@@ -40,7 +46,7 @@ Full Changelog: [v0.7.2...v0.7.3](https://github.com/Xquik-dev/terraform-provide
 
 ### Documentation
 
-* rewrite public provider text ([#41](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/41)) ([d6bad5f](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/d6bad5f6a85501083226c9391818e4048387890d))
+* rewrite public provider text ([d6bad5f](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/d6bad5f6a85501083226c9391818e4048387890d))
 
 ## 0.7.2 (2026-08-18)
 
@@ -48,7 +54,7 @@ Full Changelog: [v0.7.1...v0.7.2](https://github.com/Xquik-dev/terraform-provide
 
 ### Build System
 
-* update all stable dependencies ([#39](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/39)) ([8832517](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/8832517567bb9eca0160d6e3e3e259f791243c43))
+* update all stable dependencies ([8832517](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/8832517567bb9eca0160d6e3e3e259f791243c43))
 
 ## 0.7.1 (2026-08-11)
 
@@ -108,11 +114,11 @@ Full Changelog: [v0.4.0...v0.5.0](https://github.com/Xquik-dev/terraform-provide
 
 ### Bug Fixes
 
-* make draft release lookup reliable ([#22](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/22)) ([3431508](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/343150844f33dc41e7ef17969e978da857d38796))
+* make draft release lookup reliable ([3431508](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/343150844f33dc41e7ef17969e978da857d38796))
 * make JSON encoder cache concurrency-safe ([7b3e09a](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/7b3e09a8e87fe5a380a0809b8bf97e0495b6adfe))
-* publish assets before immutable release ([#17](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/17)) ([216c7bb](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/216c7bbbc0f4d504a5731af9072f6930393de13c))
+* publish assets before immutable release ([216c7bb](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/216c7bbbc0f4d504a5731af9072f6930393de13c))
 * remove stale integration provider surface ([8fe2514](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/8fe251402e2f2170a8b0f222bf19d44241dc1cc1))
-* update grpc-go for security advisory ([#15](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/15)) ([a181f76](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/a181f76e190f1cf61cd3efc8abcf931b6e3a65a0))
+* update grpc-go for security advisory ([a181f76](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/a181f76e190f1cf61cd3efc8abcf931b6e3a65a0))
 
 
 ### Chores
@@ -144,7 +150,7 @@ Full Changelog: [v0.4.0...v0.5.0](https://github.com/Xquik-dev/terraform-provide
 * add Contributor Covenant 2.1 Code of Conduct ([4e0d175](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/4e0d175a8d789f320c5bed9d1c5c6277b589e458))
 * add DeepWiki badge ([c5fb7e5](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/c5fb7e5155cf5ffd2532486aa13158ea0507f423))
 * clarify repository discovery ([cbded21](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/cbded216b7cb33aeaa85ebaa3d29a25fb0804eee))
-* map common Terraform workflows ([#9](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/9)) ([746b306](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/746b3069736a93d53ed86162cf4cb0c1018b4240))
+* map common Terraform workflows ([746b306](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/746b3069736a93d53ed86162cf4cb0c1018b4240))
 * remove generator vendor disclosure ([961a0c6](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/961a0c6a9ad167569f21b013c4e1ccdbeb4af1ed))
 
 ## 0.4.0 (2026-07-28)
@@ -161,9 +167,9 @@ Full Changelog: [v0.3.3...v0.4.0](https://github.com/Xquik-dev/terraform-provide
 ### Bug Fixes
 
 * make JSON encoder cache concurrency-safe ([7b3e09a](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/7b3e09a8e87fe5a380a0809b8bf97e0495b6adfe))
-* publish assets before immutable release ([#17](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/17)) ([216c7bb](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/216c7bbbc0f4d504a5731af9072f6930393de13c))
+* publish assets before immutable release ([216c7bb](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/216c7bbbc0f4d504a5731af9072f6930393de13c))
 * remove stale integration provider surface ([8fe2514](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/8fe251402e2f2170a8b0f222bf19d44241dc1cc1))
-* update grpc-go for security advisory ([#15](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/15)) ([a181f76](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/a181f76e190f1cf61cd3efc8abcf931b6e3a65a0))
+* update grpc-go for security advisory ([a181f76](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/a181f76e190f1cf61cd3efc8abcf931b6e3a65a0))
 
 
 ### Chores
@@ -191,7 +197,7 @@ Full Changelog: [v0.3.3...v0.4.0](https://github.com/Xquik-dev/terraform-provide
 * add Contributor Covenant 2.1 Code of Conduct ([4e0d175](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/4e0d175a8d789f320c5bed9d1c5c6277b589e458))
 * add DeepWiki badge ([c5fb7e5](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/c5fb7e5155cf5ffd2532486aa13158ea0507f423))
 * clarify repository discovery ([cbded21](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/cbded216b7cb33aeaa85ebaa3d29a25fb0804eee))
-* map common Terraform workflows ([#9](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/9)) ([746b306](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/746b3069736a93d53ed86162cf4cb0c1018b4240))
+* map common Terraform workflows ([746b306](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/746b3069736a93d53ed86162cf4cb0c1018b4240))
 * remove generator vendor disclosure ([961a0c6](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/961a0c6a9ad167569f21b013c4e1ccdbeb4af1ed))
 
 ## 0.3.3 (2026-07-25)
@@ -200,8 +206,8 @@ Full Changelog: [v0.3.2...v0.3.3](https://github.com/Xquik-dev/terraform-provide
 
 ### Bug Fixes
 
-* publish assets before immutable release ([#17](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/17)) ([216c7bb](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/216c7bbbc0f4d504a5731af9072f6930393de13c))
-* update grpc-go for security advisory ([#15](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/15)) ([a181f76](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/a181f76e190f1cf61cd3efc8abcf931b6e3a65a0))
+* publish assets before immutable release ([216c7bb](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/216c7bbbc0f4d504a5731af9072f6930393de13c))
+* update grpc-go for security advisory ([a181f76](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/a181f76e190f1cf61cd3efc8abcf931b6e3a65a0))
 
 ## 0.3.2 (2026-07-24)
 
@@ -234,7 +240,7 @@ Full Changelog: [v0.3.0...v0.3.1](https://github.com/Xquik-dev/terraform-provide
 
 ### Documentation
 
-* map common Terraform workflows ([#9](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/issues/9)) ([746b306](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/746b3069736a93d53ed86162cf4cb0c1018b4240))
+* map common Terraform workflows ([746b306](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/746b3069736a93d53ed86162cf4cb0c1018b4240))
 
 ## 0.3.0 (2026-07-22)
 

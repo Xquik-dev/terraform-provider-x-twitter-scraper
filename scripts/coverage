@@ -8,15 +8,15 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+source scripts/temp-paths
+
 coverage_threshold="${COVERAGE_THRESHOLD:-90.0}"
-coverage_workspace="$(mktemp -d)"
+trap remove_temp_paths EXIT
+exit_on_signals
+coverage_workspace=""
+make_temp coverage_workspace coverage -d
 coverage_binary_dir="$coverage_workspace/bin"
 coverage_data_dir="$coverage_workspace/data"
-
-cleanup() {
-  rm -rf -- "$coverage_workspace"
-}
-trap cleanup EXIT
 
 mkdir -p "$coverage_binary_dir" "$coverage_data_dir"
 

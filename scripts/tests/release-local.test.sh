@@ -18,6 +18,7 @@ readonly test_fingerprint="0000111122223333444455556666777788889999"
 prepare_release() {
   local version="${1:-1.2.3}"
   copy_file bin/release-local
+  copy_file scripts/temp-paths
   copy_file scripts/release-listing
   stub bin/check-local <<'EOF'
 #!/usr/bin/env bash

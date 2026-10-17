@@ -9,6 +9,8 @@ set +o xtrace
 
 cd -- "$(dirname -- "$0")/.."
 
+source scripts/temp-paths
+
 readonly repository="Xquik-dev/terraform-provider-x-twitter-scraper"
 readonly project="terraform-provider-x-twitter-scraper"
 readonly registry_versions_url="https://registry.terraform.io/v1/providers/Xquik-dev/x-twitter-scraper/versions"
@@ -39,17 +41,18 @@ if [[ "$dry_run" == false && -z "${RELEASE_SIGNING_KEYCHAIN_SERVICE:-}" ]]; then
   refuse "RELEASE_SIGNING_KEYCHAIN_SERVICE is not set. Set it to the Keychain item that holds the GPG passphrase, then rerun."
 fi
 
-temp_root="${TMPDIR:-/tmp}"
-workspace="$(mktemp -d "${temp_root%/}/xquik-terraform-release.XXXXXX")"
 remove_local_tag=false
 
 cleanup() {
-  rm -rf -- "${workspace:?}"
+  remove_temp_paths
   if [[ "$remove_local_tag" == true ]]; then
     git tag --delete "$tag" >/dev/null
   fi
 }
 trap cleanup EXIT
+exit_on_signals
+workspace=""
+make_temp workspace release -d
 
 step "Checking required tools"
 required_tools=(cmp curl gh git go jq shasum unzip)

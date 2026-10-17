@@ -43,6 +43,10 @@ Never include API keys, tokens, Terraform state, or private account data.
 
 Run every required check.
 
+Check and release scripts remove temporary files and directories on any exit.
+Coverage reports are temporary by default. Set `COVERAGE_OUTPUT` to a file path
+to keep a copy of the statement coverage report from `scripts/coverage`.
+
 ```sh
 bin/check-local
 ```
