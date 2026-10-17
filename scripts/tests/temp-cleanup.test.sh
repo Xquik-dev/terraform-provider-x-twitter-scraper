@@ -36,6 +36,7 @@ EOF
 }
 
 start_in_repo() {
+  set -m
   (
     cd -- "$sandbox_repo"
     exec env -i \
@@ -53,6 +54,7 @@ start_in_repo() {
       "$@"
   ) >"$sandbox/stdout" 2>"$sandbox/stderr" </dev/null &
   run_pid=$!
+  set +m
 }
 
 signal_when_blocked() {
@@ -65,7 +67,11 @@ signal_when_blocked() {
     fi
     sleep 0.05
   done
-  kill "-$1" "$run_pid"
+  if [[ "$1" == INT ]]; then
+    kill -INT -- "-$run_pid"
+  else
+    kill "-$1" "$run_pid"
+  fi
   run_status=0
   wait "$run_pid" || run_status=$?
   run_stdout="$(cat "$sandbox/stdout")"

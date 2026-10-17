@@ -43,6 +43,9 @@ Never include API keys, tokens, Terraform state, or private account data.
 
 Run every required check.
 
+Check and release scripts remove temporary files and directories on any exit.
+Keep coverage reports under the Git common directory with `COVERAGE_OUTPUT`.
+
 ```sh
 bin/check-local
 ```

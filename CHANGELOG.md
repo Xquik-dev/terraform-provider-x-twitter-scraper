@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Chores
+
+* The check and release scripts remove their temporary files and folders on every exit, including a failed step and a signal.
+
 ## 0.7.5 (2026-10-13)
 
 [Full changelog from v0.7.4 to v0.7.5](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.7.4...v0.7.5)
