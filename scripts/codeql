@@ -23,7 +23,26 @@ readonly download_limit="${CODEQL_DOWNLOAD_SECONDS:-300}"
   exit 2
 }
 
-trap remove_temp_paths EXIT
+background_child=""
+
+stop_process_tree() {
+  local child
+  for child in $(pgrep -P "$1" 2>/dev/null || true); do
+    stop_process_tree "$child"
+  done
+  kill "$1" 2>/dev/null || true
+}
+
+cleanup() {
+  if [[ -n "$background_child" ]]; then
+    stop_process_tree "$background_child"
+    wait "$background_child" 2>/dev/null || true
+    background_child=""
+  fi
+  remove_temp_paths
+}
+
+trap cleanup EXIT
 exit_on_signals
 workspace=""
 make_temp workspace codeql -d

@@ -20,6 +20,11 @@ prepare_script() {
 fake_tool() {
   fake "$1" <<'EOF'
 #!/bin/sh
+if [ "$*" = "list ./..." ]; then
+  echo "example.com/provider"
+  exit 0
+fi
+echo "$*" >>"$FAKE_LOGS/tool-calls"
 ls -A "$TMPDIR" >"$FAKE_LOGS/temp-during"
 if [ -n "${FAKE_READ_ONLY:-}" ] && [ -n "${GOCACHE:-}" ]; then
   mkdir -p "$GOCACHE/sealed"
@@ -27,8 +32,10 @@ if [ -n "${FAKE_READ_ONLY:-}" ] && [ -n "${GOCACHE:-}" ]; then
   chmod -R a-w "$GOCACHE/sealed"
 fi
 if [ "${FAKE_MODE:-}" = "block" ]; then
+  trap 'exit 0' INT
   touch "$FAKE_LOGS/started"
   sleep 1
+  ls -A "$TMPDIR" >"$FAKE_LOGS/temp-after-pause"
   exit 0
 fi
 exit 1
@@ -79,8 +86,20 @@ signal_when_blocked() {
 }
 
 assert_only_earlier_run_left() {
-  assert_contains "$(log_of temp-during)" "xquik-" "the temp folder while the step ran"
+  assert_contains "$(log_of temp-during)" "xquik-terraform-" "the temp folder while the step ran"
   assert_equal "$earlier_run" "$(ls -A "$sandbox/tmp")" "the temp folder after the run"
+}
+
+assert_temp_survives_step() {
+  local tries=0
+  until [[ -f "$sandbox_logs/temp-after-pause" ]]; do
+    tries=$((tries + 1))
+    if ((tries > 200)); then
+      fail_test "The blocking step never recorded its temp folder after the pause."
+    fi
+    sleep 0.05
+  done
+  assert_equal "$(log_of temp-during)" "$(log_of temp-after-pause)" "the temp folder until the step finished"
 }
 
 prepare_interrupt() {
@@ -90,8 +109,9 @@ prepare_interrupt() {
 
 assert_interrupted() {
   assert_equal INT "$(kill -l "$run_status")" "the terminating signal"
-  assert_contains "$(log_of temp-during)" "xquik-" "the temp folder while the step ran"
+  assert_contains "$(log_of temp-during)" "xquik-terraform-" "the temp folder while the step ran"
   assert_equal "" "$(ls -A "$sandbox/tmp/interrupt")" "the temp folder after the run"
+  assert_equal 1 "$(grep -c . "$sandbox_logs/tool-calls")" "the tool calls"
 }
 
 prepare_check_local() {
@@ -143,6 +163,19 @@ test_check_local_removes_its_temp_folder_when_terminated() {
   signal_when_blocked TERM
 
   assert_equal 143 "$run_status" "the exit code"
+  assert_temp_survives_step
+  assert_only_earlier_run_left
+}
+
+test_check_local_removes_its_temp_folder_when_hung_up() {
+  prepare_check_local
+  run_env=("FAKE_MODE=block")
+
+  start_in_repo bin/check-local --no-status
+  signal_when_blocked HUP
+
+  assert_equal 129 "$run_status" "the exit code"
+  assert_temp_survives_step
   assert_only_earlier_run_left
 }
 
@@ -177,7 +210,33 @@ test_release_local_removes_its_temp_folder_when_terminated() {
   signal_when_blocked TERM
 
   assert_equal 143 "$run_status" "the exit code"
+  assert_temp_survives_step
   assert_only_earlier_run_left
+}
+
+test_release_local_removes_its_temp_folder_when_hung_up() {
+  prepare_release_local
+  add_origin
+  run_env=("FAKE_MODE=block")
+
+  start_in_repo bin/release-local --dry-run
+  signal_when_blocked HUP
+
+  assert_equal 129 "$run_status" "the exit code"
+  assert_temp_survives_step
+  assert_only_earlier_run_left
+}
+
+test_release_local_stops_and_removes_its_temp_folder_when_interrupted() {
+  prepare_release_local
+  add_origin
+  prepare_interrupt
+
+  start_in_repo bin/release-local --dry-run
+  signal_when_blocked INT
+
+  assert_interrupted
+  assert_not_contains "$run_stdout" "==> Checking GitHub releases" "stdout"
 }
 
 test_codeql_removes_its_temp_folder_when_codeql_fails() {
@@ -187,6 +246,63 @@ test_codeql_removes_its_temp_folder_when_codeql_fails() {
 
   assert_equal 1 "$run_status" "the exit code"
   assert_only_earlier_run_left
+}
+
+test_codeql_removes_its_temp_folder_when_a_foreground_step_is_terminated() {
+  prepare_codeql
+  run_env=("FAKE_MODE=block")
+
+  start_in_repo scripts/codeql
+  signal_when_blocked TERM
+
+  assert_equal 143 "$run_status" "the exit code"
+  assert_temp_survives_step
+  assert_only_earlier_run_left
+}
+
+test_codeql_removes_its_temp_folder_when_hung_up() {
+  prepare_codeql
+  run_env=("FAKE_MODE=block")
+
+  start_in_repo scripts/codeql
+  signal_when_blocked HUP
+
+  assert_equal 129 "$run_status" "the exit code"
+  assert_temp_survives_step
+  assert_only_earlier_run_left
+}
+
+test_codeql_stops_and_removes_its_temp_folder_when_interrupted() {
+  prepare_codeql
+  cp "$sandbox_bin/codeql" "$sandbox_bin/codeql-blocking"
+  fake codeql <<'EOF'
+#!/bin/sh
+case "$1 $2" in
+  "version --format=terse") echo "2.27.2" ;;
+  "pack download")
+    for argument in "$@"; do
+      case "$argument" in
+        --dir=*) packs="${argument#--dir=}" ;;
+      esac
+    done
+    pack="$packs/codeql/go-queries/1.6.12"
+    mkdir -p "$pack/codeql-suites"
+    echo "version: 1.6.12" >"$pack/qlpack.yml"
+    touch "$pack/codeql-suites/go-security-extended.qls"
+    ;;
+  "pack install") ;;
+  "database create") exec "$0-blocking" "$@" ;;
+  *) exit 97 ;;
+esac
+EOF
+  commit_repo
+  prepare_interrupt
+
+  start_in_repo scripts/codeql
+  signal_when_blocked INT
+
+  assert_interrupted
+  assert_not_contains "$run_stderr" "go was called" "stderr"
 }
 
 test_codeql_stops_its_background_download_and_removes_its_temp_folder_when_terminated() {
@@ -237,6 +353,20 @@ test_audit_removes_its_report_when_terminated() {
   signal_when_blocked TERM
 
   assert_equal 143 "$run_status" "the exit code"
+  assert_temp_survives_step
+  assert_only_earlier_run_left
+}
+
+test_audit_removes_its_report_when_hung_up() {
+  prepare_script scripts/audit
+  fake_tool go
+  run_env=("FAKE_MODE=block")
+
+  start_in_repo scripts/audit
+  signal_when_blocked HUP
+
+  assert_equal 129 "$run_status" "the exit code"
+  assert_temp_survives_step
   assert_only_earlier_run_left
 }
 
@@ -249,6 +379,7 @@ test_audit_stops_and_removes_its_report_when_interrupted() {
   signal_when_blocked INT
 
   assert_interrupted
+  assert_not_contains "$run_stdout" "==> Finding the modules that ship" "stdout"
 }
 
 test_a_bash_parent_stops_when_the_script_is_interrupted() {
@@ -256,8 +387,8 @@ test_a_bash_parent_stops_when_the_script_is_interrupted() {
   fake_tool go
   prepare_interrupt
 
-  start_in_repo bash -c 'scripts/audit
-echo continued >"$FAKE_LOGS/continued"'
+  start_in_repo bash -c "scripts/audit
+echo continued >\"\$FAKE_LOGS/continued\""
   signal_when_blocked INT
 
   assert_interrupted
@@ -284,7 +415,33 @@ test_branch_coverage_removes_read_only_go_caches_when_terminated() {
   signal_when_blocked TERM
 
   assert_equal 143 "$run_status" "the exit code"
+  assert_temp_survives_step
   assert_only_earlier_run_left
+}
+
+test_branch_coverage_removes_read_only_go_caches_when_hung_up() {
+  prepare_script scripts/branch-coverage
+  fake_tool go
+  run_env=("FAKE_MODE=block" "FAKE_READ_ONLY=1")
+
+  start_in_repo scripts/branch-coverage
+  signal_when_blocked HUP
+
+  assert_equal 129 "$run_status" "the exit code"
+  assert_temp_survives_step
+  assert_only_earlier_run_left
+}
+
+test_branch_coverage_stops_and_removes_read_only_go_caches_when_interrupted() {
+  prepare_script scripts/branch-coverage
+  fake_tool go
+  prepare_interrupt
+  run_env+=("FAKE_READ_ONLY=1")
+
+  start_in_repo scripts/branch-coverage
+  signal_when_blocked INT
+
+  assert_interrupted
 }
 
 test_coverage_removes_its_temp_folder_when_a_step_fails() {
@@ -306,7 +463,32 @@ test_coverage_removes_its_temp_folder_when_terminated() {
   signal_when_blocked TERM
 
   assert_equal 143 "$run_status" "the exit code"
+  assert_temp_survives_step
   assert_only_earlier_run_left
+}
+
+test_coverage_removes_its_temp_folder_when_hung_up() {
+  prepare_script scripts/coverage
+  fake_tool go
+  run_env=("FAKE_MODE=block")
+
+  start_in_repo scripts/coverage
+  signal_when_blocked HUP
+
+  assert_equal 129 "$run_status" "the exit code"
+  assert_temp_survives_step
+  assert_only_earlier_run_left
+}
+
+test_coverage_stops_and_removes_its_temp_folder_when_interrupted() {
+  prepare_script scripts/coverage
+  fake_tool go
+  prepare_interrupt
+
+  start_in_repo scripts/coverage
+  signal_when_blocked INT
+
+  assert_interrupted
 }
 
 run_tests
