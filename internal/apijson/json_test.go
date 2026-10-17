@@ -621,11 +621,22 @@ func TestDecode(t *testing.T) {
 				t.Fatalf("deserialization of %v failed with error %v", resultValue, err)
 			}
 			result := resultValue.Elem().Interface()
-			if !reflect.DeepEqual(result, test.val) {
+			if !decodedEqual(result, test.val) {
 				t.Fatalf("incorrect deserialization for '%s':\nexpected:\n%s\nactual:\n%s\n", test.buf, spew.Sdump(test.val), spew.Sdump(result))
 			}
 		})
 	}
+}
+
+func decodedEqual(result, want any) bool {
+	resultTime, isTime := result.(time.Time)
+	wantTime, wantIsTime := want.(time.Time)
+	if !isTime || !wantIsTime {
+		return reflect.DeepEqual(result, want)
+	}
+	_, resultOffset := resultTime.Zone()
+	_, wantOffset := wantTime.Zone()
+	return resultTime.Equal(wantTime) && resultOffset == wantOffset
 }
 
 func TestEncode(t *testing.T) {
