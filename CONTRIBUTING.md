@@ -47,6 +47,10 @@ Run every required check.
 bin/check-local
 ```
 
+When `git config checklocal.runner` names a command, `bin/check-local` runs that command with the checkout path and its own arguments instead.
+A maintainer can use it to run the checks on another machine.
+Set `CHECK_LOCAL_HERE=1` to run them here anyway.
+
 It runs these checks in order.
 
 1. `go run ./scripts/api_coverage.go`, the [API coverage](#api-coverage)
