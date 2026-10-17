@@ -83,6 +83,17 @@ assert_only_earlier_run_left() {
   assert_equal "$earlier_run" "$(ls -A "$sandbox/tmp")" "the temp folder after the run"
 }
 
+prepare_interrupt() {
+  mkdir -p "$sandbox/tmp/interrupt"
+  run_env=("FAKE_MODE=block" "TMPDIR=$sandbox/tmp/interrupt")
+}
+
+assert_interrupted() {
+  assert_equal INT "$(kill -l "$run_status")" "the terminating signal"
+  assert_contains "$(log_of temp-during)" "xquik-" "the temp folder while the step ran"
+  assert_equal "" "$(ls -A "$sandbox/tmp/interrupt")" "the temp folder after the run"
+}
+
 prepare_check_local() {
   prepare_script bin/check-local
   fake_tool go
@@ -137,14 +148,13 @@ test_check_local_removes_its_temp_folder_when_terminated() {
 
 test_check_local_stops_and_removes_its_temp_folder_when_interrupted() {
   prepare_check_local
-  run_env=("FAKE_MODE=block")
+  prepare_interrupt
 
   start_in_repo bin/check-local --no-status
   signal_when_blocked INT
 
-  assert_equal 130 "$run_status" "the exit code"
+  assert_interrupted
   assert_not_contains "$run_stdout" "==> Module download and integrity" "stdout"
-  assert_only_earlier_run_left
 }
 
 test_release_local_removes_its_temp_folder_when_a_step_fails() {
@@ -233,13 +243,25 @@ test_audit_removes_its_report_when_terminated() {
 test_audit_stops_and_removes_its_report_when_interrupted() {
   prepare_script scripts/audit
   fake_tool go
-  run_env=("FAKE_MODE=block")
+  prepare_interrupt
 
   start_in_repo scripts/audit
   signal_when_blocked INT
 
-  assert_equal 130 "$run_status" "the exit code"
-  assert_only_earlier_run_left
+  assert_interrupted
+}
+
+test_a_bash_parent_stops_when_the_script_is_interrupted() {
+  prepare_script scripts/audit
+  fake_tool go
+  prepare_interrupt
+
+  start_in_repo bash -c 'scripts/audit
+echo continued >"$FAKE_LOGS/continued"'
+  signal_when_blocked INT
+
+  assert_interrupted
+  assert_equal "" "$(log_of continued)" "the commands after the script"
 }
 
 test_branch_coverage_removes_read_only_go_caches_when_a_step_fails() {
