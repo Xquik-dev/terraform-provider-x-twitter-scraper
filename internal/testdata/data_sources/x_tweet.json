@@ -1,0 +1,34 @@
+{
+  "tweet": {
+    "id": "2031735300000000000",
+    "text": "A tweet with nested tweets",
+    "quoted_tweet": {
+      "quoted_tweet": {
+        "text": "Quoted quote",
+        "entities": {
+          "urls": []
+        }
+      },
+      "retweeted_tweet": {
+        "text": "Quoted retweet",
+        "entities": {
+          "urls": []
+        }
+      }
+    },
+    "retweeted_tweet": {
+      "quoted_tweet": {
+        "text": "Retweeted quote",
+        "entities": {
+          "urls": []
+        }
+      },
+      "retweeted_tweet": {
+        "text": "Retweeted retweet",
+        "entities": {
+          "urls": []
+        }
+      }
+    }
+  }
+}

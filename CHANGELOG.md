@@ -12,12 +12,13 @@
 
 ### Bug Fixes
 
-* Date-time attributes keep their fractional seconds. A time the API sent as 01:17:35.036 showed 01:17:35 before ([#64](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/pull/64)).
+* A nested tweet that holds an empty list, such as a tweet with no URLs, reads as the tweet instead of null. That covers the quoted and retweeted tweets of `x_tweet` and the tweets of `x_space` and `x_broadcast`.
+* Date-time attributes keep their fractional seconds. A time the API sent as 01:17:35.036 showed 01:17:35 before ([7f77c73](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/7f77c733a8eefa498ccc42ca44528a8879808249)).
 
 ### Chores
 
 * Build with Go SDK 0.20.0.
-* `bin/check-local` fails when the API has an operation that the provider neither sends nor excludes with a reason in `excluded-operations.json` ([#63](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/pull/63)). The provider sends 49 of the 185 operations in the public spec.
+* `bin/check-local` fails when the API has an operation that the provider neither sends nor excludes with a reason in `excluded-operations.json` ([6ef47bf](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/6ef47bf91f1ada6e39d9cc83725f5e36d7de226e)). The provider sends 49 of the 185 operations in the public spec.
 
 ## 0.7.5 (2026-10-13)
 

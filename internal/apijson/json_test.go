@@ -1611,6 +1611,57 @@ var decode_from_value_tests = map[string]struct {
 		)),
 	},
 
+	"tfsdk_dynamic_empty_array_inference": {
+		`[]`,
+		types.DynamicNull(),
+		types.DynamicValue(types.TupleValueMust([]attr.Type{}, []attr.Value{})),
+	},
+
+	"tfsdk_list_empty_array": {
+		`[]`,
+		types.ListNull(types.StringType),
+		types.ListValueMust(types.StringType, []attr.Value{}),
+	},
+
+	"tfsdk_untyped_list_empty_array": {
+		`[]`,
+		types.List{},
+		fmt.Errorf("apijson: cannot deserialize empty array to types.ListValue without an element type"),
+	},
+
+	"tfsdk_normalized_dynamic_existing_list_empty_array": {
+		`[]`,
+		customfield.RawNormalizedDynamicValueFrom(types.ListValueMust(types.StringType, []attr.Value{types.StringValue("url")})),
+		customfield.RawNormalizedDynamicValueFrom(types.ListValueMust(types.StringType, []attr.Value{})),
+	},
+
+	"tfsdk_normalized_dynamic_empty_array_inference": {
+		`[]`,
+		customfield.RawNormalizedDynamicValue(basetypes.NewDynamicNull()),
+		customfield.RawNormalizedDynamicValueFrom(types.TupleValueMust([]attr.Type{}, []attr.Value{})),
+	},
+
+	"tfsdk_normalized_dynamic_nested_empty_array_inference": {
+		`{"urls":[]}`,
+		customfield.RawNormalizedDynamicValue(basetypes.NewDynamicNull()),
+		customfield.RawNormalizedDynamicValueFrom(types.ObjectValueMust(
+			map[string]attr.Type{"urls": types.TupleType{ElemTypes: []attr.Type{}}},
+			map[string]attr.Value{"urls": types.TupleValueMust([]attr.Type{}, []attr.Value{})},
+		)),
+	},
+
+	"tfsdk_normalized_dynamic_array_of_empty_arrays_inference": {
+		`[[],[]]`,
+		customfield.RawNormalizedDynamicValue(basetypes.NewDynamicNull()),
+		customfield.RawNormalizedDynamicValueFrom(types.ListValueMust(
+			types.TupleType{ElemTypes: []attr.Type{}},
+			[]attr.Value{
+				types.TupleValueMust([]attr.Type{}, []attr.Value{}),
+				types.TupleValueMust([]attr.Type{}, []attr.Value{}),
+			},
+		)),
+	},
+
 	"tfsdk_normalized_dynamic_heterogeneous_array_inference": {
 		`["hello",42]`,
 		customfield.RawNormalizedDynamicValue(basetypes.NewDynamicNull()),

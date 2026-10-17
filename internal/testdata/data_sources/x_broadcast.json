@@ -9,6 +9,12 @@
     "totalWatching": 21639,
     "width": 3840,
     "height": 2160,
+    "tweet": {
+      "text": "USSF-259 Mission",
+      "entities": {
+        "urls": []
+      }
+    },
     "creator": {
       "id": "34743251",
       "username": "SpaceX",

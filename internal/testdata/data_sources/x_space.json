@@ -20,6 +20,22 @@
       }
     ],
     "speakers": [],
-    "listeners": []
+    "listeners": [],
+    "tweet": {
+      "text": "Extending the Network to the Edge",
+      "entities": {
+        "urls": []
+      }
+    },
+    "sharings": [
+      {
+        "tweet": {
+          "text": "Join the Space",
+          "entities": {
+            "urls": []
+          }
+        }
+      }
+    ]
   }
 }
