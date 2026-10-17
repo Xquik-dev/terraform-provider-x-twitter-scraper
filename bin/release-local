@@ -9,7 +9,6 @@ set +o xtrace
 
 cd -- "$(dirname -- "$0")/.."
 
-# shellcheck source=scripts/temp-paths
 source scripts/temp-paths
 
 readonly repository="Xquik-dev/terraform-provider-x-twitter-scraper"

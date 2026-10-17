@@ -8,7 +8,6 @@ set -euo pipefail
 
 cd -- "$(dirname -- "$0")/.."
 
-# shellcheck source=scripts/temp-paths
 source scripts/temp-paths
 
 readonly pack_name="codeql/go-queries"

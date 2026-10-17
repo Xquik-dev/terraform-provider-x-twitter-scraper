@@ -8,7 +8,6 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-# shellcheck source=scripts/temp-paths
 source scripts/temp-paths
 
 coverage_threshold="${COVERAGE_THRESHOLD:-90.0}"

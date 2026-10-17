@@ -8,7 +8,6 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-# shellcheck source=scripts/temp-paths
 source scripts/temp-paths
 
 readonly gocove_version="v0.0.0-20260427173940-a0dceb9dadca"
