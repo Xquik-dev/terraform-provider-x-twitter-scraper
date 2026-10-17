@@ -503,6 +503,17 @@ func (d *decoderBuilder) newTerraformTypeDecoder(t reflect.Type) decoderFunc {
 				return nil
 			}
 			if node.Type == gjson.JSON {
+				if node.IsArray() && len(node.Array()) == 0 {
+					if eleType == nil {
+						return fmt.Errorf("apijson: cannot deserialize empty array to types.ListValue without an element type")
+					}
+					listValue, diags := basetypes.NewListValue(eleType, []attr.Value{})
+					if diags.HasError() {
+						return errorFromDiagnostics(diags)
+					}
+					value.Set(reflect.ValueOf(listValue))
+					return nil
+				}
 				attr, err := d.inferTerraformAttrFromValue(node)
 				if err != nil {
 					return err
@@ -1287,8 +1298,11 @@ func (d *decoderBuilder) inferTerraformAttrFromValue(node gjson.Result) (attr.Va
 		return types.StringValue(node.String()), nil
 	case gjson.JSON:
 		if node.IsArray() {
-			isHomogeneous, elementType, attributes, elementTypes := d.analyzeArrayTypes(node)
-			if isHomogeneous {
+			isHomogeneous, elementType, attributes, elementTypes, err := d.analyzeArrayTypes(node)
+			if err != nil {
+				return nil, err
+			}
+			if isHomogeneous && elementType != nil {
 				newVal, diags := basetypes.NewListValue(elementType, attributes)
 				if diags.HasError() {
 					return nil, errorFromDiagnostics(diags)
@@ -1329,8 +1343,9 @@ func (d *decoderBuilder) inferTerraformAttrFromValue(node gjson.Result) (attr.Va
 	return nil, fmt.Errorf("apijson: cannot infer terraform attribute from value")
 }
 
-func (d *decoderBuilder) analyzeArrayTypes(node gjson.Result) (bool, attr.Type, []attr.Value, []attr.Type) {
+func (d *decoderBuilder) analyzeArrayTypes(node gjson.Result) (bool, attr.Type, []attr.Value, []attr.Type, error) {
 	ctx := context.TODO()
+	loopErr := error(nil)
 	attributes := []attr.Value{}
 	elementTypes := []attr.Type{}
 	var firstElementType attr.Type
@@ -1339,6 +1354,7 @@ func (d *decoderBuilder) analyzeArrayTypes(node gjson.Result) (bool, attr.Type, 
 	node.ForEach(func(_, value gjson.Result) bool {
 		val, err := d.inferTerraformAttrFromValue(value)
 		if err != nil {
+			loopErr = err
 			return false
 		}
 
@@ -1355,7 +1371,7 @@ func (d *decoderBuilder) analyzeArrayTypes(node gjson.Result) (bool, attr.Type, 
 		return true
 	})
 
-	return isHomogeneous, firstElementType, attributes, elementTypes
+	return isHomogeneous, firstElementType, attributes, elementTypes, loopErr
 }
 
 func (d *decoderBuilder) parseArrayOfValues(node gjson.Result) (attr.Type, []attr.Value, error) {

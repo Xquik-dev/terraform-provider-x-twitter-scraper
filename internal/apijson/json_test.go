@@ -621,11 +621,22 @@ func TestDecode(t *testing.T) {
 				t.Fatalf("deserialization of %v failed with error %v", resultValue, err)
 			}
 			result := resultValue.Elem().Interface()
-			if !reflect.DeepEqual(result, test.val) {
+			if !decodedEqual(result, test.val) {
 				t.Fatalf("incorrect deserialization for '%s':\nexpected:\n%s\nactual:\n%s\n", test.buf, spew.Sdump(test.val), spew.Sdump(result))
 			}
 		})
 	}
+}
+
+func decodedEqual(result, want any) bool {
+	resultTime, isTime := result.(time.Time)
+	wantTime, wantIsTime := want.(time.Time)
+	if !isTime || !wantIsTime {
+		return reflect.DeepEqual(result, want)
+	}
+	_, resultOffset := resultTime.Zone()
+	_, wantOffset := wantTime.Zone()
+	return resultTime.Equal(wantTime) && resultOffset == wantOffset
 }
 
 func TestEncode(t *testing.T) {
@@ -1608,6 +1619,57 @@ var decode_from_value_tests = map[string]struct {
 		types.DynamicValue(types.TupleValueMust(
 			[]attr.Type{types.StringType, types.Int64Type},
 			[]attr.Value{types.StringValue("hello"), types.Int64Value(42)},
+		)),
+	},
+
+	"tfsdk_dynamic_empty_array_inference": {
+		`[]`,
+		types.DynamicNull(),
+		types.DynamicValue(types.TupleValueMust([]attr.Type{}, []attr.Value{})),
+	},
+
+	"tfsdk_list_empty_array": {
+		`[]`,
+		types.ListNull(types.StringType),
+		types.ListValueMust(types.StringType, []attr.Value{}),
+	},
+
+	"tfsdk_untyped_list_empty_array": {
+		`[]`,
+		types.List{},
+		fmt.Errorf("apijson: cannot deserialize empty array to types.ListValue without an element type"),
+	},
+
+	"tfsdk_normalized_dynamic_existing_list_empty_array": {
+		`[]`,
+		customfield.RawNormalizedDynamicValueFrom(types.ListValueMust(types.StringType, []attr.Value{types.StringValue("url")})),
+		customfield.RawNormalizedDynamicValueFrom(types.ListValueMust(types.StringType, []attr.Value{})),
+	},
+
+	"tfsdk_normalized_dynamic_empty_array_inference": {
+		`[]`,
+		customfield.RawNormalizedDynamicValue(basetypes.NewDynamicNull()),
+		customfield.RawNormalizedDynamicValueFrom(types.TupleValueMust([]attr.Type{}, []attr.Value{})),
+	},
+
+	"tfsdk_normalized_dynamic_nested_empty_array_inference": {
+		`{"urls":[]}`,
+		customfield.RawNormalizedDynamicValue(basetypes.NewDynamicNull()),
+		customfield.RawNormalizedDynamicValueFrom(types.ObjectValueMust(
+			map[string]attr.Type{"urls": types.TupleType{ElemTypes: []attr.Type{}}},
+			map[string]attr.Value{"urls": types.TupleValueMust([]attr.Type{}, []attr.Value{})},
+		)),
+	},
+
+	"tfsdk_normalized_dynamic_array_of_empty_arrays_inference": {
+		`[[],[]]`,
+		customfield.RawNormalizedDynamicValue(basetypes.NewDynamicNull()),
+		customfield.RawNormalizedDynamicValueFrom(types.ListValueMust(
+			types.TupleType{ElemTypes: []attr.Type{}},
+			[]attr.Value{
+				types.TupleValueMust([]attr.Type{}, []attr.Value{}),
+				types.TupleValueMust([]attr.Type{}, []attr.Value{}),
+			},
 		)),
 	},
 

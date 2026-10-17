@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.8.0 (2026-10-16)
+
+[Full changelog from v0.7.5 to v0.8.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.7.5...v0.8.0)
+
+### Features
+
+* New data sources `x_list`, `x_job`, `x_space` and `x_broadcast` read 1 X List, job listing, Space or live broadcast by its ID or URL.
+* A Space or broadcast returns its top-level tweet as an untyped object. Read the tweet with the `x_tweet` data source and `tweet_id` for typed fields.
+* Each Space sharing's `tweet` is a JSON string. Read its fields with `jsondecode`.
+* The `x_user` data source returns 32 more profile fields that the API sends, such as `listed_count`, `birthdate`, `contact_info`, `verification_reason` and `profile_picture_original`.
+
+### Bug Fixes
+
+* A nested tweet that holds an empty list, such as a tweet with no URLs, reads as the tweet instead of null. That covers the quoted and retweeted tweets of `x_tweet` and the tweets of `x_space` and `x_broadcast`.
+* Date-time attributes keep their fractional seconds. A time the API sent as 01:17:35.036 showed 01:17:35 before ([7f77c73](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/7f77c733a8eefa498ccc42ca44528a8879808249)).
+
+### Chores
+
+* Build with Go SDK 0.20.0.
+* `bin/check-local` fails when the API has an operation that the provider neither sends nor excludes with a reason in `excluded-operations.json` ([6ef47bf](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/commit/6ef47bf91f1ada6e39d9cc83725f5e36d7de226e)). The provider sends 49 of the 185 operations in the public spec.
+
 ## 0.7.5 (2026-10-13)
 
 [Full changelog from v0.7.4 to v0.7.5](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.7.4...v0.7.5)

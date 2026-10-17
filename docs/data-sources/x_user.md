@@ -17,52 +17,93 @@ X profile data lookup
 
 ### Read-Only
 
+- `account_based_in` (Attributes) Null when X shows no label. (see [below for nested schema](#nestedatt--account_based_in))
+- `account_based_in_accurate` (Boolean) False when X notes accountBasedIn may be inaccurate.
+- `account_based_in_unavailable` (Boolean) True when X withheld accountBasedIn from this read. Retry later.
+- `advertiser_account_service_levels` (List of String) X Ads services the account uses, such as `analytics`, `media_studio` or `smb`. Empty for an account without ads.
+- `advertiser_account_type` (String) The account's X Ads type. `none` for an account without ads, or `promotable_user` for one that may run them.
+- `affiliate_username` (String) Handle of the organization X shows the account is affiliated with, from its About page.
 - `affiliates_highlighted_label` (Attributes) Organization affiliation label shown on an X profile. (see [below for nested schema](#nestedatt--affiliates_highlighted_label))
 - `automated_by` (String)
+- `birthdate` (Attributes) The parts of the birthday the account made public. (see [below for nested schema](#nestedatt--birthdate))
 - `business_account_affiliates_count` (Number)
+- `business_profile_state` (String) Whether X treats the profile as a business profile. `none` or `enabled`.
 - `community_role` (String) Community role when returned by community member reads
+- `connected_via` (String) How the account first connected to X.
+- `connected_via_accurate` (Boolean) False when X notes that country may be inaccurate.
+- `contact_info` (Attributes) Emails, phone numbers & links the account publishes on its own profile. Omitted when it publishes none. (see [below for nested schema](#nestedatt--contact_info))
 - `cover_picture` (String)
-- `created_at` (String)
+- `created_at` (String) Account creation time.
 - `creator_subscriptions_count` (Number)
+- `default_profile` (Boolean) Whether the profile keeps X's default theme.
+- `default_profile_image` (Boolean) Whether the profile keeps X's default avatar.
 - `description` (String)
+- `email` (String) First email the account publishes on its profile, lowercased. Omitted when it publishes none.
+- `fast_followers_count` (Number) Followers X counts as fast followers.
 - `favourites_count` (Number)
-- `followers` (Number)
+- `followers` (Number) Omitted when X sends no count, as for the account that first posted reused media.
 - `following` (Number)
+- `geo_enabled` (Boolean) Whether the profile may add a location to posts.
+- `grok_translated_bio` (Map of String) Public profile bio translation returned by X
 - `has_custom_timelines` (Boolean)
+- `has_extended_profile` (Boolean) Whether the profile filled X's extended fields, such as a birth date. True or false.
 - `has_graduated_access` (Boolean)
 - `has_hidden_subscriptions_on_profile` (Boolean)
 - `highlights_info` (Attributes) Profile highlight availability and count metadata. (see [below for nested schema](#nestedatt--highlights_info))
 - `id` (String) The ID of this resource.
-- `identity_verification` (Attributes) Identity verification metadata displayed by X. (see [below for nested schema](#nestedatt--identity_verification))
+- `identity_verification` (Attributes) Identity verification X shows on the profile & its About page. (see [below for nested schema](#nestedatt--identity_verification))
 - `is_automated` (Boolean)
 - `is_blue_verified` (Boolean) Whether X shows a blue verification badge
 - `is_profile_translatable` (Boolean)
+- `is_translation_enabled` (Boolean) Whether the account turned on X's translation of its posts. True or false.
 - `is_translator` (Boolean)
 - `is_verified` (Boolean) Whether X marks the profile as verified
-- `location` (String)
+- `listed_count` (Number) Public lists that include the profile.
+- `location` (String) Account owner's public profile location text
 - `media_count` (Number)
 - `name` (String)
+- `normal_followers_count` (Number) Followers minus fast followers.
 - `parody_commentary_fan_label` (String)
 - `pinned_tweet_ids` (List of String)
 - `possibly_sensitive` (Boolean)
+- `professional` (Map of String) Professional metadata with category display settings
 - `profile_banner_url` (String) Original X profile banner field when available
 - `profile_bio` (Map of String) Structured profile bio with entity annotations
 - `profile_description_language` (String)
 - `profile_image_shape` (String)
 - `profile_interstitial_type` (String)
-- `profile_picture` (String)
+- `profile_picture` (String) Profile picture at 48 px, as X sends it.
+- `profile_picture_original` (String) The same profile picture at full size, as the account uploaded it. Download this one for the image.
 - `profile_sort_enabled` (Boolean)
 - `profile_translator_type` (String)
 - `protected` (Boolean) Whether the profile protects its posts
+- `redirects_to_username` (String) Handle x.com sends this profile's visitors to, such as the new handle of a renamed account whose old handle now holds a placeholder. Missing when x.com shows the profile itself.
+- `retweeted_at` (String) UTC repost time with includeRetweetTimestamp. Null if the newest profile page has no match or lookup failed. Otherwise omitted.
 - `statuses_count` (Number)
+- `subscribers_count` (Number) Accounts subscribed to the profile's paid Subscriptions. 0 when it has none.
 - `super_follow_eligible` (Boolean)
+- `super_follows_user_profile_active` (Boolean) Whether X marks the subscription profile as active.
+- `tip_jar` (Attributes) Public payment and creator-support handles shown on X. (see [below for nested schema](#nestedatt--tip_jar))
 - `unavailable` (Boolean)
 - `unavailable_reason` (String)
 - `url` (String)
 - `username` (String)
+- `username_changes` (Attributes) How often the account changed its username. (see [below for nested schema](#nestedatt--username_changes))
+- `verification_reason` (Attributes) X's text on why the profile is verified, with its links. (see [below for nested schema](#nestedatt--verification_reason))
 - `verified` (Boolean)
 - `verified_type` (String)
 - `withheld_in_countries` (List of String)
+- `withheld_scope` (String) Whether X withholds a post or user
+
+<a id="nestedatt--account_based_in"></a>
+### Nested Schema for `account_based_in`
+
+Read-Only:
+
+- `level` (String) Available values are "country" and "region".
+- `observed_at` (String)
+- `value` (String)
+
 
 <a id="nestedatt--affiliates_highlighted_label"></a>
 ### Nested Schema for `affiliates_highlighted_label`
@@ -71,10 +112,65 @@ Read-Only:
 
 - `badge_url` (String)
 - `description` (String)
+- `long_description` (Map of String) Public text, ranges, references, and mention data.
 - `url` (String)
 - `url_type` (String)
 - `user_label_display_type` (String)
 - `user_label_type` (String)
+
+
+<a id="nestedatt--birthdate"></a>
+### Nested Schema for `birthdate`
+
+Read-Only:
+
+- `day` (Number)
+- `month` (Number)
+- `year` (Number)
+
+
+<a id="nestedatt--contact_info"></a>
+### Nested Schema for `contact_info`
+
+Read-Only:
+
+- `emails` (Attributes List) Emails in the bio, name or location, lowercased. (see [below for nested schema](#nestedatt--contact_info--emails))
+- `links` (Attributes List) The profile's website & the links in its bio. (see [below for nested schema](#nestedatt--contact_info--links))
+- `phones` (Attributes List) Phone numbers on the profile. Only a spelling that can be nothing else counts. (see [below for nested schema](#nestedatt--contact_info--phones))
+
+<a id="nestedatt--contact_info--emails"></a>
+### Nested Schema for `contact_info.emails`
+
+Read-Only:
+
+- `domain` (String) The part after the @ sign.
+- `source` (String) Profile field that holds the email.
+Available values are "bio", "name" and "location".
+- `value` (String) The email address.
+- `written_as` (String) The account's own spelling, sent when it spelled the email out.
+
+
+<a id="nestedatt--contact_info--links"></a>
+### Nested Schema for `contact_info.links`
+
+Read-Only:
+
+- `network` (String) Site the link belongs to, such as `linkedin`, `github` or `telegram`. Any other site is `website`.
+- `source` (String) `url` for the website field, `bio` for a bio link.
+Available values are "url" and "bio".
+- `url` (String) The link, as X expands it.
+
+
+<a id="nestedatt--contact_info--phones"></a>
+### Nested Schema for `contact_info.phones`
+
+Read-Only:
+
+- `source` (String) Profile field that holds the number.
+Available values are "bio", "name", "location" and "url".
+- `value` (String) The digits, with a leading + when the account wrote a country code.
+- `written_as` (String) The account's own spelling of the number.
+
 
 
 <a id="nestedatt--highlights_info"></a>
@@ -92,5 +188,49 @@ Read-Only:
 Read-Only:
 
 - `description` (String)
-- `is_identity_verified` (Boolean)
-- `verified_since_msec` (String)
+- `is_identity_verified` (Boolean) Whether the owner verified their ID with X.
+- `verified_since_msec` (String) When X verified the account, in milliseconds since 1970, as text.
+
+
+<a id="nestedatt--tip_jar"></a>
+### Nested Schema for `tip_jar`
+
+Read-Only:
+
+- `bandcamp_handle` (String)
+- `bitcoin_handle` (String)
+- `cash_app_handle` (String)
+- `ethereum_handle` (String)
+- `gofundme_handle` (String)
+- `is_enabled` (Boolean)
+- `patreon_handle` (String)
+- `pay_pal_handle` (String)
+- `venmo_handle` (String)
+
+
+<a id="nestedatt--username_changes"></a>
+### Nested Schema for `username_changes`
+
+Read-Only:
+
+- `count` (Number)
+- `last_changed_at` (String) Time of the latest change, omitted when there is none.
+
+
+<a id="nestedatt--verification_reason"></a>
+### Nested Schema for `verification_reason`
+
+Read-Only:
+
+- `entities` (Attributes List) Links inside the text, by character range. (see [below for nested schema](#nestedatt--verification_reason--entities))
+- `text` (String)
+
+<a id="nestedatt--verification_reason--entities"></a>
+### Nested Schema for `verification_reason.entities`
+
+Read-Only:
+
+- `from_index` (Number)
+- `to_index` (Number)
+- `url` (String)
+- `url_type` (String)

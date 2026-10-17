@@ -154,11 +154,6 @@ a space and the absolute path from the spec. List each operation once.
 ]
 ```
 
-The group that names Go SDK 0.19.2 lists retrieve methods that this Go SDK
-lacks. [Issue 82](https://github.com/Xquik-dev/x-twitter-scraper-go/issues/82)
-of the Go SDK adds them. The provider then gives each a data source and
-removes the group.
-
 ## Release
 
 A release is the annotated tag `v<version>` plus a GitHub release that holds

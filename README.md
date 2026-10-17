@@ -72,6 +72,7 @@ Every X write resource stores its canonical response. Uncertain retries keep the
 - `monitor` and `monitor_keyword` for account and keyword monitors
 - `event` and `draw` for events and giveaway draws
 - `x_tweet`, `x_user` and `x_account` for tweet, user and account lookups
+- `x_list`, `x_job`, `x_space` and `x_broadcast` for X Lists, job listings, Spaces and live broadcasts
 - `x_write_action` for durable write status
 - `support_ticket` for support requests
 
