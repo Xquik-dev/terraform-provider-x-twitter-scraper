@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.9.0 (2026-10-16)
+
+[Full changelog from v0.8.0 to v0.9.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.8.0...v0.9.0)
+
+### Features
+
+* The `x_tweet` and `x_user` data sources gain a `json` attribute with the full API response. Read any field with `jsondecode`, including fields the typed attributes leave out, such as `jsondecode(data.x-twitter-scraper_x_tweet.example.json).tweet.isPinned`.
+
+## 0.8.0 (2026-10-16)
+
+[Full changelog from v0.7.5 to v0.8.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.7.5...v0.8.0)
+
+### Features
+
+* New data sources `x_list`, `x_job`, `x_space` and `x_broadcast` read 1 X List, job listing, Space or live broadcast by its ID or URL.
+* A Space or broadcast returns its tweet as raw JSON. Read the tweet with the `x_tweet` data source and `tweet_id` for typed fields.
+* The `x_user` data source returns 32 more profile fields that the API sends, such as `listed_count`, `birthdate`, `contact_info`, `verification_reason` and `profile_picture_original`.
+
+### Bug Fixes
+
+* Date-time attributes keep their fractional seconds. A time the API sent as 01:17:35.036 showed 01:17:35 before ([#64](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/pull/64)).
+
+### Chores
+
+* Build with Go SDK 0.20.0.
+* `bin/check-local` fails when the API has an operation that the provider neither sends nor excludes with a reason in `excluded-operations.json` ([#63](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/pull/63)). The provider sends 49 of the 185 operations in the public spec.
+
 ## 0.7.5 (2026-10-13)
 
 [Full changelog from v0.7.4 to v0.7.5](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.7.4...v0.7.5)

@@ -20,6 +20,10 @@ import (
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/support_ticket"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/webhook"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_account"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_broadcast"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_job"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_list"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_space"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_tweet"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_user"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/x_write"
@@ -157,6 +161,10 @@ func (p *XTwitterScraperProvider) DataSources(ctx context.Context) []func() data
 		x_user.NewXUserDataSource,
 		x_account.NewXAccountDataSource,
 		support_ticket.NewSupportTicketDataSource,
+		x_list.NewXListDataSource,
+		x_job.NewXJobDataSource,
+		x_space.NewXSpaceDataSource,
+		x_broadcast.NewXBroadcastDataSource,
 	}
 }
 

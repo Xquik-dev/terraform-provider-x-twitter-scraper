@@ -14,6 +14,7 @@ import (
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/logging"
 	"github.com/Xquik-dev/x-twitter-scraper-go"
 	"github.com/Xquik-dev/x-twitter-scraper-go/option"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 )
 
@@ -76,6 +77,7 @@ func (d *XUserDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
 		return
 	}
+	data.JSON = jsontypes.NewNormalizedValue(string(bytes))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
