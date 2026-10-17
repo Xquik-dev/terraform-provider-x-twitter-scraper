@@ -7,7 +7,8 @@
 ### Features
 
 * New data sources `x_list`, `x_job`, `x_space` and `x_broadcast` read 1 X List, job listing, Space or live broadcast by its ID or URL.
-* A Space or broadcast returns its tweet as raw JSON. Read the tweet with the `x_tweet` data source and `tweet_id` for typed fields.
+* A Space or broadcast returns its top-level tweet as an untyped object. Read the tweet with the `x_tweet` data source and `tweet_id` for typed fields.
+* Each Space sharing's `tweet` is a JSON string. Read its fields with `jsondecode`.
 * The `x_user` data source returns 32 more profile fields that the API sends, such as `listed_count`, `birthdate`, `contact_info`, `verification_reason` and `profile_picture_original`.
 
 ### Bug Fixes

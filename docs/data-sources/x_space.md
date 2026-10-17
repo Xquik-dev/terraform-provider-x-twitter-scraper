@@ -357,7 +357,7 @@ Read-Only:
 - `id` (String) X's ID of the sharing, not of the post
 - `shared_at` (String) When the post was shared
 - `shared_by` (Attributes) Public X profile. (see [below for nested schema](#nestedatt--space--sharings--shared_by))
-- `tweet` (Dynamic) Search tweet with author. Zero metrics may mean X omitted counts.
+- `tweet` (String) Search tweet with author as a JSON string. Use jsondecode to read its fields. Zero metrics may mean X omitted counts.
 - `updated_at` (String) When X last changed the sharing
 
 <a id="nestedatt--space--sharings--shared_by"></a>

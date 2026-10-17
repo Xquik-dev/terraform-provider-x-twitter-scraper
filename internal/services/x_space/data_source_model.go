@@ -297,7 +297,7 @@ type XSpaceSpaceSharingsDataSourceModel struct {
 	ID        types.String                                                         `tfsdk:"id" json:"id,computed"`
 	SharedAt  timetypes.RFC3339                                                    `tfsdk:"shared_at" json:"sharedAt,computed" format:"date-time"`
 	SharedBy  customfield.NestedObject[XSpaceSpaceSharingsSharedByDataSourceModel] `tfsdk:"shared_by" json:"sharedBy,computed"`
-	Tweet     customfield.NormalizedDynamicValue                                   `tfsdk:"tweet" json:"tweet,computed"`
+	Tweet     jsontypes.Normalized                                                 `tfsdk:"tweet" json:"tweet,computed"`
 	UpdatedAt timetypes.RFC3339                                                    `tfsdk:"updated_at" json:"updatedAt,computed" format:"date-time"`
 }
 

@@ -35,6 +35,18 @@
             "urls": []
           }
         }
+      },
+      {
+        "tweet": {
+          "text": "Replay the Space",
+          "entities": {
+            "urls": [
+              {
+                "url": "https://x.com/i/spaces/1OGwblLjnQMKB"
+              }
+            ]
+          }
+        }
       }
     ]
   }

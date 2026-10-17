@@ -1448,10 +1448,10 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 										},
 									},
 								},
-								"tweet": schema.DynamicAttribute{
-									Description: "Search tweet with author. Zero metrics may mean X omitted counts.",
+								"tweet": schema.StringAttribute{
+									Description: "Search tweet with author as a JSON string. Use jsondecode to read its fields. Zero metrics may mean X omitted counts.",
 									Computed:    true,
-									CustomType:  customfield.NormalizedDynamicType{},
+									CustomType:  jsontypes.NormalizedType{},
 								},
 								"updated_at": schema.StringAttribute{
 									Description: "When X last changed the sharing",
