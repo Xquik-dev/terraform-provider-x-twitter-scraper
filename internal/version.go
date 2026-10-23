@@ -4,4 +4,4 @@
 
 package internal
 
-const PackageVersion = "0.8.0"
+const PackageVersion = "0.9.0"

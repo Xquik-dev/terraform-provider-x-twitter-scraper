@@ -1,0 +1,17 @@
+// SPDX-FileCopyrightText: 2026 Xquik contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
+package monitor_post
+
+import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+)
+
+var _ resource.ResourceWithUpgradeState = (*MonitorPostResource)(nil)
+
+func (r *MonitorPostResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
+	return map[int64]resource.StateUpgrader{}
+}
