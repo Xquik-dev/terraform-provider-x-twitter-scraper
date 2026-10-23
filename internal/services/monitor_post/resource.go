@@ -62,6 +62,7 @@ func (r *MonitorPostResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
+	startPaused := data.IsActive.Equal(types.BoolValue(false))
 	dataBytes, err := data.MarshalJSON()
 	if err != nil {
 		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
@@ -82,6 +83,35 @@ func (r *MonitorPostResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.UnmarshalComputed(bytes, &data)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	if !startPaused || resp.Diagnostics.HasError() {
+		return
+	}
+
+	res = new(http.Response)
+	err = r.client.Patch(
+		ctx,
+		monitorPostItemPath(data.ID.ValueString()),
+		nil,
+		nil,
+		option.WithRequestBody("application/json", []byte(`{"isActive":false}`)),
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"failed to pause the new post monitor",
+			fmt.Sprintf("Post monitor %s is active. Untaint it, then apply again to pause it. %s", data.ID.ValueString(), err),
+		)
+		return
+	}
+	bytes, _ = io.ReadAll(res.Body)
 	err = apijson.UnmarshalComputed(bytes, &data)
 	if err != nil {
 		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
@@ -114,15 +144,26 @@ func (r *MonitorPostResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 	res := new(http.Response)
-	err = r.client.Patch(
-		ctx,
-		monitorPostItemPath(data.ID.ValueString()),
-		nil,
-		nil,
-		option.WithRequestBody("application/json", dataBytes),
-		option.WithResponseBodyInto(&res),
-		option.WithMiddleware(logging.Middleware(ctx)),
-	)
+	if string(dataBytes) == "{}" {
+		err = r.client.Get(
+			ctx,
+			monitorPostItemPath(data.ID.ValueString()),
+			nil,
+			nil,
+			option.WithResponseBodyInto(&res),
+			option.WithMiddleware(logging.Middleware(ctx)),
+		)
+	} else {
+		err = r.client.Patch(
+			ctx,
+			monitorPostItemPath(data.ID.ValueString()),
+			nil,
+			nil,
+			option.WithRequestBody("application/json", dataBytes),
+			option.WithResponseBodyInto(&res),
+			option.WithMiddleware(logging.Middleware(ctx)),
+		)
+	}
 	if err != nil {
 		resp.Diagnostics.AddError("failed to make http request", err.Error())
 		return
@@ -234,6 +275,7 @@ func (r *MonitorPostResource) ImportState(ctx context.Context, req resource.Impo
 		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
 		return
 	}
+	data.Post = data.PostID
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

@@ -22,8 +22,8 @@ Watches 1 post's replies, quotes, counts, edits & deletion
 ### Optional
 
 - `event_types` (List of String) Post event types to send. Without it, a monitor sends new replies, new quotes, like & retweet changes, edits & deletion.
-- `is_active` (Boolean)
-- `name` (String) Your own label for the post monitor. Its events carry it as monitorName.
+- `is_active` (Boolean) Set it to false to pause the monitor & its hourly charge.
+- `name` (String) Your own label for the post monitor. Its events carry it as monitorName. Use 1 to 80 characters with single spaces between words.
 
 ### Read-Only
 
