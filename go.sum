@@ -1,5 +1,5 @@
-github.com/Xquik-dev/x-twitter-scraper-go v0.20.0 h1:JaSWkC/f7ZngXQpdOJ3eRpJm5dlg7/WfwbXaawjQGTk=
-github.com/Xquik-dev/x-twitter-scraper-go v0.20.0/go.mod h1:5sXTuvnI5923mLYSdJnXJuk6RHGpBSbQGvWNKA3keIo=
+github.com/Xquik-dev/x-twitter-scraper-go v0.22.0 h1:Nyzzoc4X9B4TpYvvjGpu1TF6/UPzp++NXMP6cQPLIlM=
+github.com/Xquik-dev/x-twitter-scraper-go v0.22.0/go.mod h1:pvBV6VeUGXmFSjhegHerNK69lDe4QPCdNudQlo//OtU=
 github.com/bufbuild/protocompile v0.14.1 h1:iA73zAf/fyljNjQKwYzUHD6AD4R8KMasmwa/FBatYVw=
 github.com/bufbuild/protocompile v0.14.1/go.mod h1:ppVdAIhbr2H8asPk6k4pY7t9zB1OU5DoEw9xY/FUi1c=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
