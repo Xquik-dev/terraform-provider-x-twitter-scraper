@@ -49,7 +49,7 @@ bin/check-local
 
 It runs these checks in order.
 
-1. `go run ./scripts/api_coverage.go`, the [API coverage](#api-coverage)
+1. `go run ./cmd/api-coverage`, the [API coverage](#api-coverage)
    check
 2. `./scripts/bootstrap` to download and verify modules
 3. `reuse lint` 6.2.0 through `uvx` for license metadata
@@ -101,7 +101,7 @@ TF_ACC=1 ./scripts/test
 
 ## API coverage
 
-`bin/check-local` starts with `go run ./scripts/api_coverage.go`. It compares
+`bin/check-local` starts with `go run ./cmd/api-coverage`. It compares
 the operations in the public API spec with the requests that resources and data
 sources send. It fails when the API has an operation that the provider neither
 sends nor lists in `excluded-operations.json`. An operation that the provider

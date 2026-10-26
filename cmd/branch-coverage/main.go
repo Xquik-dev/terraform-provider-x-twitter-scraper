@@ -1,5 +1,3 @@
-//go:build ignore
-
 // Copyright the Xquik contributors.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -15,7 +13,7 @@ import (
 
 func main() {
 	if len(os.Args) != 4 {
-		exitf("Run go run scripts/branch_coverage.go REPORT PROFILE MINIMUM.")
+		exitf("Run go run ./cmd/branch-coverage REPORT PROFILE MINIMUM.")
 	}
 	minimum, err := strconv.ParseFloat(os.Args[3], 64)
 	if err != nil {

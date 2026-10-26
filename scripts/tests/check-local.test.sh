@@ -143,7 +143,7 @@ test_a_passing_run_lists_the_checks_in_order_and_runs_reuse_through_uvx() {
   assert_contains "$run_stdout" "Commit status not posted because --no-status was passed." "stdout"
   assert_equal "$check_order" "$(log_of order)" "the order of the checks"
   assert_equal "--from reuse==6.2.0 reuse lint" "$(log_of uvx)" "the uvx call"
-  assert_equal "run ./scripts/api_coverage.go" "$(log_of go-run)" "the API coverage call"
+  assert_equal "run ./cmd/api-coverage" "$(log_of go-run)" "the API coverage call"
   assert_equal "" "$(log_of gh)" "the posted statuses"
 }
 
