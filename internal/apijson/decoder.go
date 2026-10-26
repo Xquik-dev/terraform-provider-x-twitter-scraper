@@ -235,6 +235,11 @@ func (d *decoderBuilder) newMapDecoder(t reflect.Type) decoderFunc {
 	updateBehavior := d.updateBehavior
 
 	keyType := t.Key()
+	if keyType.Kind() != reflect.String {
+		return func(node gjson.Result, value reflect.Value, state *decoderState) error {
+			return fmt.Errorf("apijson: cannot decode a JSON object into a map with %v keys", keyType)
+		}
+	}
 	itemType := t.Elem()
 	itemDecoder := d.typeDecoder(itemType)
 	alwaysUpdateDecoder := d.alwaysUpdateDecoder(itemType)
@@ -307,7 +312,8 @@ func (d *decoderBuilder) newMapDecoder(t reflect.Type) decoderFunc {
 			if !exists {
 				continue
 			}
-			existingValue := value.MapIndex(reflect.ValueOf(key))
+			keyValue := reflect.ValueOf(key).Convert(keyType)
+			existingValue := value.MapIndex(keyValue)
 			itemValue := reflect.New(itemType).Elem()
 			itemValue.Set(existingValue)
 			itemerr := decoder(gjson.Result{}, itemValue, state)
@@ -315,7 +321,7 @@ func (d *decoderBuilder) newMapDecoder(t reflect.Type) decoderFunc {
 				return itemerr
 			}
 
-			mapValue.SetMapIndex(reflect.ValueOf(key), itemValue)
+			mapValue.SetMapIndex(keyValue, itemValue)
 		}
 		if nonEmpty {
 			value.Set(mapValue)
