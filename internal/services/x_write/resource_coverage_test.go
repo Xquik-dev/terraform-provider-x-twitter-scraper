@@ -1,12 +1,12 @@
 // Copyright 2026 Xquik contributors
 // SPDX-License-Identifier: Apache-2.0
 
-package x_write
+package xwrite
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -40,7 +40,7 @@ func TestWriteResourceLifecycle(t *testing.T) {
 		option.WithBaseURL(server.URL+"/"),
 		option.WithMaxRetries(0),
 	)
-	resourceUnderTest := resourceFor(operations[0].action).(*writeResource)
+	resourceUnderTest := writeResourceFor(t, operations[0].action)
 	ctx := context.Background()
 
 	var metadataResponse resource.MetadataResponse
@@ -132,7 +132,7 @@ func TestWriteResourceRejectsInvalidResponsesAndState(t *testing.T) {
 		option.WithBaseURL(server.URL+"/"),
 		option.WithMaxRetries(0),
 	)
-	resourceUnderTest := resourceFor(operations[0].action).(*writeResource)
+	resourceUnderTest := writeResourceFor(t, operations[0].action)
 	resourceUnderTest.client = &client
 	resourceSchema := resourceSchema(context.Background(), operations[0])
 
@@ -183,7 +183,7 @@ func TestWriteResourceRejectsInvalidResponsesAndState(t *testing.T) {
 func TestWriteResourceRejectsInvalidPlan(t *testing.T) {
 	t.Parallel()
 
-	resourceUnderTest := resourceFor(operations[0].action).(*writeResource)
+	resourceUnderTest := writeResourceFor(t, operations[0].action)
 	resourceSchema := resourceSchema(context.Background(), operations[0])
 	plan := tfsdk.Plan{
 		Raw:    tftypes.NewValue(tftypes.String, "not-an-object"),
@@ -202,18 +202,8 @@ func TestWriteResourceReportsTerminalFailure(t *testing.T) {
 
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("Content-Type", "application/json")
-		response := canonicalAction(operations[0].action, serverURL(request)+"/x/write-actions/write-action-123")
-		response["status"] = "failed"
-		response["terminal"] = true
-		response["success"] = false
-		response["sendDispatched"] = false
-		response["billing"] = map[string]any{
-			"status": "not_charged", "charged": false, "chargedCredits": "", "plannedCredits": "10",
-		}
-		response["charged"] = false
-		response["chargedCredits"] = ""
-		if err := json.NewEncoder(writer).Encode(response); err != nil {
-			t.Errorf("encode response: %v", err)
+		if _, err := io.WriteString(writer, writeActionJSON(operations[0].action, serverURL(request)+"/x/write-actions/write-action-123", failedWrite)); err != nil {
+			t.Errorf("write response: %v", err)
 		}
 	}))
 	t.Cleanup(server.Close)
@@ -222,7 +212,7 @@ func TestWriteResourceReportsTerminalFailure(t *testing.T) {
 		option.WithBaseURL(server.URL+"/"),
 		option.WithMaxRetries(0),
 	)
-	resourceUnderTest := resourceFor(operations[0].action).(*writeResource)
+	resourceUnderTest := writeResourceFor(t, operations[0].action)
 	resourceUnderTest.client = &client
 	resourceSchema := resourceSchema(context.Background(), operations[0])
 	plan := tfsdk.Plan{
@@ -248,31 +238,64 @@ func TestUnknownWriteResourcePanics(t *testing.T) {
 	t.Parallel()
 
 	defer func() {
-		if recovered := recover(); recovered == nil {
+		if recover() == nil {
 			t.Fatal("unknown write action did not panic")
 		}
 	}()
 	_ = resourceFor("unknown")
 }
 
-func canonicalAction(action string, statusURL string) map[string]any {
-	return map[string]any{
-		"object": "x_write_action", "id": "write-action-123", "writeActionId": "write-action-123",
-		"action": action, "status": "success", "terminal": true, "retryable": false,
-		"safeToRetry": false, "statusUrl": statusURL, "pollAfterMs": 0,
-		"charged": true, "chargedCredits": "10", "targetId": "target-123",
-		"billing": map[string]any{
-			"status": "charged", "charged": true, "chargedCredits": "10", "plannedCredits": "10",
-		},
-		"request": map[string]any{"hash": "request-hash", "payload": map[string]any{"account": "sanitized"}},
-		"account": map[string]any{"id": "account-123", "username": "response-account"},
-		"result":  map[string]any{"id": "result-123", "state": "confirmed", "type": "state_change"},
-		"target":  map[string]any{"id": "target-123", "type": "tweet"},
-		"nextAction": map[string]any{
-			"type": "verify_result", "afterMs": 0, "requiresNewIdempotencyKey": false, "url": statusURL,
-		},
-		"requestId": "request-123", "sendDispatched": true, "success": true,
+type writeActionState struct {
+	status         string
+	terminal       bool
+	charged        bool
+	chargedCredits string
+	billingStatus  string
+	result         string
+	nextAction     string
+	sendDispatched bool
+	success        bool
+}
+
+var (
+	succeededWrite = writeActionState{
+		status: "success", terminal: true, charged: true, chargedCredits: "10", billingStatus: "charged",
+		result: `{"id":"result-123","state":"confirmed","type":"state_change"}`, nextAction: "verify_result",
+		sendDispatched: true, success: true,
 	}
+	acceptedWrite = writeActionState{
+		status: "accepted", chargedCredits: "10", billingStatus: "pending",
+		result: `{}`, nextAction: "poll", sendDispatched: true,
+	}
+	failedWrite = writeActionState{
+		status: "failed", terminal: true, billingStatus: "not_charged",
+		result: `{"id":"result-123","state":"confirmed","type":"state_change"}`, nextAction: "verify_result",
+	}
+)
+
+func writeActionJSON(action string, statusURL string, state writeActionState) string {
+	return fmt.Sprintf(`{"object":"x_write_action","id":"write-action-123","writeActionId":"write-action-123",`+
+		`"action":%q,"status":%q,"terminal":%t,"retryable":false,"safeToRetry":false,"statusUrl":%q,"pollAfterMs":0,`+
+		`"charged":%t,"chargedCredits":%q,"targetId":"target-123",`+
+		`"billing":{"status":%q,"charged":%t,"chargedCredits":%q,"plannedCredits":"10"},`+
+		`"request":{"hash":"request-hash","payload":{"account":"sanitized"}},`+
+		`"account":{"id":"account-123","username":"response-account"},"result":%s,`+
+		`"target":{"id":"target-123","type":"tweet"},`+
+		`"nextAction":{"type":%q,"afterMs":0,"requiresNewIdempotencyKey":false,"url":%q},`+
+		`"requestId":"request-123","sendDispatched":%t,"success":%t}`,
+		action, state.status, state.terminal, statusURL,
+		state.charged, state.chargedCredits,
+		state.billingStatus, state.charged, state.chargedCredits,
+		state.result, state.nextAction, statusURL, state.sendDispatched, state.success)
+}
+
+func writeResourceFor(t *testing.T, action string) *writeResource {
+	t.Helper()
+	resourceUnderTest, ok := resourceFor(action).(*writeResource)
+	if !ok {
+		t.Fatalf("resource for %s is not a write resource", action)
+	}
+	return resourceUnderTest
 }
 
 func rawWriteObject(terraformType tftypes.Type, stringsByName map[string]string) tftypes.Value {
@@ -282,11 +305,11 @@ func rawWriteObject(terraformType tftypes.Type, stringsByName map[string]string)
 	}
 	attributes := make(map[string]tftypes.Value, len(object.AttributeTypes))
 	for name, attributeType := range object.AttributeTypes {
-		value := any(nil)
 		if stringValue, exists := stringsByName[name]; exists && attributeType.Is(tftypes.String) {
-			value = stringValue
+			attributes[name] = tftypes.NewValue(attributeType, stringValue)
+			continue
 		}
-		attributes[name] = tftypes.NewValue(attributeType, value)
+		attributes[name] = tftypes.NewValue(attributeType, nil)
 	}
 	return tftypes.NewValue(object, attributes)
 }

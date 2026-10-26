@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package monitor_keyword
+// Package monitorkeyword implements the x-twitter-scraper_monitor_keyword
+// resource and data source.
+package monitorkeyword
 
 import (
 	"context"
@@ -202,12 +204,7 @@ func (r *MonitorKeywordResource) Delete(ctx context.Context, req resource.Delete
 func (r *MonitorKeywordResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	var data = new(MonitorKeywordModel)
 
-	path := ""
-	diags := importpath.ParseImportID(
-		req.ID,
-		"<id>",
-		&path,
-	)
+	path, diags := importpath.ParseImportID(req.ID)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

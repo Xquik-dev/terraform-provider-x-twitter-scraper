@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package x_write
+// Package xwrite implements the resources that run X write actions, such as
+// x-twitter-scraper_x_tweet.
+package xwrite
 
 import (
 	"context"

@@ -5,6 +5,7 @@ package customfield
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -25,6 +26,7 @@ func TestPrimitiveCollectionContracts(t *testing.T) {
 
 	ctx := context.Background()
 	stringValue := types.StringValue("value")
+	decoded := types.StringValue("decoded")
 
 	t.Run("list", func(t *testing.T) {
 		listType := NewListType[basetypes.StringValue](ctx)
@@ -56,7 +58,9 @@ func TestPrimitiveCollectionContracts(t *testing.T) {
 		requireNoError(t, err)
 		assertTrue(t, "list null helper", known.NullValue(ctx).IsNull())
 		assertTrue(t, "list unknown helper", known.UnknownValue(ctx).IsUnknown())
-		assertFalse(t, "list known helper", known.KnownValue(ctx, []basetypes.StringValue{stringValue}).IsNull())
+		target, build := known.DecodeTarget(ctx)
+		target.Set(reflect.ValueOf([]basetypes.StringValue{decoded}))
+		assertTrue(t, "list decode target", build().Equal(NewListMust[basetypes.StringValue](ctx, []attr.Value{decoded})))
 		assertFalse(t, "known list state", known.IsNullOrUnknown())
 		assertTrue(t, "unknown list state", UnknownList[basetypes.StringValue](ctx).IsNullOrUnknown())
 		assertTrue(t, "list equality", known.Equal(known))
@@ -68,7 +72,7 @@ func TestPrimitiveCollectionContracts(t *testing.T) {
 		_, diags = known.ValueAttr(ctx)
 		requireNoDiagnostics(t, diags)
 
-		_, diags = NewList[basetypes.StringValue](ctx, "invalid")
+		_, diags = List[basetypes.StringValue]{ListValue: basetypes.NewListValueMust(types.Int64Type, []attr.Value{types.Int64Value(1)})}.Value(ctx)
 		requireDiagnostics(t, diags)
 		assertPanics(t, "invalid list must", func() {
 			NewListMust[basetypes.StringValue](ctx, []attr.Value{types.Int64Value(1)})
@@ -105,7 +109,9 @@ func TestPrimitiveCollectionContracts(t *testing.T) {
 		requireNoError(t, err)
 		assertTrue(t, "set null helper", known.NullValue(ctx).IsNull())
 		assertTrue(t, "set unknown helper", known.UnknownValue(ctx).IsUnknown())
-		assertFalse(t, "set known helper", known.KnownValue(ctx, []basetypes.StringValue{stringValue}).IsNull())
+		target, build := known.DecodeTarget(ctx)
+		target.Set(reflect.ValueOf([]basetypes.StringValue{decoded}))
+		assertTrue(t, "set decode target", build().Equal(NewSetMust[basetypes.StringValue](ctx, []attr.Value{decoded})))
 		assertFalse(t, "known set state", known.IsNullOrUnknown())
 		assertTrue(t, "unknown set state", UnknownSet[basetypes.StringValue](ctx).IsNullOrUnknown())
 		assertTrue(t, "set equality", known.Equal(known))
@@ -117,7 +123,7 @@ func TestPrimitiveCollectionContracts(t *testing.T) {
 		_, diags = known.ValueAttr(ctx)
 		requireNoDiagnostics(t, diags)
 
-		_, diags = NewSet[basetypes.StringValue](ctx, "invalid")
+		_, diags = Set[basetypes.StringValue]{SetValue: basetypes.NewSetValueMust(types.Int64Type, []attr.Value{types.Int64Value(1)})}.Value(ctx)
 		requireDiagnostics(t, diags)
 		assertPanics(t, "invalid set must", func() {
 			NewSetMust[basetypes.StringValue](ctx, []attr.Value{types.Int64Value(1)})
@@ -154,7 +160,9 @@ func TestPrimitiveCollectionContracts(t *testing.T) {
 		requireNoError(t, err)
 		assertTrue(t, "map null helper", known.NullValue(ctx).IsNull())
 		assertTrue(t, "map unknown helper", known.UnknownValue(ctx).IsUnknown())
-		assertFalse(t, "map known helper", known.KnownValue(ctx, map[string]basetypes.StringValue{"key": stringValue}).IsNull())
+		target, build := known.DecodeTarget(ctx)
+		target.Set(reflect.ValueOf(map[string]basetypes.StringValue{"key": decoded}))
+		assertTrue(t, "map decode target", build().Equal(NewMapMust(ctx, map[string]basetypes.StringValue{"key": decoded})))
 		assertTrue(t, "map equality", known.Equal(known))
 		assertFalse(t, "map value mismatch", known.Equal(types.StringValue("value")))
 		assertNotNil(t, "map value type", known.Type(ctx))
@@ -164,9 +172,9 @@ func TestPrimitiveCollectionContracts(t *testing.T) {
 		_, diags = known.ValueAttr(ctx)
 		requireNoDiagnostics(t, diags)
 
-		_, diags = NewMap[basetypes.StringValue](ctx, "invalid")
+		_, diags = NewMapFromAttributes[basetypes.StringValue](ctx, map[string]attr.Value{"key": types.Int64Value(1)})
 		requireDiagnostics(t, diags)
-		_, diags = NewMap[basetypes.StringValue](ctx, map[string]attr.Value{"key": types.Int64Value(1)})
+		_, diags = Map[basetypes.StringValue]{MapValue: basetypes.NewMapValueMust(types.Int64Type, map[string]attr.Value{"key": types.Int64Value(1)})}.Value(ctx)
 		requireDiagnostics(t, diags)
 	})
 }
@@ -176,6 +184,7 @@ func TestNestedObjectCollectionContracts(t *testing.T) {
 
 	ctx := context.Background()
 	item := coverageObject{Name: types.StringValue("name"), Count: types.Int64Value(1)}
+	decodedItem := coverageObject{Name: types.StringValue("decoded"), Count: types.Int64Value(2)}
 	object := NewObjectMust(ctx, &item)
 
 	objectType := NewNestedObjectType[coverageObject](ctx)
@@ -203,7 +212,9 @@ func TestNestedObjectCollectionContracts(t *testing.T) {
 	requireNoError(t, err)
 	assertTrue(t, "object null helper", object.NullValue(ctx).IsNull())
 	assertTrue(t, "object unknown helper", object.UnknownValue(ctx).IsUnknown())
-	assertFalse(t, "object known helper", object.KnownValue(ctx, &item).IsNull())
+	target, build := object.DecodeTarget(ctx)
+	target.Set(reflect.ValueOf(decodedItem))
+	assertTrue(t, "object decode target", build().Equal(NewObjectMust(ctx, &decodedItem)))
 	assertTrue(t, "object equality", object.Equal(object))
 	assertFalse(t, "object value mismatch", object.Equal(types.StringValue("value")))
 	assertNotNil(t, "object value type", object.Type(ctx))
@@ -242,7 +253,9 @@ func TestNestedObjectCollectionContracts(t *testing.T) {
 		requireNoError(t, nestedErr)
 		assertTrue(t, "object list null helper", known.NullValue(ctx).IsNull())
 		assertTrue(t, "object list unknown helper", known.UnknownValue(ctx).IsUnknown())
-		assertFalse(t, "object list known helper", known.KnownValue(ctx, []coverageObject{item}).IsNull())
+		target, build := known.DecodeTarget(ctx)
+		target.Set(reflect.ValueOf([]coverageObject{decodedItem}))
+		assertTrue(t, "object list decode target", build().Equal(NewObjectListMust(ctx, []coverageObject{decodedItem})))
 		assertTrue(t, "object list equality", known.Equal(known))
 		assertFalse(t, "object list mismatch", known.Equal(types.StringValue("value")))
 		assertNotNil(t, "object list type", known.Type(ctx))
@@ -286,7 +299,9 @@ func TestNestedObjectCollectionContracts(t *testing.T) {
 		requireNoError(t, nestedErr)
 		assertTrue(t, "object map null helper", known.NullValue(ctx).IsNull())
 		assertTrue(t, "object map unknown helper", known.UnknownValue(ctx).IsUnknown())
-		assertFalse(t, "object map known helper", known.KnownValue(ctx, map[string]coverageObject{"key": item}).IsNull())
+		target, build := known.DecodeTarget(ctx)
+		target.Set(reflect.ValueOf(map[string]coverageObject{"key": decodedItem}))
+		assertTrue(t, "object map decode target", build().Equal(NewObjectMapMust(ctx, map[string]coverageObject{"key": decodedItem})))
 		assertTrue(t, "object map equality", known.Equal(known))
 		assertFalse(t, "object map mismatch", known.Equal(types.StringValue("value")))
 		assertNotNil(t, "object map type", known.Type(ctx))
@@ -325,7 +340,9 @@ func TestNestedObjectCollectionContracts(t *testing.T) {
 		requireNoError(t, nestedErr)
 		assertTrue(t, "object set null helper", known.NullValue(ctx).IsNull())
 		assertTrue(t, "object set unknown helper", known.UnknownValue(ctx).IsUnknown())
-		assertFalse(t, "object set known helper", known.KnownValue(ctx, []coverageObject{item}).IsNull())
+		target, build := known.DecodeTarget(ctx)
+		target.Set(reflect.ValueOf([]coverageObject{decodedItem}))
+		assertTrue(t, "object set decode target", build().Equal(NewObjectSetMust(ctx, []coverageObject{decodedItem})))
 		assertFalse(t, "known object set state", known.IsNullOrUnknown())
 		assertTrue(t, "null object set state", NullObjectSet[coverageObject](ctx).IsNullOrUnknown())
 		assertTrue(t, "object set equality", known.Equal(known))
@@ -391,7 +408,10 @@ func TestNormalizedDynamicContracts(t *testing.T) {
 	dynamicString := types.DynamicValue(types.StringValue("value"))
 	normalizedValue, diags := normalizedType.ValueFromDynamic(ctx, dynamicString)
 	requireNoDiagnostics(t, diags)
-	converted := normalizedValue.(NormalizedDynamicValue)
+	converted, ok := normalizedValue.(NormalizedDynamicValue)
+	if !ok {
+		t.Fatalf("normalized value is a %T", normalizedValue)
+	}
 	_, diags = converted.ToDynamicValue(ctx)
 	requireNoDiagnostics(t, diags)
 	assertNotNil(t, "normalized value type", converted.Type(ctx))
@@ -494,7 +514,7 @@ func assertNotEmpty(t *testing.T, label string, value string) {
 	}
 }
 
-func assertNotNil(t *testing.T, label string, value any) {
+func assertNotNil(t *testing.T, label string, value fmt.Stringer) {
 	t.Helper()
 	if value == nil {
 		t.Fatalf("%s is nil", label)

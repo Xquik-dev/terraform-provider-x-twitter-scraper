@@ -49,8 +49,11 @@ case "$1 $2" in
     ;;
   "database create")
     source_root="$(option --source-root "$@")"
-    echo "$source_root" >"$FAKE_LOGS/source-root"
     mkdir -p "$3"
+    case "$source_root" in
+      */comment-fixture) exit 0 ;;
+    esac
+    echo "$source_root" >"$FAKE_LOGS/source-root"
     echo "built" >"$source_root/build-output.txt"
     files=""
     for file in main.go pkg/lib.go; do
@@ -60,6 +63,19 @@ case "$1 $2" in
     ;;
   "database analyze")
     output="$(option --output "$@")"
+    case "$output" in
+      */comment-fixture.sarif)
+        flagged="a_test.go:1 cmd/tool/main.go:1 first.go:4 second.go:1 second.go:4 second.go:5"
+        [ -z "${FAKE_COMMENT_DRIFT:-}" ] || flagged="first.go:4 second.go:4 second.go:5"
+        results=""
+        for flag in $flagged; do
+          [ -z "$results" ] || results="$results,"
+          results="$results"'{"ruleId":"go/no-code-comments","locations":[{"physicalLocation":{"artifactLocation":{"uri":"'"${flag%:*}"'"},"region":{"startLine":'"${flag#*:}"'}}}]}'
+        done
+        echo '{"runs":[{"results":['"$results"']}]}' >"$output"
+        exit 0
+        ;;
+    esac
     results=""
     notifications=""
     diagnostic="go/diagnostics/extraction-errors"
@@ -102,7 +118,10 @@ test_codeql_scans_a_copy_with_the_pinned_pack_and_leaves_the_working_tree_alone(
   assert_contains "$(log_of codeql)" "database analyze" "the CodeQL calls"
   assert_contains "$(log_of codeql)" " codeql/go-queries@1.6.12:codeql-suites/go-security-extended.qls codeql/no-code-comments --additional-packs=$sandbox/tmp/" "the analysis"
   assert_contains "$(log_of codeql)" "pack install codeql/no-code-comments --common-caches=$sandbox/tmp/" "the comment query install"
-  assert_equal 4 "$(grep -c -- "--common-caches=$sandbox/tmp/xquik-terraform-codeql." "$sandbox_logs/codeql")" "the calls with a private cache"
+  assert_contains "$(log_of codeql)" "--build-mode=autobuild --extractor-option=go.extract_tests=true --source-root=$sandbox/tmp/" "the test file extraction"
+  assert_contains "$(log_of codeql)" "/comment-fixture --common-caches=$sandbox/tmp/" "the fixture database"
+  assert_contains "$(log_of codeql)" "/comment-fixture-database codeql/no-code-comments --common-caches=$sandbox/tmp/" "the fixture analysis"
+  assert_equal 6 "$(grep -c -- "--common-caches=$sandbox/tmp/xquik-terraform-codeql." "$sandbox_logs/codeql")" "the calls with a private cache"
   assert_equal "" "$(ls "$sandbox/tmp")" "the leftover temporary files"
 }
 
@@ -115,6 +134,26 @@ test_a_codeql_result_fails_the_run_and_is_printed() {
   assert_equal 1 "$run_status" "the exit code"
   assert_equal "go/sql-injection at pkg/lib.go:7
 CodeQL found 1 results. Fix each one above, then rerun." "$run_stderr" "stderr"
+}
+
+test_a_comment_query_that_spares_a_second_package_comment_fails_the_run() {
+  prepare_codeql
+  run_env=("FAKE_COMMENT_DRIFT=1")
+
+  run_in_repo scripts/codeql
+
+  assert_equal 1 "$run_status" "the exit code"
+  assert_equal "The comment query flagged these fixture lines.
+first.go:4
+second.go:4
+second.go:5
+It must flag every comment except the first non-test package comment of each package other than main.
+a_test.go:1
+cmd/tool/main.go:1
+first.go:4
+second.go:1
+second.go:4
+second.go:5" "$run_stderr" "stderr"
 }
 
 test_a_failed_comment_query_install_fails_the_run() {

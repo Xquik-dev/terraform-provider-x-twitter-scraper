@@ -24,7 +24,11 @@ func (p *providerPackage) fieldSelection(expression ast.Expr) (*types.Var, types
 	if owner == nil {
 		return nil, nil
 	}
-	return selection.Obj().(*types.Var), owner
+	field, ok := selection.Obj().(*types.Var)
+	if !ok {
+		return nil, nil
+	}
+	return field, owner
 }
 
 func (p *providerPackage) returnedField(result *ast.ReturnStmt, receiver types.Object) *types.Var {
@@ -83,7 +87,11 @@ func (p *providerPackage) pathField(expression ast.Expr) (*types.Var, types.Obje
 	if selection == nil || selection.Kind() != types.MethodVal {
 		return nil, nil
 	}
-	method := p.functions[selection.Obj().(*types.Func)]
+	function, ok := selection.Obj().(*types.Func)
+	if !ok {
+		return nil, nil
+	}
+	method := p.functions[function]
 	owner := p.objectOf(selector.X)
 	if method == nil || owner == nil {
 		return nil, nil
@@ -112,7 +120,10 @@ func (p *providerPackage) literalsOf(table types.Type) []*ast.CompositeLit {
 }
 
 func (p *providerPackage) tableRequest(literal *ast.CompositeLit, methodField, pathField *types.Var) (request, bool) {
-	fields := p.pkg.TypesInfo.TypeOf(literal).Underlying().(*types.Struct)
+	fields, ok := p.pkg.TypesInfo.TypeOf(literal).Underlying().(*types.Struct)
+	if !ok {
+		return request{}, false
+	}
 	values := map[*types.Var]ast.Expr{}
 	for index, element := range literal.Elts {
 		pair, keyed := element.(*ast.KeyValueExpr)

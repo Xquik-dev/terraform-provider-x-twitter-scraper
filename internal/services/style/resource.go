@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// Package style implements the x-twitter-scraper_style resource and data
+// source.
 package style
 
 import (
@@ -196,12 +198,7 @@ func (r *StyleResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 func (r *StyleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	var data = new(StyleModel)
 
-	path := ""
-	diags := importpath.ParseImportID(
-		req.ID,
-		"<id>",
-		&path,
-	)
+	path, diags := importpath.ParseImportID(req.ID)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

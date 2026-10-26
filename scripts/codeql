@@ -97,13 +97,14 @@ echo "==> Building the CodeQL database"
 codeql database create "$database" \
   --language=go \
   --build-mode=autobuild \
+  --extractor-option=go.extract_tests=true \
   --source-root="$source_root" \
   --common-caches="$caches" \
   --threads=0
 
 expected="$(
   cd -- "$source_root"
-  go list -json ./... | jq -r '.Dir as $dir | (.GoFiles // [])[] | "\($dir)/\(.)"' |
+  go list -json ./... | jq -r '.Dir as $dir | ((.GoFiles // []) + (.TestGoFiles // []) + (.XTestGoFiles // []))[] | "\($dir)/\(.)"' |
     sed "s|^.*${source_root#/}/||" | LC_ALL=C sort -u
 )"
 scanned="$(
@@ -146,6 +147,66 @@ if ((result_count > 0)); then
     | .locations[0].physicalLocation as $where
     | "\(.ruleId) at \($where.artifactLocation.uri):\($where.region.startLine)"' "$results" >&2
   echo "CodeQL found $result_count results. Fix each one above, then rerun." >&2
+  exit 1
+fi
+
+echo "==> Checking the comment query on a fixture package"
+readonly fixture_root="$workspace/comment-fixture"
+readonly fixture_database="$workspace/comment-fixture-database"
+readonly fixture_results="$workspace/comment-fixture.sarif"
+mkdir -p -- "$fixture_root"
+printf 'module example.com/commentfixture\n\ngo 1.27\n' >"$fixture_root/go.mod"
+cat >"$fixture_root/first.go" <<'GO'
+// Package commentfixture keeps this package comment.
+package commentfixture
+
+// Value has a declaration comment.
+var Value = 1
+GO
+cat >"$fixture_root/second.go" <<'GO'
+// Package commentfixture has a second package comment.
+package commentfixture
+
+// A line comment.
+var second = Value // A trailing comment.
+GO
+cat >"$fixture_root/a_test.go" <<'GO'
+// Package commentfixture has a test package comment.
+package commentfixture
+GO
+mkdir -p -- "$fixture_root/cmd/tool"
+cat >"$fixture_root/cmd/tool/main.go" <<'GO'
+// Command tool has a command comment.
+package main
+
+func main() {}
+GO
+codeql database create "$fixture_database" \
+  --language=go \
+  --build-mode=autobuild \
+  --extractor-option=go.extract_tests=true \
+  --source-root="$fixture_root" \
+  --common-caches="$caches" \
+  --threads=0
+codeql database analyze "$fixture_database" "$comment_pack" \
+  --common-caches="$caches" \
+  --format=sarif-latest \
+  --output="$fixture_results" \
+  --threads=0
+flagged="$(jq -r '.runs[].results[]
+  | .locations[0].physicalLocation
+  | "\(.artifactLocation.uri):\(.region.startLine)"' "$fixture_results" | LC_ALL=C sort)"
+readonly expected_flags="a_test.go:1
+cmd/tool/main.go:1
+first.go:4
+second.go:1
+second.go:4
+second.go:5"
+if [[ "$flagged" != "$expected_flags" ]]; then
+  echo "The comment query flagged these fixture lines." >&2
+  printf '%s\n' "$flagged" >&2
+  echo "It must flag every comment except the first non-test package comment of each package other than main." >&2
+  printf '%s\n' "$expected_flags" >&2
   exit 1
 fi
 

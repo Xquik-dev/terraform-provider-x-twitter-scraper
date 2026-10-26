@@ -11,12 +11,12 @@ import (
 )
 
 type DraftModel struct {
-	ID        types.String      `tfsdk:"id" json:"id,computed"`
-	Text      types.String      `tfsdk:"text" json:"text,required"`
-	Goal      types.String      `tfsdk:"goal" json:"goal,optional"`
-	Topic     types.String      `tfsdk:"topic" json:"topic,optional"`
-	CreatedAt timetypes.RFC3339 `tfsdk:"created_at" json:"createdAt,computed" format:"date-time"`
-	UpdatedAt timetypes.RFC3339 `tfsdk:"updated_at" json:"updatedAt,computed" format:"date-time"`
+	ID        types.String      `tfsdk:"id" json:"id" api:"computed"`
+	Text      types.String      `tfsdk:"text" json:"text" api:"required"`
+	Goal      types.String      `tfsdk:"goal" json:"goal" api:"optional"`
+	Topic     types.String      `tfsdk:"topic" json:"topic" api:"optional"`
+	CreatedAt timetypes.RFC3339 `tfsdk:"created_at" json:"createdAt" api:"computed" format:"date-time"`
+	UpdatedAt timetypes.RFC3339 `tfsdk:"updated_at" json:"updatedAt" api:"computed" format:"date-time"`
 }
 
 func (m DraftModel) MarshalJSON() (data []byte, err error) {

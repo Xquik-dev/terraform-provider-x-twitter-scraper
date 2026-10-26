@@ -88,7 +88,7 @@ func serverPath(servers ...[]server) (string, error) {
 }
 
 func unreadableSpec(source string) error {
-	return fmt.Errorf("Could not read the API spec from %s. Check network access, or set %s to a local copy of %s.", source, SpecVariable, defaultSpecSource)
+	return fmt.Errorf("could not read the API spec from %s. Check network access, or set %s to a local copy of %s", source, SpecVariable, defaultSpecSource)
 }
 
 func fetchSpec(source string, client *http.Client) ([]byte, error) {
@@ -141,8 +141,8 @@ func specOperations(source string, client *http.Client) (operations, error) {
 	return found, nil
 }
 
-func invalidExclusions(format string, args ...any) error {
-	return fmt.Errorf("%s is not valid. %s.", exclusionFile, fmt.Sprintf(format, args...))
+func invalidExclusions(detail string) error {
+	return fmt.Errorf("the file %s is not valid. %s", exclusionFile, detail)
 }
 
 func readExclusions(root fs.FS) (operations, error) {
@@ -156,30 +156,31 @@ func readExclusions(root fs.FS) (operations, error) {
 	if err := decoder.Decode(&groups); err != nil {
 		var syntax *json.SyntaxError
 		if errors.As(err, &syntax) {
-			return nil, invalidExclusions("It is not valid JSON near byte %d", syntax.Offset)
+			return nil, invalidExclusions(fmt.Sprintf("It is not valid JSON near byte %d", syntax.Offset))
 		}
 		return nil, invalidExclusions("It must be a JSON list of groups, each with only a reason string and an operations list of strings")
 	}
-	if _, err := decoder.Token(); err != io.EOF {
+	var extra json.RawMessage
+	if err := decoder.Decode(&extra); err != io.EOF {
 		return nil, invalidExclusions("It holds more than 1 JSON value")
 	}
 	excluded := operations{}
 	for index, group := range groups {
 		number := index + 1
 		if strings.TrimSpace(group.Reason) == "" {
-			return nil, invalidExclusions("Group %d needs a non-empty reason", number)
+			return nil, invalidExclusions(fmt.Sprintf("Group %d needs a non-empty reason", number))
 		}
 		if len(group.Operations) == 0 {
-			return nil, invalidExclusions("Group %d needs at least 1 operation", number)
+			return nil, invalidExclusions(fmt.Sprintf("Group %d needs at least 1 operation", number))
 		}
 		for _, text := range group.Operations {
 			match := operationPattern.FindStringSubmatch(text)
 			if match == nil || !knownMethod(match[1]) {
-				return nil, invalidExclusions("Group %d lists %q, which is not an upper case HTTP method, a space and a path starting with /", number, text)
+				return nil, invalidExclusions(fmt.Sprintf("Group %d lists %q, which is not an upper case HTTP method, a space and a path starting with /", number, text))
 			}
 			key := operationKey(match[1], match[2])
 			if earlier, duplicate := excluded[key]; duplicate {
-				return nil, invalidExclusions("It lists %s and %s, which name the same operation. List it once", earlier, text)
+				return nil, invalidExclusions(fmt.Sprintf("It lists %s and %s, which name the same operation. List it once", earlier, text))
 			}
 			excluded[key] = text
 		}

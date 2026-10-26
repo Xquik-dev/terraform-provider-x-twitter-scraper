@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package x_list
+// Package xlist implements the x-twitter-scraper_x_list data source.
+package xlist
 
 import (
 	"context"

@@ -92,7 +92,7 @@ func TestInvalidExclusionFilesFail(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			code, out, failures := runCheck(t, writeProvider(t, test.content), writeSpec(t, coveredSpec))
-			assertRun(t, code, out, failures, 1, "", "excluded-operations.json is not valid. "+test.want+"\n")
+			assertRun(t, code, out, failures, 1, "", "The file excluded-operations.json is not valid. "+test.want+"\n")
 		})
 	}
 }
@@ -101,7 +101,7 @@ func TestMissingExclusionFileFails(t *testing.T) {
 	files := providerTree("[]")
 	delete(files, exclusionFile)
 	code, out, failures := runCheck(t, writeModules(t, sdkTree(), files), writeSpec(t, coveredSpec))
-	assertRun(t, code, out, failures, 1, "", "excluded-operations.json is not valid. The repository root has no readable copy. Create it, even as an empty list [].\n")
+	assertRun(t, code, out, failures, 1, "", "The file excluded-operations.json is not valid. The repository root has no readable copy. Create it, even as an empty list [].\n")
 }
 
 func TestUnreadableSpecFails(t *testing.T) {

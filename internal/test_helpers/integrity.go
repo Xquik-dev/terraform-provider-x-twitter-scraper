@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package test_helpers
+// Package testhelpers checks that provider models match their Terraform
+// schemas.
+package testhelpers
 
 import (
 	"context"
@@ -40,9 +42,9 @@ type codingerror interface {
 type path []string
 
 type attrlike interface {
-	val() any
+	val() reflect.Value
 	tag() string
-	custom(path) any
+	custom(path) attr.Type
 }
 
 type bug struct {
@@ -100,9 +102,9 @@ func (e *mismatch) id() string {
 type codingerrors []codingerror
 
 func (errs *codingerrors) Ignore(t *testing.T, paths ...string) {
-	acc := map[string]any{}
+	acc := map[string]bool{}
 	for _, path := range paths {
-		acc[path] = nil
+		acc[path] = true
 	}
 	*errs = slices.DeleteFunc(*errs, func(err codingerror) bool {
 		id := err.id()
@@ -137,11 +139,11 @@ func (errs *codingerrors) Report(t *testing.T) {
 type att struct{ v attr.Type }
 type attri struct{ v ds.Attribute }
 
-func (a *att) val() any {
-	return a.v
+func (a *att) val() reflect.Value {
+	return reflect.ValueOf(a.v)
 }
-func (a *attri) val() any {
-	return a.v
+func (a *attri) val() reflect.Value {
+	return reflect.ValueOf(a.v)
 }
 
 func (a *att) tag() string {
@@ -164,10 +166,10 @@ func (a *attri) tag() string {
 	}
 }
 
-func (a *att) custom(path) any {
+func (a *att) custom(path) attr.Type {
 	return nil
 }
-func (a *attri) custom(path path) any {
+func (a *attri) custom(path path) attr.Type {
 	switch v := (a.v).(type) {
 	case ds.BoolAttribute:
 		return v.CustomType
@@ -240,22 +242,30 @@ func (a *attri) custom(path path) any {
 	}
 }
 
-func ValidateDataSourceModelSchemaIntegrity(model any, schema ds.Schema) codingerrors {
-	path := []string{}
-	attributes := map[string]attrlike{}
-	for name, attr := range schema.Attributes {
-		attributes[name] = &attri{attr}
-	}
-	return walkAttributes(path, reflect.TypeOf(model), attributes)
+func ValidateDataSourceModelSchemaIntegrity[T any](model T, schema ds.Schema) codingerrors {
+	return ValidateDataSourceModelTypeIntegrity(reflect.TypeOf(model), schema)
 }
 
-func ValidateResourceModelSchemaIntegrity(model any, schema rs.Schema) codingerrors {
+func ValidateDataSourceModelTypeIntegrity(model reflect.Type, schema ds.Schema) codingerrors {
 	path := []string{}
 	attributes := map[string]attrlike{}
 	for name, attr := range schema.Attributes {
 		attributes[name] = &attri{attr}
 	}
-	return walkAttributes(path, reflect.TypeOf(model), attributes)
+	return walkAttributes(path, model, attributes)
+}
+
+func ValidateResourceModelSchemaIntegrity[T any](model T, schema rs.Schema) codingerrors {
+	return ValidateResourceModelTypeIntegrity(reflect.TypeOf(model), schema)
+}
+
+func ValidateResourceModelTypeIntegrity(model reflect.Type, schema rs.Schema) codingerrors {
+	path := []string{}
+	attributes := map[string]attrlike{}
+	for name, attr := range schema.Attributes {
+		attributes[name] = &attri{attr}
+	}
+	return walkAttributes(path, model, attributes)
 }
 
 func deref(t reflect.Type) reflect.Type {
@@ -273,10 +283,17 @@ func checkTag(path []string, attr attrlike, field reflect.StructField) (errs cod
 	tagged, tags := false, []string{}
 
 	for _, label := range []string{"path", "query", "json"} {
-		if labelled, ok := field.Tag.Lookup(label); ok {
+		if _, ok := field.Tag.Lookup(label); ok {
 			tagged = true
-			tags = append(tags, strings.Split(labelled, ",")...)
 		}
+	}
+	if path, ok := field.Tag.Lookup("path"); ok {
+		if _, options, found := strings.Cut(path, ","); found {
+			tags = append(tags, strings.Split(options, ",")...)
+		}
+	}
+	if options, ok := field.Tag.Lookup("api"); ok {
+		tags = append(tags, strings.Split(options, ",")...)
 	}
 
 	if !tagged {
@@ -294,11 +311,7 @@ func checkCustom(path []string, attribute attrlike, model reflect.Type) (errs co
 		return
 	}
 
-	if a, ok := custom.(attr.Type); ok {
-		custom = a.ValueType(context.TODO())
-	}
-
-	t := deref(reflect.TypeOf(custom))
+	t := deref(reflect.TypeOf(custom.ValueType(context.TODO())))
 	if model.ConvertibleTo(t) {
 		return
 	}
@@ -325,24 +338,21 @@ func walkAttributes(path []string, model reflect.Type, attributes map[string]att
 		if field, ok := fields[name]; ok {
 			errs = append(append(errs, checkTag(index, attr, field)...), walk(index, attr, field.Type)...)
 		} else {
-			errs = append(errs, &mismatch{path: index, expected: fmt.Sprintf("%T", attr.val()), actual: nil})
+			errs = append(errs, &mismatch{path: index, expected: attr.val().Type().String(), actual: nil})
 		}
 	}
 	return
 }
 
-// workaround for lack of generic param in reflection
-// we store an instance of the generics in struct itself
-// https://github.com/golang/go/issues/54393
-func genericParam(t reflect.Type, idx int) reflect.Type {
+func genericParam(t reflect.Type) reflect.Type {
 	t = deref(t)
-	if t.Kind() != reflect.Struct {
+	if typed, ok := reflect.TypeAssert[interface{ ModelType() reflect.Type }](reflect.Zero(t)); ok {
+		return typed.ModelType()
+	}
+	if t.Kind() != reflect.Struct || t.NumField() == 0 {
 		return nil
 	}
-	if t.NumField() <= idx {
-		return nil
-	}
-	return t.Field(idx).Type
+	return t.Field(0).Type
 }
 
 func checkMapKeys(path []string, model reflect.Type) (errs codingerrors) {
@@ -380,7 +390,7 @@ func walkCollection(path path, collection attr.TypeWithElementType, kind reflect
 		errs = append(errs, checkMapKeys(path, model)...)
 		model = deref(model.Elem())
 	} else if model.Implements(bstype.Elem()) {
-		model = genericParam(model, 0)
+		model = genericParam(model)
 	} else {
 		return append(errs, &mismatch{path: path, expected: exp, actual: model})
 	}
@@ -431,7 +441,7 @@ func walkAttriCollection(path path, attribute ds.Attribute, kind reflect.Kind, m
 				return append(errs, &bug{path: path, msg: fmt.Sprintf("walkAttriCollection: Should use customfield.%s instead of %s", ty, t)})
 			}
 		}
-		model = genericParam(model, 0)
+		model = genericParam(model)
 	} else {
 		return append(errs, &mismatch{path: path, expected: exp, actual: model})
 	}
@@ -464,7 +474,7 @@ func walkNested(path path, attribute ds.NestedAttribute, kind reflect.Kind, mode
 		model = deref(model.Elem())
 	} else if model.Implements(basetype.Elem()) {
 		errs = append(errs, checkCustom(append(path, idx...), &attri{attribute}, model)...)
-		model = genericParam(model, 0)
+		model = genericParam(model)
 	}
 
 	if model.Kind() != reflect.Struct {
@@ -482,12 +492,17 @@ func walk(path path, attribute attrlike, model reflect.Type) (errs codingerrors)
 	model = deref(model)
 	kind := model.Kind()
 
-	switch a := attribute.val().(type) {
-	case ds.DynamicAttribute, rs.DynamicAttribute:
+	value := attribute.val()
+	if !value.IsValid() {
+		log.Printf("walk: Unexpected nil attribute at %q", path.pathName())
+		return
+	}
+	switch value.Type() {
+	case reflect.TypeFor[ds.DynamicAttribute](), reflect.TypeFor[rs.DynamicAttribute]():
 		if !model.Implements(reflect.TypeOf((*basetypes.DynamicValuable)(nil)).Elem()) {
 			return append(errs, &mismatch{path: path, expected: "Dynamic", actual: model})
 		}
-		if at, ok := a.(rs.DynamicAttribute); ok {
+		if at, ok := reflect.TypeAssert[rs.DynamicAttribute](value); ok {
 			if !slices.ContainsFunc(at.PlanModifiers, func(m planmodifier.Dynamic) bool {
 				_, ok := m.(customfield.NormalizingDynamicPlanModifier)
 				return ok
@@ -495,75 +510,84 @@ func walk(path path, attribute attrlike, model reflect.Type) (errs codingerrors)
 				return append(errs, &missing{path: path, kind: "schema", what: "PlanModifiers: []planmodifier.Dynamic{customfield.NormalizeDynamicPlanModifier()}"})
 			}
 		}
-	case ds.BoolAttribute, rs.BoolAttribute, basetypes.BoolType:
+	case reflect.TypeFor[ds.BoolAttribute](), reflect.TypeFor[rs.BoolAttribute](), reflect.TypeFor[basetypes.BoolType]():
 		if model.Implements(reflect.TypeOf((*basetypes.BoolValuable)(nil)).Elem()) {
 			return append(errs, checkCustom(path, attribute, model)...)
 		} else if kind != reflect.Bool {
 			return append(errs, &mismatch{path: path, expected: "Bool", actual: model})
 		}
-	case ds.Int64Attribute, rs.Int64Attribute, basetypes.Int64Type:
+	case reflect.TypeFor[ds.Int64Attribute](), reflect.TypeFor[rs.Int64Attribute](), reflect.TypeFor[basetypes.Int64Type]():
 		if model.Implements(reflect.TypeOf((*basetypes.Int64Valuable)(nil)).Elem()) {
 			return append(errs, checkCustom(path, attribute, model)...)
 		} else if kind != reflect.Int && kind != reflect.Int64 {
 			return append(errs, &mismatch{path: path, expected: "Int", actual: model})
 		}
-	case ds.Float64Attribute, rs.Float64Attribute, basetypes.Float64Type:
+	case reflect.TypeFor[ds.Float64Attribute](), reflect.TypeFor[rs.Float64Attribute](), reflect.TypeFor[basetypes.Float64Type]():
 		if model.Implements(reflect.TypeOf((*basetypes.Float64Valuable)(nil)).Elem()) {
 			return append(errs, checkCustom(path, attribute, model)...)
 		} else if kind != reflect.Float64 {
 			return append(errs, &mismatch{path: path, expected: "Float", actual: model})
 		}
-	case ds.NumberAttribute, rs.NumberAttribute, basetypes.NumberType:
+	case reflect.TypeFor[ds.NumberAttribute](), reflect.TypeFor[rs.NumberAttribute](), reflect.TypeFor[basetypes.NumberType]():
 		if model.Implements(reflect.TypeOf((*basetypes.NumberValuable)(nil)).Elem()) {
 			return append(errs, checkCustom(path, attribute, model)...)
 		} else if model.ConvertibleTo(reflect.TypeOf(big.Int{})) || model.ConvertibleTo(reflect.TypeOf(big.Float{})) {
 			return append(errs, &mismatch{path: path, expected: "Number", actual: model})
 		}
-	case timetypes.RFC3339Type:
+	case reflect.TypeFor[timetypes.RFC3339Type]():
 		if !model.ConvertibleTo(reflect.TypeOf(timetypes.RFC3339{})) {
 			return append(errs, &mismatch{path: path, expected: "Time", actual: model})
 		}
-	case jsontypes.NormalizedType:
+	case reflect.TypeFor[jsontypes.NormalizedType]():
 		if !model.ConvertibleTo(reflect.TypeOf(jsontypes.Normalized{})) {
 			return append(errs, &mismatch{path: path, expected: "JSON", actual: model})
 		}
-	case ds.StringAttribute, rs.StringAttribute, basetypes.StringType:
+	case reflect.TypeFor[ds.StringAttribute](), reflect.TypeFor[rs.StringAttribute](), reflect.TypeFor[basetypes.StringType]():
 		if model.Implements(reflect.TypeOf((*basetypes.StringValuable)(nil)).Elem()) {
 			return append(errs, checkCustom(path, attribute, model)...)
 		} else if kind != reflect.String {
 			return append(errs, &mismatch{path: path, expected: "String", actual: model})
 		}
-	case basetypes.ListType, basetypes.SetType, basetypes.MapType:
-		return append(errs, walkCollection(path, a.(attr.TypeWithElementType), kind, model)...)
-	case ds.ListAttribute, ds.SetAttribute, ds.MapAttribute, rs.ListAttribute, rs.SetAttribute, rs.MapAttribute:
-		return append(errs, walkAttriCollection(path, a.(ds.Attribute), kind, model)...)
-	case ds.ObjectAttribute, rs.ObjectAttribute, basetypes.ObjectType:
+	case reflect.TypeFor[basetypes.ListType](), reflect.TypeFor[basetypes.SetType](), reflect.TypeFor[basetypes.MapType]():
+		collection, ok := reflect.TypeAssert[attr.TypeWithElementType](value)
+		if !ok {
+			return append(errs, &bug{path: path, msg: "walk: collection type has no element type"})
+		}
+		return append(errs, walkCollection(path, collection, kind, model)...)
+	case reflect.TypeFor[ds.ListAttribute](), reflect.TypeFor[ds.SetAttribute](), reflect.TypeFor[ds.MapAttribute](), reflect.TypeFor[rs.ListAttribute](), reflect.TypeFor[rs.SetAttribute](), reflect.TypeFor[rs.MapAttribute]():
+		collection, ok := reflect.TypeAssert[ds.Attribute](value)
+		if !ok {
+			return append(errs, &bug{path: path, msg: "walk: collection attribute is not a schema attribute"})
+		}
+		return append(errs, walkAttriCollection(path, collection, kind, model)...)
+	case reflect.TypeFor[ds.ObjectAttribute](), reflect.TypeFor[rs.ObjectAttribute](), reflect.TypeFor[basetypes.ObjectType]():
 		if model.Implements(reflect.TypeOf((*basetypes.ObjectValuable)(nil)).Elem()) {
 			errs = append(errs, checkCustom(path, attribute, model)...)
-			model = genericParam(model, 0)
+			model = genericParam(model)
 		} else if kind != reflect.Struct {
 			return append(errs, &mismatch{path: path, expected: "Object", actual: model})
 		}
 		attributes := map[string]attrlike{}
-		switch objt := a.(type) {
-		case ds.ObjectAttribute:
-			for name, nested := range objt.AttributeTypes {
-				attributes[name] = &att{nested}
-			}
-		case rs.ObjectAttribute:
-			for name, nested := range objt.AttributeTypes {
-				attributes[name] = &att{nested}
-			}
-		case basetypes.ObjectType:
-			for name, nested := range objt.AttrTypes {
-				attributes[name] = &att{nested}
-			}
+		var nestedTypes map[string]attr.Type
+		if objt, ok := reflect.TypeAssert[ds.ObjectAttribute](value); ok {
+			nestedTypes = objt.AttributeTypes
+		} else if objt, ok := reflect.TypeAssert[rs.ObjectAttribute](value); ok {
+			nestedTypes = objt.AttributeTypes
+		} else if objt, ok := reflect.TypeAssert[basetypes.ObjectType](value); ok {
+			nestedTypes = objt.AttrTypes
+		}
+		for name, nested := range nestedTypes {
+			attributes[name] = &att{nested}
 		}
 		return append(errs, walkAttributes(path, model, attributes)...)
-	case ds.SingleNestedAttribute, ds.ListNestedAttribute, ds.MapNestedAttribute, ds.SetNestedAttribute, rs.SingleNestedAttribute, rs.SetNestedAttribute, rs.ListNestedAttribute, rs.MapNestedAttribute:
-		return append(errs, walkNested(path, a.(ds.NestedAttribute), kind, model)...)
+	case reflect.TypeFor[ds.SingleNestedAttribute](), reflect.TypeFor[ds.ListNestedAttribute](), reflect.TypeFor[ds.MapNestedAttribute](), reflect.TypeFor[ds.SetNestedAttribute](), reflect.TypeFor[rs.SingleNestedAttribute](), reflect.TypeFor[rs.SetNestedAttribute](), reflect.TypeFor[rs.ListNestedAttribute](), reflect.TypeFor[rs.MapNestedAttribute]():
+		nested, ok := reflect.TypeAssert[ds.NestedAttribute](value)
+		if !ok {
+			return append(errs, &bug{path: path, msg: "walk: nested attribute has no nested object"})
+		}
+		return append(errs, walkNested(path, nested, kind, model)...)
 	default:
-		log.Printf("walk: Unexpected attribute type at %q: %T", path.pathName(), a)
+		log.Printf("walk: Unexpected attribute type at %q: %s", path.pathName(), value.Type())
 	}
 
 	return

@@ -16,7 +16,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
@@ -29,11 +28,11 @@ import (
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/customfield"
 )
 
-var encoders sync.Map
+var encoders apijson.Cache[encoderEntry, encoderFunc]
 
-func MarshalRoot(value any, writer *multipart.Writer) error {
+func MarshalRoot[T any](value T, writer *multipart.Writer) error {
 	e := &encoder{root: true, dateFormat: time.RFC3339}
-	return e.marshal(value, writer)
+	return e.marshal(reflect.ValueOf(value), writer)
 }
 
 type encoder struct {
@@ -55,8 +54,7 @@ type encoderEntry struct {
 	root       bool
 }
 
-func (e *encoder) marshal(value any, writer *multipart.Writer) error {
-	val := reflect.ValueOf(value)
+func (e *encoder) marshal(val reflect.Value, writer *multipart.Writer) error {
 	if !val.IsValid() {
 		return nil
 	}
@@ -72,27 +70,11 @@ func (e *encoder) typeEncoder(t reflect.Type) encoderFunc {
 		root:       e.root,
 	}
 
-	if fi, ok := encoders.Load(entry); ok {
-		return fi.(encoderFunc)
-	}
-
-	var (
-		wg sync.WaitGroup
-		f  encoderFunc
-	)
-	wg.Add(1)
-	fi, loaded := encoders.LoadOrStore(entry, encoderFunc(func(key string, v reflect.Value, writer *multipart.Writer) error {
-		wg.Wait()
-		return f(key, v, writer)
-	}))
-	if loaded {
-		return fi.(encoderFunc)
-	}
-
-	f = e.newTypeEncoder(t)
-	wg.Done()
-	encoders.Store(entry, f)
-	return f
+	return encoders.Load(entry, func() encoderFunc { return e.newTypeEncoder(t) }, func(wait func() encoderFunc) encoderFunc {
+		return func(key string, v reflect.Value, writer *multipart.Writer) error {
+			return wait()(key, v, writer)
+		}
+	})
 }
 
 func (e *encoder) newTypeEncoder(t reflect.Type) encoderFunc {
@@ -138,12 +120,15 @@ func (e *encoder) newTypeEncoder(t reflect.Type) encoderFunc {
 	}
 }
 
-type terraformUnwrappingFunc func(val attr.Value) (any, diag.Diagnostics)
+type terraformUnwrappingFunc func(val attr.Value) (reflect.Value, diag.Diagnostics)
 
 func (e *encoder) terraformUnwrappedEncoder(underlyingType reflect.Type, unwrap terraformUnwrappingFunc) encoderFunc {
 	enc := e.typeEncoder(underlyingType)
 	return func(key string, value reflect.Value, writer *multipart.Writer) error {
-		attrValue := value.Interface().(attr.Value)
+		attrValue, err := valueAs[attr.Value](value)
+		if err != nil {
+			return err
+		}
 		if attrValue.IsNull() || attrValue.IsUnknown() {
 			return nil
 		}
@@ -151,13 +136,16 @@ func (e *encoder) terraformUnwrappedEncoder(underlyingType reflect.Type, unwrap 
 		if diags.HasError() {
 			return errorFromDiagnostics(diags)
 		}
-		return enc(key, reflect.ValueOf(unwrapped), writer)
+		return enc(key, unwrapped, writer)
 	}
 }
 
 func (e *encoder) terraformUnwrappedDynamicEncoder(unwrap terraformUnwrappingFunc) encoderFunc {
 	return func(key string, value reflect.Value, writer *multipart.Writer) error {
-		attrValue := value.Interface().(attr.Value)
+		attrValue, err := valueAs[attr.Value](value)
+		if err != nil {
+			return err
+		}
 		if attrValue.IsNull() || attrValue.IsUnknown() {
 			return nil
 		}
@@ -165,8 +153,11 @@ func (e *encoder) terraformUnwrappedDynamicEncoder(unwrap terraformUnwrappingFun
 		if diags.HasError() {
 			return errorFromDiagnostics(diags)
 		}
-		enc := e.typeEncoder(reflect.TypeOf(unwrapped))
-		return enc(key, reflect.ValueOf(unwrapped), writer)
+		if !unwrapped.IsValid() {
+			return nil
+		}
+		enc := e.typeEncoder(unwrapped.Type())
+		return enc(key, unwrapped, writer)
 	}
 }
 
@@ -174,55 +165,83 @@ func (e *encoder) newTerraformTypeEncoder(t reflect.Type) encoderFunc {
 	ctx := context.TODO()
 
 	if t == reflect.TypeOf(basetypes.BoolValue{}) {
-		return e.terraformUnwrappedEncoder(reflect.PointerTo(reflect.TypeOf(true)), func(value attr.Value) (any, diag.Diagnostics) {
+		return e.terraformUnwrappedEncoder(reflect.PointerTo(reflect.TypeOf(true)), func(value attr.Value) (reflect.Value, diag.Diagnostics) {
 			return apijson.UnwrapTerraformAttrValue(ctx, value)
 		})
 	} else if t == reflect.TypeOf(basetypes.Int64Value{}) {
-		return e.terraformUnwrappedEncoder(reflect.PointerTo(reflect.TypeOf(int64(0))), func(value attr.Value) (any, diag.Diagnostics) {
+		return e.terraformUnwrappedEncoder(reflect.PointerTo(reflect.TypeOf(int64(0))), func(value attr.Value) (reflect.Value, diag.Diagnostics) {
 			return apijson.UnwrapTerraformAttrValue(ctx, value)
 		})
 	} else if t == reflect.TypeOf(basetypes.Float64Value{}) {
-		return e.terraformUnwrappedEncoder(reflect.PointerTo(reflect.TypeOf(float64(0))), func(value attr.Value) (any, diag.Diagnostics) {
+		return e.terraformUnwrappedEncoder(reflect.PointerTo(reflect.TypeOf(float64(0))), func(value attr.Value) (reflect.Value, diag.Diagnostics) {
 			return apijson.UnwrapTerraformAttrValue(ctx, value)
 		})
 	} else if t == reflect.TypeOf(basetypes.StringValue{}) {
-		return e.terraformUnwrappedEncoder(reflect.PointerTo(reflect.TypeOf("")), func(value attr.Value) (any, diag.Diagnostics) {
+		return e.terraformUnwrappedEncoder(reflect.PointerTo(reflect.TypeOf("")), func(value attr.Value) (reflect.Value, diag.Diagnostics) {
 			return apijson.UnwrapTerraformAttrValue(ctx, value)
 		})
 	} else if t == reflect.TypeOf(timetypes.RFC3339{}) {
-		return e.terraformUnwrappedEncoder(reflect.TypeOf(time.Time{}), func(value attr.Value) (any, diag.Diagnostics) {
-			timeValue, diags := value.(timetypes.RFC3339).ValueRFC3339Time()
-			if diags.HasError() {
-				return nil, diags
+		return e.terraformUnwrappedEncoder(reflect.TypeOf(time.Time{}), func(value attr.Value) (reflect.Value, diag.Diagnostics) {
+			rfc3339, ok := value.(timetypes.RFC3339)
+			if !ok {
+				return reflect.Value{}, unexpectedValue(value, "timetypes.RFC3339")
 			}
-			return timeValue, nil
+			timeValue, diags := rfc3339.ValueRFC3339Time()
+			if diags.HasError() {
+				return reflect.Value{}, diags
+			}
+			return reflect.ValueOf(timeValue), nil
 		})
 	} else if t == reflect.TypeOf(basetypes.ListValue{}) {
-		return e.terraformUnwrappedDynamicEncoder(func(value attr.Value) (any, diag.Diagnostics) {
-			return value.(basetypes.ListValue).Elements(), diag.Diagnostics{}
+		return e.terraformUnwrappedDynamicEncoder(func(value attr.Value) (reflect.Value, diag.Diagnostics) {
+			list, ok := value.(basetypes.ListValue)
+			if !ok {
+				return reflect.Value{}, unexpectedValue(value, "basetypes.ListValue")
+			}
+			return reflect.ValueOf(list.Elements()), diag.Diagnostics{}
 		})
 	} else if t == reflect.TypeOf(basetypes.SetValue{}) {
-		return e.terraformUnwrappedDynamicEncoder(func(value attr.Value) (any, diag.Diagnostics) {
-			return value.(basetypes.SetValue).Elements(), diag.Diagnostics{}
+		return e.terraformUnwrappedDynamicEncoder(func(value attr.Value) (reflect.Value, diag.Diagnostics) {
+			set, ok := value.(basetypes.SetValue)
+			if !ok {
+				return reflect.Value{}, unexpectedValue(value, "basetypes.SetValue")
+			}
+			return reflect.ValueOf(set.Elements()), diag.Diagnostics{}
 		})
 	} else if t == reflect.TypeOf(basetypes.MapValue{}) {
 		return encodePartAsJSON
 	} else if t == reflect.TypeOf(basetypes.ObjectValue{}) {
 		return encodePartAsJSON
 	} else if t.Implements(reflect.TypeOf((*basetypes.DynamicValuable)(nil)).Elem()) {
-		return e.terraformUnwrappedDynamicEncoder(func(value attr.Value) (any, diag.Diagnostics) {
-			val, d := value.(basetypes.DynamicValuable).ToDynamicValue(ctx)
-			return val.UnderlyingValue(), d
+		return e.terraformUnwrappedDynamicEncoder(func(value attr.Value) (reflect.Value, diag.Diagnostics) {
+			dynamic, ok := value.(basetypes.DynamicValuable)
+			if !ok {
+				return reflect.Value{}, unexpectedValue(value, "a dynamic value")
+			}
+			val, d := dynamic.ToDynamicValue(ctx)
+			underlying := val.UnderlyingValue()
+			if underlying == nil {
+				return reflect.Value{}, d
+			}
+			return reflect.ValueOf(underlying), d
 		})
 	} else if t.Implements(reflect.TypeOf((*customfield.NestedObjectLike)(nil)).Elem()) {
 		return encodePartAsJSON
 	} else if t.Implements(reflect.TypeOf((*customfield.NestedObjectListLike)(nil)).Elem()) {
-		return e.terraformUnwrappedDynamicEncoder(func(value attr.Value) (any, diag.Diagnostics) {
-			return value.(customfield.NestedObjectListLike).AsStructSlice(context.TODO())
+		return e.terraformUnwrappedDynamicEncoder(func(value attr.Value) (reflect.Value, diag.Diagnostics) {
+			list, ok := value.(customfield.NestedObjectListLike)
+			if !ok {
+				return reflect.Value{}, unexpectedValue(value, "a nested object list")
+			}
+			return list.AsStructSlice(context.TODO())
 		})
 	} else if t.Implements(reflect.TypeOf((*customfield.ListLike)(nil)).Elem()) {
-		return e.terraformUnwrappedDynamicEncoder(func(value attr.Value) (any, diag.Diagnostics) {
-			return value.(customfield.ListLike).ValueAttr(context.TODO())
+		return e.terraformUnwrappedDynamicEncoder(func(value attr.Value) (reflect.Value, diag.Diagnostics) {
+			list, ok := value.(customfield.ListLike)
+			if !ok {
+				return reflect.Value{}, unexpectedValue(value, "a list")
+			}
+			return list.ValueAttr(context.TODO())
 		})
 	} else if t.Implements(reflect.TypeOf((*customfield.NestedObjectMapLike)(nil)).Elem()) {
 		return encodePartAsJSON
@@ -364,7 +383,11 @@ func (e *encoder) newStructTypeEncoder(t reflect.Type) encoderFunc {
 func (e *encoder) newTimeTypeEncoder() encoderFunc {
 	format := e.dateFormat
 	return func(key string, value reflect.Value, writer *multipart.Writer) error {
-		return writer.WriteField(key, value.Convert(reflect.TypeOf(time.Time{})).Interface().(time.Time).Format(format))
+		converted, err := valueAs[time.Time](value.Convert(reflect.TypeFor[time.Time]()))
+		if err != nil {
+			return err
+		}
+		return writer.WriteField(key, converted.Format(format))
 	}
 }
 
@@ -386,7 +409,10 @@ func escapeQuotes(s string) string {
 
 func (e *encoder) newReaderTypeEncoder() encoderFunc {
 	return func(key string, value reflect.Value, writer *multipart.Writer) error {
-		reader := value.Convert(reflect.TypeOf((*io.Reader)(nil)).Elem()).Interface().(io.Reader)
+		reader, err := valueAs[io.Reader](value.Convert(reflect.TypeFor[io.Reader]()))
+		if err != nil {
+			return err
+		}
 		filename := "anonymous_file"
 		contentType := "application/octet-stream"
 		if named, ok := reader.(interface{ Name() string }); ok {
@@ -481,4 +507,18 @@ func errorFromDiagnostics(diags diag.Diagnostics) error {
 		messages = append(messages, err.Detail())
 	}
 	return errors.New(strings.Join(messages, " "))
+}
+
+func valueAs[T any](value reflect.Value) (T, error) {
+	typed, ok := reflect.TypeAssert[T](value)
+	if !ok {
+		return typed, fmt.Errorf("apiform: %s does not hold a %s", value.Type(), reflect.TypeFor[T]())
+	}
+	return typed, nil
+}
+
+func unexpectedValue(value attr.Value, want string) diag.Diagnostics {
+	var diags diag.Diagnostics
+	diags.AddError("unexpected value type", fmt.Sprintf("expected %s, got %T", want, value))
+	return diags
 }

@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// Package types reads and builds Terraform attribute values for provider
+// models.
 package types
 
 import (

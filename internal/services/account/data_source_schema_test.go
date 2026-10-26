@@ -16,6 +16,6 @@ func TestAccountDataSourceModelSchemaParity(t *testing.T) {
 	t.Parallel()
 	model := (*account.AccountDataSourceModel)(nil)
 	schema := account.DataSourceSchema(context.TODO())
-	errs := test_helpers.ValidateDataSourceModelSchemaIntegrity(model, schema)
+	errs := testhelpers.ValidateDataSourceModelSchemaIntegrity(model, schema)
 	errs.Report(t)
 }

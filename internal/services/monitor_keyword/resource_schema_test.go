@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package monitor_keyword_test
+package monitorkeyword_test
 
 import (
 	"context"
@@ -14,8 +14,8 @@ import (
 
 func TestMonitorKeywordModelSchemaParity(t *testing.T) {
 	t.Parallel()
-	model := (*monitor_keyword.MonitorKeywordModel)(nil)
-	schema := monitor_keyword.ResourceSchema(context.TODO())
-	errs := test_helpers.ValidateResourceModelSchemaIntegrity(model, schema)
+	model := (*monitorkeyword.MonitorKeywordModel)(nil)
+	schema := monitorkeyword.ResourceSchema(context.TODO())
+	errs := testhelpers.ValidateResourceModelSchemaIntegrity(model, schema)
 	errs.Report(t)
 }

@@ -8,6 +8,12 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+temp_root="${TMPDIR:-/tmp}"
+workspace="$(mktemp -d "${temp_root%/}/xquik-terraform-lint.XXXXXX")"
+trap 'rm -rf -- "${workspace:?}"' EXIT
+
+platforms=(linux)
+
 echo "==> Checking formatting"
 unformatted="$(gofmt -s -l .)"
 if [[ -n "$unformatted" ]]; then
@@ -19,8 +25,19 @@ fi
 echo "==> Checking module metadata"
 go mod tidy -diff
 
-echo "==> Running Go vet"
-go vet ./...
+echo "==> Building staticcheck"
+go build -modfile=tools/staticcheck/go.mod -o "$workspace/staticcheck" honnef.co/go/tools/cmd/staticcheck
+
+for platform in "${platforms[@]}"; do
+  echo "==> Running Go vet for $platform"
+  GOOS="$platform" go vet ./...
+  echo "==> Running staticcheck for $platform"
+  GOOS="$platform" "$workspace/staticcheck" -checks all -show-ignored ./...
+done
+
+echo "==> Checking type coverage"
+platform_list="${platforms[*]}"
+go run ./cmd/type-coverage -goos "${platform_list// /,}"
 
 echo "==> Running Go build"
 go build ./...

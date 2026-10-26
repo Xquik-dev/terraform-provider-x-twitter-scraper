@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.0 (2026-10-26)
+
+[Full changelog from v0.8.0 to v0.9.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.8.0...v0.9.0)
+
+### Breaking changes
+
+* The `x_account` data source replaces a timestamp attribute with `connected_at`, which holds the same value. If `terraform plan` reports an unsupported `x_account` attribute, read `connected_at` instead.
+
+### Chores
+
+* Lint fails on any untyped declaration, type escape hatch or staticcheck finding.
+
 ## 0.8.0 (2026-10-16)
 
 [Full changelog from v0.7.5 to v0.8.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.7.5...v0.8.0)

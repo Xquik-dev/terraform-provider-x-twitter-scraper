@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package test_helpers_test
+package testhelpers_test
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	ds "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -20,19 +21,24 @@ import (
 type empty struct{}
 
 type builtin struct {
-	A bool                   `tfsdk:"A" path:"required"`
-	B *int                   `tfsdk:"B" query:"computed_optional"`
-	C **int64                `tfsdk:"C" json:"C,computed"`
-	D ***float64             `tfsdk:"D" path:"optional"`
-	E ****float64            `tfsdk:"E" query:"required"`
-	F *****string            `tfsdk:"F" json:"computed_optional"`
-	G []bool                 `tfsdk:"G" query:"computed"`
-	H *[]*bool               `tfsdk:"H" json:"optional"`
-	I map[**string]**bool    `tfsdk:"I" path:"required"`
-	J ***builtin             `tfsdk:"J" query:"computed_optional"`
-	K []builtin              `tfsdk:"K" json:"K,computed"`
-	L *[]*builtin            `tfsdk:"L" path:"optional"`
+	A bool                   `tfsdk:"A" path:"A,required"`
+	B *int                   `tfsdk:"B" json:"B" api:"computed_optional"`
+	C **int64                `tfsdk:"C" json:"C" api:"computed"`
+	D ***float64             `tfsdk:"D" path:"D,optional"`
+	E ****float64            `tfsdk:"E" json:"E" api:"required"`
+	F *****string            `tfsdk:"F" json:"F" api:"computed_optional"`
+	G []bool                 `tfsdk:"G" json:"G" api:"computed"`
+	H *[]*bool               `tfsdk:"H" json:"H" api:"optional"`
+	I map[**string]**bool    `tfsdk:"I" path:"I,required"`
+	J ***builtin             `tfsdk:"J" json:"J" api:"computed_optional"`
+	K []builtin              `tfsdk:"K" json:"K" api:"computed"`
+	L *[]*builtin            `tfsdk:"L" path:"L,optional"`
 	M **map[string]**builtin `tfsdk:"M"`
+}
+
+type wireNameMode struct {
+	A bool `tfsdk:"A" path:"required"`
+	B bool `tfsdk:"B" query:"B,required"`
 }
 
 type reallysimple struct {
@@ -77,17 +83,31 @@ type custype struct {
 var ctx = context.TODO()
 
 var datasourceTests = map[string]struct {
-	model  any
+	model  reflect.Type
 	schema ds.Schema
 	errors []string
 }{
 	"empty": {
-		(*empty)(nil),
+		reflect.TypeOf((*empty)(nil)),
 		ds.Schema{},
 		[]string{},
 	},
+	"mode in the wire name": {
+		reflect.TypeOf((*wireNameMode)(nil)),
+		ds.Schema{
+			Attributes: map[string]ds.Attribute{
+				"A": rs.BoolAttribute{
+					Required: true,
+				},
+				"B": rs.BoolAttribute{
+					Required: true,
+				},
+			},
+		},
+		[]string{".@wireNameMode.A", ".@wireNameMode.B"},
+	},
 	"builtin": {
-		(*builtin)(nil),
+		reflect.TypeOf((*builtin)(nil)),
 		ds.Schema{
 			Attributes: map[string]ds.Attribute{
 				"A": rs.BoolAttribute{
@@ -171,7 +191,7 @@ var datasourceTests = map[string]struct {
 		[]string{},
 	},
 	"basetypes": {
-		(*bstype)(nil),
+		reflect.TypeOf((*bstype)(nil)),
 		ds.Schema{
 			Attributes: map[string]ds.Attribute{
 				"A": rs.DynamicAttribute{
@@ -224,7 +244,7 @@ var datasourceTests = map[string]struct {
 		},
 	},
 	"customfield": {
-		(*custype)(nil),
+		reflect.TypeOf((*custype)(nil)),
 		ds.Schema{
 			Attributes: map[string]ds.Attribute{
 				"A": ds.ListAttribute{
@@ -280,17 +300,17 @@ var datasourceTests = map[string]struct {
 }
 
 var resourceTests = map[string]struct {
-	model  any
+	model  reflect.Type
 	schema rs.Schema
 	errors []string
 }{
 	"empty": {
-		(*empty)(nil),
+		reflect.TypeOf((*empty)(nil)),
 		rs.Schema{},
 		[]string{},
 	},
 	"builtin": {
-		(*builtin)(nil),
+		reflect.TypeOf((*builtin)(nil)),
 		rs.Schema{
 			Attributes: map[string]rs.Attribute{
 				"A": ds.BoolAttribute{
@@ -374,7 +394,7 @@ var resourceTests = map[string]struct {
 		[]string{},
 	},
 	"basetypes": {
-		(*bstype)(nil),
+		reflect.TypeOf((*bstype)(nil)),
 		rs.Schema{
 			Attributes: map[string]rs.Attribute{
 				"A": ds.DynamicAttribute{},
@@ -425,7 +445,7 @@ var resourceTests = map[string]struct {
 		},
 	},
 	"customfield": {
-		(*custype)(nil),
+		reflect.TypeOf((*custype)(nil)),
 		rs.Schema{
 			Attributes: map[string]rs.Attribute{
 				"A": rs.ListAttribute{
@@ -488,7 +508,7 @@ func TestParity(t *testing.T) {
 
 	for name, testcase := range datasourceTests {
 		t.Run("datasource_"+name, func(t *testing.T) {
-			errs := test_helpers.ValidateDataSourceModelSchemaIntegrity(testcase.model, testcase.schema)
+			errs := testhelpers.ValidateDataSourceModelTypeIntegrity(testcase.model, testcase.schema)
 			errs.Ignore(t, testcase.errors...)
 			errs.Report(t)
 		})
@@ -496,7 +516,7 @@ func TestParity(t *testing.T) {
 
 	for name, testcase := range resourceTests {
 		t.Run("resource_"+name, func(t *testing.T) {
-			errs := test_helpers.ValidateResourceModelSchemaIntegrity(testcase.model, testcase.schema)
+			errs := testhelpers.ValidateResourceModelTypeIntegrity(testcase.model, testcase.schema)
 			errs.Ignore(t, testcase.errors...)
 			errs.Report(t)
 		})

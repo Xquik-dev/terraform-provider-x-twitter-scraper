@@ -85,8 +85,8 @@ func (r *PageService[T]) Next(ctx context.Context) error {
 }
 
 func TestReadSDKRejectsUnreadableSources(t *testing.T) {
-	sdkProblem := "The coverage check could not read the Go SDK source. Run go mod download, then rerun."
-	baseURLProblem := "The coverage check could not read the default base URL from option.WithEnvironmentProduction in the Go SDK. Check the Go SDK version in go.mod."
+	sdkProblem := "the coverage check could not read the Go SDK source. Run go mod download, then rerun"
+	baseURLProblem := "the coverage check could not read the default base URL from option.WithEnvironmentProduction in the Go SDK. Check the Go SDK version in go.mod"
 	with := func(name, content string) fstest.MapFS {
 		files := sdkFiles()
 		files[name] = &fstest.MapFile{Data: []byte(content)}

@@ -39,13 +39,13 @@ func loadConfig(root string, mode packages.LoadMode) *packages.Config {
 func sdkDir(root string) (string, error) {
 	found, err := packages.Load(loadConfig(root, packages.NeedName|packages.NeedModule), SDKModule)
 	if err != nil || len(found) != 1 || found[0].Module == nil || found[0].Module.Dir == "" {
-		return "", fmt.Errorf("The coverage check could not find the source of %s. Run go mod download, then rerun.", SDKModule)
+		return "", fmt.Errorf("the coverage check could not find the source of %s. Run go mod download, then rerun", SDKModule)
 	}
 	return found[0].Module.Dir, nil
 }
 
 func loadProvider(root string) ([]*packages.Package, []string, error) {
-	noPackages := fmt.Errorf("The coverage check found no Go packages under %s. Run it from the repository root.", servicesRoot)
+	noPackages := fmt.Errorf("the coverage check found no Go packages under %s. Run it from the repository root", servicesRoot)
 	if info, err := os.Stat(filepath.Join(root, servicesRoot)); err != nil || !info.IsDir() {
 		return nil, nil, noPackages
 	}
@@ -60,7 +60,7 @@ func loadProvider(root string) ([]*packages.Package, []string, error) {
 		}
 	}
 	if len(problems) > 0 {
-		return nil, problems, fmt.Errorf("The coverage check could not compile the Go packages under %s. Fix the errors above, then rerun.", servicesRoot)
+		return nil, problems, fmt.Errorf("the coverage check could not compile the Go packages under %s. Fix the errors above, then rerun", servicesRoot)
 	}
 	return loaded, nil, nil
 }
@@ -76,7 +76,9 @@ func providerRequests(root string, index *sdk) ([]request, []string, error) {
 		for _, file := range pkg.Syntax {
 			for _, declaration := range file.Decls {
 				if function, ok := declaration.(*ast.FuncDecl); ok {
-					reader.functions[pkg.TypesInfo.Defs[function.Name].(*types.Func)] = function
+					if object, ok := pkg.TypesInfo.Defs[function.Name].(*types.Func); ok {
+						reader.functions[object] = function
+					}
 				}
 			}
 		}
@@ -169,7 +171,10 @@ func (p *providerPackage) readPath(expression ast.Expr, helperAllowed bool) (str
 	}
 	switch expression := ast.Unparen(expression).(type) {
 	case *ast.Ident:
-		variable, _ := p.pkg.TypesInfo.Uses[expression].(*types.Var)
+		variable, ok := p.pkg.TypesInfo.Uses[expression].(*types.Var)
+		if !ok {
+			return "", false
+		}
 		values := p.assignedValues(variable)
 		if len(values) != 1 {
 			return "", false
@@ -220,7 +225,11 @@ func namedType(value types.Type) string {
 	if pointer, ok := value.(*types.Pointer); ok {
 		value = pointer.Elem()
 	}
-	return types.Unalias(value).(*types.Named).Obj().Name()
+	named, ok := types.Unalias(value).(*types.Named)
+	if !ok {
+		return ""
+	}
+	return named.Obj().Name()
 }
 
 func (p *providerPackage) sdkMethod(selector *ast.SelectorExpr) (string, bool) {

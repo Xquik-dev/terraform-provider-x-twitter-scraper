@@ -7,6 +7,7 @@ package customfield
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -94,10 +95,11 @@ func (t ListType[T]) NullValue(ctx context.Context) (attr.Value, diag.Diagnostic
 }
 
 type ListLike interface {
-	ValueAttr(ctx context.Context) (any, diag.Diagnostics)
+	ValueAttr(ctx context.Context) (reflect.Value, diag.Diagnostics)
 	NullValue(ctx context.Context) ListLike
 	UnknownValue(ctx context.Context) ListLike
-	KnownValue(ctx context.Context, T any) ListLike
+	DecodeTarget(ctx context.Context) (reflect.Value, func() ListLike)
+	ModelType() reflect.Type
 	IsNullOrUnknown() bool
 	attr.Value
 }
@@ -105,7 +107,6 @@ type ListLike interface {
 var _ ListLike = (*List[basetypes.StringValue])(nil)
 
 type List[T attr.Value] struct {
-	placeholder T
 	basetypes.ListValue
 }
 
@@ -125,9 +126,16 @@ func (v List[T]) UnknownValue(ctx context.Context) ListLike {
 	return UnknownList[T](ctx)
 }
 
-func (v List[T]) KnownValue(ctx context.Context, values any) ListLike {
-	r, _ := NewList[T](ctx, values)
-	return r
+func (v List[T]) DecodeTarget(ctx context.Context) (reflect.Value, func() ListLike) {
+	values, _ := v.Value(ctx)
+	return reflect.ValueOf(&values).Elem(), func() ListLike {
+		r, _ := NewList(ctx, values)
+		return r
+	}
+}
+
+func (v List[T]) ModelType() reflect.Type {
+	return reflect.TypeFor[T]()
 }
 
 func (v List[T]) IsNullOrUnknown() bool {
@@ -147,16 +155,23 @@ func (v List[T]) Type(ctx context.Context) attr.Type {
 	return NewListType[T](ctx)
 }
 
-func (v List[T]) ValueAttr(ctx context.Context) (any, diag.Diagnostics) {
-	return v.Value(ctx)
+func (v List[T]) ValueAttr(ctx context.Context) (reflect.Value, diag.Diagnostics) {
+	ts, diags := v.Value(ctx)
+	return reflect.ValueOf(ts), diags
 }
 
 func (v List[T]) Value(ctx context.Context) ([]T, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	ts := []T{}
 	for _, elem := range v.ListValue.Elements() {
-		ts = append(ts, elem.(T))
+		t, ok := elem.(T)
+		if !ok {
+			diags.AddError("unexpected element type", fmt.Sprintf("expected %T, got %T", t, elem))
+			return nil, diags
+		}
+		ts = append(ts, t)
 	}
-	return ts, nil
+	return ts, diags
 }
 
 func NullList[T attr.Value](ctx context.Context) List[T] {
@@ -167,21 +182,16 @@ func UnknownList[T attr.Value](ctx context.Context) List[T] {
 	return List[T]{ListValue: basetypes.NewListUnknown(elemType[T](ctx))}
 }
 
-func NewList[T attr.Value](ctx context.Context, values any) (List[T], diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	attrs, ok := values.([]attr.Value)
-	if !ok {
-		ts, ok := values.([]T)
-		if !ok {
-			diags.AddError("unexpected type of values", fmt.Sprintf("expected %T or []attr.Value, got %T", []T{}, values))
-			return UnknownList[T](ctx), diags
-		}
-		attrs = make([]attr.Value, len(ts))
-		for i, v := range ts {
-			attrs[i] = v
-		}
+func NewList[T attr.Value](ctx context.Context, values []T) (List[T], diag.Diagnostics) {
+	attrs := make([]attr.Value, len(values))
+	for i, v := range values {
+		attrs[i] = v
 	}
+	return NewListFromAttributes[T](ctx, attrs)
+}
+
+func NewListFromAttributes[T attr.Value](ctx context.Context, attrs []attr.Value) (List[T], diag.Diagnostics) {
+	var diags diag.Diagnostics
 
 	listValue, d := basetypes.NewListValue(elemType[T](ctx), attrs)
 	diags.Append(d...)
@@ -193,7 +203,7 @@ func NewList[T attr.Value](ctx context.Context, values any) (List[T], diag.Diagn
 }
 
 func NewListMust[T attr.Value](ctx context.Context, values []attr.Value) List[T] {
-	o, diags := NewList[T](ctx, values)
+	o, diags := NewListFromAttributes[T](ctx, values)
 	if diags.HasError() {
 		panic(fmt.Errorf("unexpected error creating a customfield.List: %v", diags))
 	}

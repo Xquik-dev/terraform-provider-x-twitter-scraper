@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package x_account
+package xaccount
 
 import (
 	"context"
@@ -23,9 +23,10 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 			"id": schema.StringAttribute{
 				Required: true,
 			},
-			"cookies_obtained_at": schema.StringAttribute{
-				Computed:   true,
-				CustomType: timetypes.RFC3339Type{},
+			"connected_at": schema.StringAttribute{
+				Description: "The last time the account connected or reconnected. Null before its first login.",
+				Computed:    true,
+				CustomType:  timetypes.RFC3339Type{},
 			},
 			"created_at": schema.StringAttribute{
 				Computed:   true,

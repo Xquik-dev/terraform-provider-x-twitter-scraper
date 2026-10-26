@@ -116,7 +116,7 @@ for tool in cmp codeql git go goreleaser jq objdump pgrep shellcheck tar unzip u
 done
 
 start_check "API coverage" "API coverage" "Follow the lines above, then rerun."
-go run ./scripts/api_coverage.go
+go run ./cmd/api-coverage
 pass_check
 
 start_check "Module download and integrity" "modules" "Run go clean -modcache, then rerun."

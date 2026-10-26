@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// Package event implements the x-twitter-scraper_event data source.
 package event
 
 import (

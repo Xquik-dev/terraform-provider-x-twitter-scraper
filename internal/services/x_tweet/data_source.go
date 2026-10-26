@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package x_tweet
+// Package xtweet implements the x-twitter-scraper_x_tweet data source.
+package xtweet
 
 import (
 	"context"

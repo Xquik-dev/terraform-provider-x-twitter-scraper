@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package x_job_test
+package xjob_test
 
 import (
 	"context"
@@ -14,8 +14,8 @@ import (
 
 func TestXJobDataSourceModelSchemaParity(t *testing.T) {
 	t.Parallel()
-	model := (*x_job.XJobDataSourceModel)(nil)
-	schema := x_job.DataSourceSchema(context.TODO())
-	errs := test_helpers.ValidateDataSourceModelSchemaIntegrity(model, schema)
+	model := (*xjob.XJobDataSourceModel)(nil)
+	schema := xjob.DataSourceSchema(context.TODO())
+	errs := testhelpers.ValidateDataSourceModelSchemaIntegrity(model, schema)
 	errs.Report(t)
 }

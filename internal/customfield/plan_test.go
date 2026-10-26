@@ -28,11 +28,11 @@ func P[T any](v T) *T { return &v }
 type NestedStruct struct {
 	A           types.String                                    `tfsdk:"a" json:"a"`
 	B           types.String                                    `tfsdk:"b" json:"b"`
-	InnerStruct customfield.NestedObject[NestedInnerStruct]     `tfsdk:"inner_struct" json:"inner_struct,computed"`
-	PrimList    customfield.List[basetypes.StringValue]         `tfsdk:"prim_list" json:"prim_list,computed"`
-	PrimSet     customfield.Set[basetypes.StringValue]          `tfsdk:"prim_set" json:"prim_set,computed"`
-	StructList  customfield.NestedObjectList[NestedInnerStruct] `tfsdk:"struct_list" json:"struct_list,computed"`
-	StructSet   customfield.NestedObjectSet[NestedIntStruct]    `tfsdk:"struct_set" json:"struct_set,computed"`
+	InnerStruct customfield.NestedObject[NestedInnerStruct]     `tfsdk:"inner_struct" json:"inner_struct" api:"computed"`
+	PrimList    customfield.List[basetypes.StringValue]         `tfsdk:"prim_list" json:"prim_list" api:"computed"`
+	PrimSet     customfield.Set[basetypes.StringValue]          `tfsdk:"prim_set" json:"prim_set" api:"computed"`
+	StructList  customfield.NestedObjectList[NestedInnerStruct] `tfsdk:"struct_list" json:"struct_list" api:"computed"`
+	StructSet   customfield.NestedObjectSet[NestedIntStruct]    `tfsdk:"struct_set" json:"struct_set" api:"computed"`
 }
 
 type NestedInnerStruct struct {
@@ -168,7 +168,7 @@ func TestPlanReadAndWrite(t *testing.T) {
 	})
 }
 
-func EnsurePlanEquals(t *testing.T, diags diag.Diagnostics, expected any, actual any) {
+func EnsurePlanEquals[T any](t *testing.T, diags diag.Diagnostics, expected T, actual T) {
 	ExpectNoDiagnostics(t, diags)
 
 	if !reflect.DeepEqual(actual, expected) {

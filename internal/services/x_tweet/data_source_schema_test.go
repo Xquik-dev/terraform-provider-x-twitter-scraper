@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package x_tweet_test
+package xtweet_test
 
 import (
 	"context"
@@ -14,8 +14,8 @@ import (
 
 func TestXTweetDataSourceModelSchemaParity(t *testing.T) {
 	t.Parallel()
-	model := (*x_tweet.XTweetDataSourceModel)(nil)
-	schema := x_tweet.DataSourceSchema(context.TODO())
-	errs := test_helpers.ValidateDataSourceModelSchemaIntegrity(model, schema)
+	model := (*xtweet.XTweetDataSourceModel)(nil)
+	schema := xtweet.DataSourceSchema(context.TODO())
+	errs := testhelpers.ValidateDataSourceModelSchemaIntegrity(model, schema)
 	errs.Report(t)
 }

@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// Package draft implements the x-twitter-scraper_draft resource and data
+// source.
 package draft
 
 import (
@@ -153,12 +155,7 @@ func (r *DraftResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 func (r *DraftResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	var data = new(DraftModel)
 
-	path := ""
-	diags := importpath.ParseImportID(
-		req.ID,
-		"<id>",
-		&path,
-	)
+	path, diags := importpath.ParseImportID(req.ID)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

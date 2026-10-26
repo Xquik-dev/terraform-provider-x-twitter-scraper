@@ -1,7 +1,7 @@
 // Copyright 2026 Xquik contributors
 // SPDX-License-Identifier: Apache-2.0
 
-package support_ticket
+package supportticket
 
 import "testing"
 

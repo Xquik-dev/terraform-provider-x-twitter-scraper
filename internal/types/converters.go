@@ -16,10 +16,14 @@ import (
 func NewFloat64ValueFromBigFloat(value *big.Float) (basetypes.Float64Value, error) {
 	tfVal := tftypes.NewValue(tftypes.Number, value)
 	out, err := basetypes.Float64Type{}.ValueFromTerraform(context.Background(), tfVal)
-	if out != nil && err == nil {
-		return out.(basetypes.Float64Value), nil
+	if err != nil {
+		return basetypes.Float64Value{}, err
 	}
-	return basetypes.Float64Value{}, err
+	floatValue, ok := out.(basetypes.Float64Value)
+	if !ok {
+		return basetypes.Float64Value{}, fmt.Errorf("expected a basetypes.Float64Value, got %T", out)
+	}
+	return floatValue, nil
 }
 
 func NewFloat64Value(value float64) basetypes.Float64Value {

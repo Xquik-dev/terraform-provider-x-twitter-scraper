@@ -16,6 +16,6 @@ func TestDraftModelSchemaParity(t *testing.T) {
 	t.Parallel()
 	model := (*draft.DraftModel)(nil)
 	schema := draft.ResourceSchema(context.TODO())
-	errs := test_helpers.ValidateResourceModelSchemaIntegrity(model, schema)
+	errs := testhelpers.ValidateResourceModelSchemaIntegrity(model, schema)
 	errs.Report(t)
 }

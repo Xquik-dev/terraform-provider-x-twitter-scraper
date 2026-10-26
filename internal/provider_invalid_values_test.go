@@ -6,7 +6,7 @@ package internal
 import (
 	"context"
 	"fmt"
-	"strings"
+	"slices"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -19,7 +19,7 @@ func TestRegisteredSurfaceRejectsInvalidTerraformValues(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	providerUnderTest := NewProvider("test")().(*XTwitterScraperProvider)
+	providerUnderTest := testProvider(t)
 	invalidRaw := tftypes.NewValue(tftypes.String, "invalid")
 
 	for _, factory := range providerUnderTest.Resources(ctx) {
@@ -132,17 +132,19 @@ func TestRegisteredSurfaceRejectsInvalidTerraformValues(t *testing.T) {
 }
 
 func resourceSupportsUpdate(resourceUnderTest resource.Resource) bool {
-	typeName := fmt.Sprintf("%T", resourceUnderTest)
-	return strings.Contains(typeName, "monitor.") ||
-		strings.Contains(typeName, "monitor_keyword.") ||
-		strings.Contains(typeName, "style.") ||
-		strings.Contains(typeName, "support_ticket.") ||
-		strings.Contains(typeName, "webhook.")
+	return slices.Contains([]string{
+		"x-twitter-scraper_monitor",
+		"x-twitter-scraper_monitor_keyword",
+		"x-twitter-scraper_style",
+		"x-twitter-scraper_support_ticket",
+		"x-twitter-scraper_webhook",
+	}, resourceTypeName(resourceUnderTest))
 }
 
 func resourceSupportsDelete(resourceUnderTest resource.Resource) bool {
-	typeName := fmt.Sprintf("%T", resourceUnderTest)
-	return strings.Contains(typeName, "draft.") ||
-		strings.Contains(typeName, "monitor_keyword.") ||
-		strings.Contains(typeName, "style.")
+	return slices.Contains([]string{
+		"x-twitter-scraper_draft",
+		"x-twitter-scraper_monitor_keyword",
+		"x-twitter-scraper_style",
+	}, resourceTypeName(resourceUnderTest))
 }

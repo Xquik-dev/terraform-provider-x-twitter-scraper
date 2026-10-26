@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strings"
 	"testing"
 
@@ -102,7 +103,7 @@ func TestRegisteredResourcesAndDataSources(t *testing.T) {
 		option.WithBaseURL(server.URL+"/"),
 		option.WithMaxRetries(0),
 	)
-	providerUnderTest := NewProvider("test")().(*XTwitterScraperProvider)
+	providerUnderTest := testProvider(t)
 
 	for _, factory := range providerUnderTest.Resources(context.Background()) {
 		resourceUnderTest := factory()
@@ -122,7 +123,7 @@ func TestRegisteredResourcesAndDataSources(t *testing.T) {
 func TestRegisteredSurfaceRejectsInvalidAPIResponses(t *testing.T) {
 	t.Parallel()
 
-	providerUnderTest := NewProvider("test")().(*XTwitterScraperProvider)
+	providerUnderTest := testProvider(t)
 	scenarios := []struct {
 		name       string
 		statusCode int
@@ -140,7 +141,7 @@ func TestRegisteredSurfaceRejectsInvalidAPIResponses(t *testing.T) {
 
 			for _, factory := range providerUnderTest.Resources(context.Background()) {
 				resourceUnderTest := factory()
-				if strings.Contains(fmt.Sprintf("%T", resourceUnderTest), "x_write.") {
+				if isWriteResource(resourceUnderTest) {
 					continue
 				}
 				t.Run(fmt.Sprintf("resource/%T", resourceUnderTest), func(t *testing.T) {
@@ -162,11 +163,11 @@ func TestRegisteredResourcesHandleNotFoundResponses(t *testing.T) {
 
 	client, closeServer := responseClient(http.StatusNotFound, `{"error":"not found"}`)
 	t.Cleanup(closeServer)
-	providerUnderTest := NewProvider("test")().(*XTwitterScraperProvider)
+	providerUnderTest := testProvider(t)
 
 	for _, factory := range providerUnderTest.Resources(context.Background()) {
 		resourceUnderTest := factory()
-		if strings.Contains(fmt.Sprintf("%T", resourceUnderTest), "x_write.") {
+		if isWriteResource(resourceUnderTest) {
 			continue
 		}
 		t.Run(fmt.Sprintf("%T", resourceUnderTest), func(t *testing.T) {
@@ -327,7 +328,10 @@ func exerciseRejectedDataSourceResponse(t *testing.T, dataSourceUnderTest dataso
 	ctx := context.Background()
 	var schemaResponse datasource.SchemaResponse
 	dataSourceUnderTest.Schema(ctx, datasource.SchemaRequest{}, &schemaResponse)
-	configurable := dataSourceUnderTest.(datasource.DataSourceWithConfigure)
+	configurable, ok := dataSourceUnderTest.(datasource.DataSourceWithConfigure)
+	if !ok {
+		t.Fatal("data source does not accept a configured client")
+	}
 	var configureResponse datasource.ConfigureResponse
 	configurable.Configure(ctx, datasource.ConfigureRequest{ProviderData: client}, &configureResponse)
 	if configureResponse.Diagnostics.HasError() {
@@ -362,7 +366,10 @@ func resourceSchema(t *testing.T, resourceUnderTest resource.Resource) resource.
 
 func configureResource(t *testing.T, resourceUnderTest resource.Resource, client *xtwitterscraper.Client) {
 	t.Helper()
-	configurable := resourceUnderTest.(resource.ResourceWithConfigure)
+	configurable, ok := resourceUnderTest.(resource.ResourceWithConfigure)
+	if !ok {
+		t.Fatal("resource does not accept a configured client")
+	}
 	var configureResponse resource.ConfigureResponse
 	configurable.Configure(
 		context.Background(),
@@ -389,10 +396,21 @@ func responseClient(statusCode int, body string) (xtwitterscraper.Client, func()
 }
 
 func resourceSupportsRead(resourceUnderTest resource.Resource) bool {
-	typeName := fmt.Sprintf("%T", resourceUnderTest)
-	return !strings.Contains(typeName, "compose.") &&
-		!strings.Contains(typeName, "guest_wallet.") &&
-		!strings.Contains(typeName, "webhook.")
+	return !slices.Contains([]string{
+		"x-twitter-scraper_compose",
+		"x-twitter-scraper_guest_wallet",
+		"x-twitter-scraper_webhook",
+	}, resourceTypeName(resourceUnderTest))
+}
+
+func isWriteResource(resourceUnderTest resource.Resource) bool {
+	return strings.HasPrefix(resourceTypeName(resourceUnderTest), "x-twitter-scraper_x_")
+}
+
+func resourceTypeName(resourceUnderTest resource.Resource) string {
+	var metadata resource.MetadataResponse
+	resourceUnderTest.Metadata(context.Background(), resource.MetadataRequest{ProviderTypeName: "x-twitter-scraper"}, &metadata)
+	return metadata.TypeName
 }
 
 func exerciseDataSource(t *testing.T, dataSourceUnderTest datasource.DataSource, client *xtwitterscraper.Client) {
@@ -463,11 +481,11 @@ func rawObject(objectType attr.Type, stringsByName map[string]string) tftypes.Va
 
 	attributes := make(map[string]tftypes.Value, len(object.AttributeTypes))
 	for name, attributeType := range object.AttributeTypes {
-		value := any(nil)
 		if stringValue, ok := stringsByName[name]; ok && attributeType.Is(tftypes.String) {
-			value = stringValue
+			attributes[name] = tftypes.NewValue(attributeType, stringValue)
+			continue
 		}
-		attributes[name] = tftypes.NewValue(attributeType, value)
+		attributes[name] = tftypes.NewValue(attributeType, nil)
 	}
 	return tftypes.NewValue(object, attributes)
 }

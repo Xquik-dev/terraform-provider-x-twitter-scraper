@@ -6,6 +6,7 @@ package apiform
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"reflect"
@@ -18,6 +19,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
+
+type coverageText string
+
+func (text coverageText) String() string {
+	return string(text)
+}
 
 type coverageReader struct {
 	io.Reader
@@ -41,15 +48,15 @@ func TestEncoderHandlesAllPrimitiveWidthsAndInterfaces(t *testing.T) {
 	t.Parallel()
 
 	input := struct {
-		Int8      int8      `form:"int8"`
-		Uint8     uint8     `form:"uint8"`
-		Interface any       `form:"interface"`
-		Nil       any       `form:"nil"`
-		Date      time.Time `form:"date" format:"date"`
+		Int8      int8         `form:"int8"`
+		Uint8     uint8        `form:"uint8"`
+		Interface fmt.Stringer `form:"interface"`
+		Nil       fmt.Stringer `form:"nil"`
+		Date      time.Time    `form:"date" format:"date"`
 	}{
 		Int8:      -8,
 		Uint8:     8,
-		Interface: "value",
+		Interface: coverageText("value"),
 		Date:      time.Date(2026, time.July, 23, 12, 0, 0, 0, time.UTC),
 	}
 
@@ -73,7 +80,7 @@ func TestEncoderHandlesAllPrimitiveWidthsAndInterfaces(t *testing.T) {
 
 	var buffer bytes.Buffer
 	writer := multipart.NewWriter(&buffer)
-	if err := MarshalRoot(nil, writer); err != nil {
+	if err := MarshalRoot[fmt.Stringer](nil, writer); err != nil {
 		t.Fatalf("marshal nil: %v", err)
 	}
 	if err := writer.Close(); err != nil {
@@ -128,7 +135,7 @@ func TestTagParsingAndDiagnosticFormatting(t *testing.T) {
 	t.Parallel()
 
 	type tagged struct {
-		Value string `form:"value,required,extras,metadata,computed,force_encode" format:"date-time"`
+		Value string `form:"value" api:"required,extras,metadata,computed,force_encode" format:"date-time"`
 		Other string
 	}
 	valueField, ok := reflect.TypeOf(tagged{}).FieldByName("Value")
@@ -183,6 +190,7 @@ func TestEncoderHandlesNullPointersEmbeddedFieldsAndReaders(t *testing.T) {
 	}
 	input := edgeForm{
 		EmbeddedFields: EmbeddedFields{Embedded: "embedded-value"},
+		ignored:        "unexported-value",
 		Reader:         coverageReader{Reader: strings.NewReader("reader-value")},
 		List:           basetypes.NewListNull(basetypes.StringType{}),
 		Skip:           "must-not-appear",
@@ -196,6 +204,9 @@ func TestEncoderHandlesNullPointersEmbeddedFieldsAndReaders(t *testing.T) {
 	}
 	if strings.Contains(body, "must-not-appear") {
 		t.Fatal("dash-tagged field was encoded")
+	}
+	if strings.Contains(body, "unexported-value") {
+		t.Fatal("unexported field was encoded")
 	}
 
 	var prefixed bytes.Buffer
@@ -243,7 +254,7 @@ func TestEncoderRejectsInvalidTerraformAndNestedValues(t *testing.T) {
 	}
 }
 
-func marshalForm(value any) (string, error) {
+func marshalForm[T any](value T) (string, error) {
 	var buffer bytes.Buffer
 	writer := multipart.NewWriter(&buffer)
 	if err := MarshalRoot(value, writer); err != nil {

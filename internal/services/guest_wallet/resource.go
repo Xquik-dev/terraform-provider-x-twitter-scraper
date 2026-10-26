@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package guest_wallet
+// Package guestwallet implements the x-twitter-scraper_guest_wallet resource.
+package guestwallet
 
 import (
 	"context"

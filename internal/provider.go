@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// Package internal implements the x-twitter-scraper Terraform provider and
+// registers its resources and data sources.
 package internal
 
 import (
@@ -44,9 +46,9 @@ type XTwitterScraperProvider struct {
 }
 
 type XTwitterScraperProviderModel struct {
-	BaseURL     types.String `tfsdk:"base_url" json:"base_url,optional"`
-	APIKey      types.String `tfsdk:"api_key" json:"api_key,optional"`
-	BearerToken types.String `tfsdk:"bearer_token" json:"bearer_token,optional"`
+	BaseURL     types.String `tfsdk:"base_url" json:"base_url" api:"optional"`
+	APIKey      types.String `tfsdk:"api_key" json:"api_key" api:"optional"`
+	BearerToken types.String `tfsdk:"bearer_token" json:"bearer_token" api:"optional"`
 }
 
 func (p *XTwitterScraperProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -122,28 +124,28 @@ func (p *XTwitterScraperProvider) Resources(ctx context.Context) []func() resour
 		draft.NewResource,
 		style.NewResource,
 		monitor.NewResource,
-		monitor_keyword.NewResource,
+		monitorkeyword.NewResource,
 		webhook.NewResource,
-		x_write.NewCreateTweetResource,
-		x_write.NewDeleteTweetResource,
-		x_write.NewLikeResource,
-		x_write.NewUnlikeResource,
-		x_write.NewRetweetResource,
-		x_write.NewUnretweetResource,
-		x_write.NewFollowResource,
-		x_write.NewUnfollowResource,
-		x_write.NewRemoveFollowerResource,
-		x_write.NewSendDMResource,
-		x_write.NewUploadMediaResource,
-		x_write.NewUpdateProfileResource,
-		x_write.NewUpdateAvatarResource,
-		x_write.NewUpdateBannerResource,
-		x_write.NewCreateCommunityResource,
-		x_write.NewDeleteCommunityResource,
-		x_write.NewJoinCommunityResource,
-		x_write.NewLeaveCommunityResource,
-		support_ticket.NewResource,
-		guest_wallet.NewResource,
+		xwrite.NewCreateTweetResource,
+		xwrite.NewDeleteTweetResource,
+		xwrite.NewLikeResource,
+		xwrite.NewUnlikeResource,
+		xwrite.NewRetweetResource,
+		xwrite.NewUnretweetResource,
+		xwrite.NewFollowResource,
+		xwrite.NewUnfollowResource,
+		xwrite.NewRemoveFollowerResource,
+		xwrite.NewSendDMResource,
+		xwrite.NewUploadMediaResource,
+		xwrite.NewUpdateProfileResource,
+		xwrite.NewUpdateAvatarResource,
+		xwrite.NewUpdateBannerResource,
+		xwrite.NewCreateCommunityResource,
+		xwrite.NewDeleteCommunityResource,
+		xwrite.NewJoinCommunityResource,
+		xwrite.NewLeaveCommunityResource,
+		supportticket.NewResource,
+		guestwallet.NewResource,
 	}
 }
 
@@ -154,17 +156,17 @@ func (p *XTwitterScraperProvider) DataSources(ctx context.Context) []func() data
 		style.NewStyleDataSource,
 		monitor.NewMonitorDataSource,
 		event.NewEventDataSource,
-		monitor_keyword.NewMonitorKeywordDataSource,
+		monitorkeyword.NewMonitorKeywordDataSource,
 		draw.NewDrawDataSource,
-		x_write_action.NewXWriteActionDataSource,
-		x_tweet.NewXTweetDataSource,
-		x_user.NewXUserDataSource,
-		x_account.NewXAccountDataSource,
-		support_ticket.NewSupportTicketDataSource,
-		x_list.NewXListDataSource,
-		x_job.NewXJobDataSource,
-		x_space.NewXSpaceDataSource,
-		x_broadcast.NewXBroadcastDataSource,
+		xwriteaction.NewXWriteActionDataSource,
+		xtweet.NewXTweetDataSource,
+		xuser.NewXUserDataSource,
+		xaccount.NewXAccountDataSource,
+		supportticket.NewSupportTicketDataSource,
+		xlist.NewXListDataSource,
+		xjob.NewXJobDataSource,
+		xspace.NewXSpaceDataSource,
+		xbroadcast.NewXBroadcastDataSource,
 	}
 }
 

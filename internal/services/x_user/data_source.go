@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package x_user
+// Package xuser implements the x-twitter-scraper_x_user data source.
+package xuser
 
 import (
 	"context"

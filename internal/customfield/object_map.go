@@ -7,6 +7,7 @@ package customfield
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -103,16 +104,16 @@ func (t NestedObjectMapType[T]) NullValue(ctx context.Context) (attr.Value, diag
 
 type NestedObjectMapLike interface {
 	basetypes.MapValuable
-	AsStructMap(ctx context.Context) (any, diag.Diagnostics)
+	AsStructMap(ctx context.Context) (reflect.Value, diag.Diagnostics)
 	NullValue(ctx context.Context) NestedObjectMapLike
 	UnknownValue(ctx context.Context) NestedObjectMapLike
-	KnownValue(ctx context.Context, T any) NestedObjectMapLike
+	DecodeTarget(ctx context.Context) (reflect.Value, func() NestedObjectMapLike)
+	ModelType() reflect.Type
 }
 
 var _ NestedObjectMapLike = (*NestedObjectMap[basetypes.StringValue])(nil)
 
 type NestedObjectMap[T any] struct {
-	placeholder T
 	basetypes.MapValue
 }
 
@@ -132,12 +133,15 @@ func (v NestedObjectMap[T]) UnknownValue(ctx context.Context) NestedObjectMapLik
 	return UnknownObjectMap[T](ctx)
 }
 
-func (v NestedObjectMap[T]) KnownValue(ctx context.Context, anyValues any) NestedObjectMapLike {
-	r, diags := NewObjectMap(ctx, anyValues.(map[string]T))
-	if diags.HasError() {
-		panic(fmt.Errorf("unexpected error creating NestedObjectMap: %v", diags))
+func (v NestedObjectMap[T]) DecodeTarget(ctx context.Context) (reflect.Value, func() NestedObjectMapLike) {
+	values, _ := v.AsStructMapT(ctx)
+	return reflect.ValueOf(&values).Elem(), func() NestedObjectMapLike {
+		r, diags := NewObjectMap(ctx, values)
+		if diags.HasError() {
+			panic(fmt.Errorf("unexpected error creating NestedObjectMap: %v", diags))
+		}
+		return r
 	}
-	return r
 }
 
 func (v NestedObjectMap[T]) Equal(o attr.Value) bool {
@@ -153,8 +157,13 @@ func (v NestedObjectMap[T]) Type(ctx context.Context) attr.Type {
 	return NewNestedObjectMapType[T](ctx)
 }
 
-func (v NestedObjectMap[T]) AsStructMap(ctx context.Context) (any, diag.Diagnostics) {
-	return v.AsStructMapT(ctx)
+func (v NestedObjectMap[T]) AsStructMap(ctx context.Context) (reflect.Value, diag.Diagnostics) {
+	ts, diags := v.AsStructMapT(ctx)
+	return reflect.ValueOf(ts), diags
+}
+
+func (v NestedObjectMap[T]) ModelType() reflect.Type {
+	return reflect.TypeFor[T]()
 }
 
 func (v NestedObjectMap[T]) AsStructMapT(ctx context.Context) (map[string]T, diag.Diagnostics) {

@@ -16,6 +16,6 @@ func TestEventDataSourceModelSchemaParity(t *testing.T) {
 	t.Parallel()
 	model := (*event.EventDataSourceModel)(nil)
 	schema := event.DataSourceSchema(context.TODO())
-	errs := test_helpers.ValidateDataSourceModelSchemaIntegrity(model, schema)
+	errs := testhelpers.ValidateDataSourceModelSchemaIntegrity(model, schema)
 	errs.Report(t)
 }

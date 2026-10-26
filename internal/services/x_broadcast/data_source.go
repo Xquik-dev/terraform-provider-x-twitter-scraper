@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package x_broadcast
+// Package xbroadcast implements the x-twitter-scraper_x_broadcast data source.
+package xbroadcast
 
 import (
 	"context"

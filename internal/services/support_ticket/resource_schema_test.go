@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package support_ticket_test
+package supportticket_test
 
 import (
 	"context"
@@ -14,8 +14,8 @@ import (
 
 func TestSupportTicketModelSchemaParity(t *testing.T) {
 	t.Parallel()
-	model := (*support_ticket.SupportTicketModel)(nil)
-	schema := support_ticket.ResourceSchema(context.TODO())
-	errs := test_helpers.ValidateResourceModelSchemaIntegrity(model, schema)
+	model := (*supportticket.SupportTicketModel)(nil)
+	schema := supportticket.ResourceSchema(context.TODO())
+	errs := testhelpers.ValidateResourceModelSchemaIntegrity(model, schema)
 	errs.Report(t)
 }

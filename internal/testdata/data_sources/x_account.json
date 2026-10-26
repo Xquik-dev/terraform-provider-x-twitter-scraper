@@ -1,0 +1,10 @@
+{
+  "id": "42",
+  "xUserId": "1500000000000000000",
+  "xUsername": "example",
+  "status": "active",
+  "health": "healthy",
+  "createdAt": "2025-03-01T08:30:00Z",
+  "updatedAt": "2025-03-10T08:30:00Z",
+  "connectedAt": "2025-03-10T08:30:00Z"
+}

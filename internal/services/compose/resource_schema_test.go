@@ -16,6 +16,6 @@ func TestComposeModelSchemaParity(t *testing.T) {
 	t.Parallel()
 	model := (*compose.ComposeModel)(nil)
 	schema := compose.ResourceSchema(context.TODO())
-	errs := test_helpers.ValidateResourceModelSchemaIntegrity(model, schema)
+	errs := testhelpers.ValidateResourceModelSchemaIntegrity(model, schema)
 	errs.Report(t)
 }

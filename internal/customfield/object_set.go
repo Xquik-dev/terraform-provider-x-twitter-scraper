@@ -7,6 +7,7 @@ package customfield
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -104,7 +105,6 @@ func (t NestedObjectSetType[T]) NullValue(ctx context.Context) (attr.Value, diag
 var _ NestedObjectListLike = (*NestedObjectSet[basetypes.StringValue])(nil)
 
 type NestedObjectSet[T any] struct {
-	placeholder T
 	basetypes.SetValue
 }
 
@@ -124,12 +124,15 @@ func (v NestedObjectSet[T]) UnknownValue(ctx context.Context) NestedObjectListLi
 	return UnknownObjectSet[T](ctx)
 }
 
-func (v NestedObjectSet[T]) KnownValue(ctx context.Context, anyValues any) NestedObjectListLike {
-	r, diags := NewObjectSet(ctx, anyValues.([]T))
-	if diags.HasError() {
-		panic(fmt.Errorf("unexpected error creating NestedObjectSet: %v", diags))
+func (v NestedObjectSet[T]) DecodeTarget(ctx context.Context) (reflect.Value, func() NestedObjectListLike) {
+	values, _ := v.AsStructSliceT(ctx)
+	return reflect.ValueOf(&values).Elem(), func() NestedObjectListLike {
+		r, diags := NewObjectSet(ctx, values)
+		if diags.HasError() {
+			panic(fmt.Errorf("unexpected error creating NestedObjectSet: %v", diags))
+		}
+		return r
 	}
-	return r
 }
 
 func (v NestedObjectSet[T]) IsNullOrUnknown() bool {
@@ -149,8 +152,13 @@ func (v NestedObjectSet[T]) Type(ctx context.Context) attr.Type {
 	return NewNestedObjectSetType[T](ctx)
 }
 
-func (v NestedObjectSet[T]) AsStructSlice(ctx context.Context) (any, diag.Diagnostics) {
-	return v.AsStructSliceT(ctx)
+func (v NestedObjectSet[T]) AsStructSlice(ctx context.Context) (reflect.Value, diag.Diagnostics) {
+	ts, diags := v.AsStructSliceT(ctx)
+	return reflect.ValueOf(ts), diags
+}
+
+func (v NestedObjectSet[T]) ModelType() reflect.Type {
+	return reflect.TypeFor[T]()
 }
 
 func (v NestedObjectSet[T]) AsStructSliceT(ctx context.Context) ([]T, diag.Diagnostics) {

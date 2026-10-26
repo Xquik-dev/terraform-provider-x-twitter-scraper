@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package x_account
+// Package xaccount implements the x-twitter-scraper_x_account data source.
+package xaccount
 
 import (
 	"context"

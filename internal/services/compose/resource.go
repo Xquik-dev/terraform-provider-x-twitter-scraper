@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// Package compose implements the x-twitter-scraper_compose resource.
 package compose
 
 import (

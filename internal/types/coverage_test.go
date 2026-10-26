@@ -52,7 +52,7 @@ func TestStringConvertersRejectInvalidNumbers(t *testing.T) {
 func assertConversionPanics(t *testing.T, action func()) {
 	t.Helper()
 	defer func() {
-		if recovered := recover(); recovered == nil {
+		if recover() == nil {
 			t.Fatal("conversion did not panic")
 		}
 	}()
