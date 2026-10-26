@@ -1,18 +1,14 @@
 // Copyright 2026 Xquik contributors
 // SPDX-License-Identifier: Apache-2.0
 
-package importpath_test
+package importpath
 
-import (
-	"testing"
-
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/importpath"
-)
+import "testing"
 
 func TestParseIDDecodesTheID(t *testing.T) {
 	t.Parallel()
 
-	id, diags := importpath.ParseImportID("tweet%20search")
+	id, diags := ParseImportID("tweet%20search")
 	if diags.HasError() {
 		t.Fatalf("unexpected error: %v", diags)
 	}
@@ -24,10 +20,10 @@ func TestParseIDDecodesTheID(t *testing.T) {
 func TestParseIDRejectsInvalidIDs(t *testing.T) {
 	t.Parallel()
 
-	if _, diagnostics := importpath.ParseImportID("%"); !diagnostics.HasError() {
+	if _, diagnostics := ParseImportID("%"); !diagnostics.HasError() {
 		t.Fatal("invalid URL encoding produced no diagnostic")
 	}
-	if _, diagnostics := importpath.ParseImportID("one/two"); !diagnostics.HasError() {
+	if _, diagnostics := ParseImportID("one/two"); !diagnostics.HasError() {
 		t.Fatal("an ID with 2 segments produced no diagnostic")
 	}
 }
