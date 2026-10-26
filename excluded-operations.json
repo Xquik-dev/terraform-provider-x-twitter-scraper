@@ -12,7 +12,9 @@
       "GET /api/v1/api-keys",
       "POST /api/v1/api-keys",
       "DELETE /api/v1/api-keys/{id}",
-      "POST /api/v1/credits/quick-topup"
+      "POST /api/v1/credits/quick-topup",
+      "PATCH /api/v1/api-keys/{id}",
+      "POST /api/v1/api-keys/bulk-revoke"
     ]
   },
   {
@@ -82,7 +84,16 @@
       "GET /api/v1/x/trends/history",
       "GET /api/v1/x/trends/locations",
       "GET /api/v1/trends",
-      "GET /api/v1/radar"
+      "GET /api/v1/radar",
+      "GET /api/v1/x/communities/{id}/analytics",
+      "GET /api/v1/x/sports/{league}/games",
+      "GET /api/v1/x/sports/{league}/games/{id}",
+      "GET /api/v1/x/sports/{league}/games/{id}/audience",
+      "GET /api/v1/x/sports/{league}/games/{id}/box-score",
+      "GET /api/v1/x/sports/{league}/games/{id}/plays",
+      "GET /api/v1/x/sports/{league}/games/{id}/player-props",
+      "GET /api/v1/x/sports/{league}/games/{id}/posts",
+      "GET /api/v1/x/sports/{league}/games/{id}/roster"
     ]
   },
   {
@@ -118,7 +129,18 @@
       "GET /api/v1/webhooks",
       "GET /api/v1/webhooks/{id}/deliveries",
       "GET /api/v1/support/tickets",
-      "GET /api/v1/x/accounts"
+      "GET /api/v1/x/accounts",
+      "GET /api/v1/monitors/posts",
+      "GET /api/v1/monitors/posts/{id}/metrics"
+    ]
+  },
+  {
+    "reason": "Creates, reads, updates and deletes post monitors. The provider has no post monitor resource yet.",
+    "operations": [
+      "POST /api/v1/monitors/posts",
+      "GET /api/v1/monitors/posts/{id}",
+      "PATCH /api/v1/monitors/posts/{id}",
+      "DELETE /api/v1/monitors/posts/{id}"
     ]
   },
   {
