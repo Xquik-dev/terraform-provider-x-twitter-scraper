@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package test_helpers
+// Package testhelpers checks that provider models match their Terraform
+// schemas.
+package testhelpers
 
 import (
 	"context"

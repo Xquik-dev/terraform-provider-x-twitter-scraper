@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package monitor_keyword
+// Package monitorkeyword implements the x-twitter-scraper_monitor_keyword
+// resource and data source.
+package monitorkeyword
 
 import (
 	"context"

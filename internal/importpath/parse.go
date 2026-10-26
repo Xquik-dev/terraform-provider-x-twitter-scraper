@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// Package importpath parses Terraform import IDs into their path segments.
 package importpath
 
 import (

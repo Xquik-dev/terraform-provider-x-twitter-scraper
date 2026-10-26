@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// Package apicoverage compares the operations in the public API spec with the
+// requests that the provider sends.
 package apicoverage
 
 import (

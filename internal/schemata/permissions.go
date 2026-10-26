@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// Package schemata describes the API permissions that a schema attribute needs.
 package schemata
 
 import (

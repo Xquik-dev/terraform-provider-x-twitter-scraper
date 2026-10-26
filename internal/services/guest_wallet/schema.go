@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package guest_wallet
+package guestwallet
 
 import (
 	"context"

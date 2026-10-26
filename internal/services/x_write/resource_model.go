@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package x_write
+package xwrite
 
 import "github.com/hashicorp/terraform-plugin-framework/types"
 

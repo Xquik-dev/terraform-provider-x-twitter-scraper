@@ -408,7 +408,7 @@ func TestJSONTagParsesInlineAndMetadataFields(t *testing.T) {
 	t.Parallel()
 
 	type tagged struct {
-		Value string `json:"value,extras,metadata,inline"`
+		Value string `json:"value" api:"extras,metadata,inline"`
 	}
 	field, ok := reflect.TypeOf(tagged{}).FieldByName("Value")
 	if !ok {

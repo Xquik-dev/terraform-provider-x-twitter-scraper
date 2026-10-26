@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package x_write_action
+// Package xwriteaction implements the x-twitter-scraper_x_write_action data
+// source.
+package xwriteaction
 
 import (
 	"context"

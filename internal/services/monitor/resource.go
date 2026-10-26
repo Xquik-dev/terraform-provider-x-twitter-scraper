@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// Package monitor implements the x-twitter-scraper_monitor resource and data
+// source.
 package monitor
 
 import (

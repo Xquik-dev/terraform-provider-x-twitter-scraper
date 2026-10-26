@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package guest_wallet_test
+package guestwallet_test
 
 import (
 	"context"
@@ -14,8 +14,8 @@ import (
 
 func TestGuestWalletModelSchemaParity(t *testing.T) {
 	t.Parallel()
-	model := (*guest_wallet.GuestWalletModel)(nil)
-	schema := guest_wallet.ResourceSchema(context.TODO())
-	errs := test_helpers.ValidateResourceModelSchemaIntegrity(model, schema)
+	model := (*guestwallet.GuestWalletModel)(nil)
+	schema := guestwallet.ResourceSchema(context.TODO())
+	errs := testhelpers.ValidateResourceModelSchemaIntegrity(model, schema)
 	errs.Report(t)
 }

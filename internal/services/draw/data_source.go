@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// Package draw implements the x-twitter-scraper_draw data source.
 package draw
 
 import (

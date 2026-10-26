@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package x_tweet
+package xtweet
 
 import (
 	"context"

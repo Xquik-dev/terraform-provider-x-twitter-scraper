@@ -10,6 +10,7 @@ import (
 )
 
 const jsonStructTag = "json"
+const optionsStructTag = "api"
 const formatStructTag = "format"
 
 type parsedStructTag struct {
@@ -20,7 +21,7 @@ type parsedStructTag struct {
 	required                        bool
 	optional                        bool
 	computed                        bool
-	computed_optional               bool
+	computedOptional                bool
 	noRefresh                       bool
 	forceEncode                     bool
 	encodeStateValueWhenPlanUnknown bool
@@ -31,12 +32,9 @@ func parseJSONStructTag(field reflect.StructField) (tag parsedStructTag, ok bool
 	if !ok {
 		return
 	}
-	parts := strings.Split(raw, ",")
-	if len(parts) == 0 {
-		return tag, false
-	}
-	tag.name = parts[0]
-	for _, part := range parts[1:] {
+	tag.name, _, _ = strings.Cut(raw, ",")
+	options, _ := field.Tag.Lookup(optionsStructTag)
+	for part := range strings.SplitSeq(options, ",") {
 		switch part {
 		case "extras":
 			tag.extras = true
@@ -51,7 +49,7 @@ func parseJSONStructTag(field reflect.StructField) (tag parsedStructTag, ok bool
 		case "computed":
 			tag.computed = true
 		case "computed_optional":
-			tag.computed_optional = true
+			tag.computedOptional = true
 		case "no_refresh":
 			tag.noRefresh = true
 		case "encode_state_for_unknown":

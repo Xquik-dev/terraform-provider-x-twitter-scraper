@@ -16,6 +16,6 @@ func TestMonitorModelSchemaParity(t *testing.T) {
 	t.Parallel()
 	model := (*monitor.MonitorModel)(nil)
 	schema := monitor.ResourceSchema(context.TODO())
-	errs := test_helpers.ValidateResourceModelSchemaIntegrity(model, schema)
+	errs := testhelpers.ValidateResourceModelSchemaIntegrity(model, schema)
 	errs.Report(t)
 }

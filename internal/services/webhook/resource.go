@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// Package webhook implements the x-twitter-scraper_webhook resource.
 package webhook
 
 import (

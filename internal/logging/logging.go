@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// Package logging logs API requests and responses through the Terraform plugin
+// log.
 package logging
 
 import (

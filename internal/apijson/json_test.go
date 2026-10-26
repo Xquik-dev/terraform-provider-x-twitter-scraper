@@ -45,9 +45,9 @@ type TfsdkStructs struct {
 }
 
 type EmbeddedTfsdkStruct struct {
-	EmbeddedString types.String                                 `tfsdk:"tfsdk_embedded_string" json:"embedded_string,required"`
-	EmbeddedInt    types.Int64                                  `tfsdk:"tfsdk_embedded_int" json:"embedded_int,optional"`
-	DataObject     customfield.NestedObject[DoubleNestedStruct] `tfsdk:"tfsdk_data_object" json:"data_object,optional"`
+	EmbeddedString types.String                                 `tfsdk:"tfsdk_embedded_string" json:"embedded_string" api:"required"`
+	EmbeddedInt    types.Int64                                  `tfsdk:"tfsdk_embedded_int" json:"embedded_int" api:"optional"`
+	DataObject     customfield.NestedObject[DoubleNestedStruct] `tfsdk:"tfsdk_data_object" json:"data_object" api:"optional"`
 }
 
 type DoubleNestedStruct struct {
@@ -88,18 +88,18 @@ type DateTimeCustom struct {
 
 type AdditionalProperties struct {
 	A      bool           `json:"a"`
-	Extras map[string]any `json:"-,extras"`
+	Extras map[string]any `json:"-" api:"extras"`
 }
 
 type TypedAdditionalProperties struct {
 	A      bool           `json:"a"`
-	Extras map[string]int `json:"-,extras"`
+	Extras map[string]int `json:"-" api:"extras"`
 }
 
 type EmbeddedStructs struct {
 	AdditionalProperties
 	A      *int           `json:"number2"`
-	Extras map[string]any `json:"-,extras"`
+	Extras map[string]any `json:"-" api:"extras"`
 }
 
 type Recursive struct {
@@ -112,20 +112,20 @@ type UnknownStruct struct {
 }
 
 type Inline struct {
-	InlineField Primitives `json:"-,inline"`
+	InlineField Primitives `json:"-" api:"inline"`
 }
 
 type InlineArray struct {
-	InlineField []string `json:"-,inline"`
+	InlineField []string `json:"-" api:"inline"`
 }
 
 type EncodeStateForUnknownStruct struct {
 	NormalField                     types.String `tfsdk:"normal_field" json:"normal_field"`
-	ComputedWithForceEncode         types.String `tfsdk:"computed_force_encode" json:"computed_force_encode,computed,force_encode"`
-	ComputedWithStateEncode         types.String `tfsdk:"computed_state_encode" json:"computed_state_encode,computed,force_encode,encode_state_for_unknown"`
-	ComputedOptionalWithStateEncode types.String `tfsdk:"computed_optional_state_encode" json:"computed_optional_state_encode,computed_optional,encode_state_for_unknown"`
-	ComputedRegular                 types.String `tfsdk:"computed_regular" json:"computed_regular,computed"`
-	ComputedOptionalRegular         types.String `tfsdk:"computed_optional_regular" json:"computed_optional_regular,computed_optional"`
+	ComputedWithForceEncode         types.String `tfsdk:"computed_force_encode" json:"computed_force_encode" api:"computed,force_encode"`
+	ComputedWithStateEncode         types.String `tfsdk:"computed_state_encode" json:"computed_state_encode" api:"computed,force_encode,encode_state_for_unknown"`
+	ComputedOptionalWithStateEncode types.String `tfsdk:"computed_optional_state_encode" json:"computed_optional_state_encode" api:"computed_optional,encode_state_for_unknown"`
+	ComputedRegular                 types.String `tfsdk:"computed_regular" json:"computed_regular" api:"computed"`
+	ComputedOptionalRegular         types.String `tfsdk:"computed_optional_regular" json:"computed_optional_regular" api:"computed_optional"`
 }
 
 type ResultEnvelope struct {
@@ -135,7 +135,7 @@ type ResultEnvelope struct {
 type RecordsModel struct {
 	A types.String `tfsdk:"tfsdk_a" json:"a"`
 	B types.String `tfsdk:"tfsdk_b" json:"b"`
-	C types.String `tfsdk:"tfsdk_c" json:"c,computed"`
+	C types.String `tfsdk:"tfsdk_c" json:"c" api:"computed"`
 }
 
 func DropDiagnostic[resType any](res resType, diags diag.Diagnostics) resType {
@@ -599,7 +599,7 @@ var encodeOnlyTests = map[string]struct {
 	"nested_map_pointer": {
 		`{"outer":[{"a":{"a.b.*":"*"}}]}`,
 		struct {
-			Outer *[]*structWithMap `json:"outer,required"`
+			Outer *[]*structWithMap `json:"outer" api:"required"`
 		}{
 			Outer: P([]*structWithMap{
 				P(structWithMap{A: P(map[string]types.String{"a.b.*": types.StringValue("*")})}),
@@ -609,7 +609,7 @@ var encodeOnlyTests = map[string]struct {
 }
 
 type structWithMap struct {
-	A *map[string]types.String `json:"a,required"`
+	A *map[string]types.String `json:"a" api:"required"`
 }
 
 func TestDecode(t *testing.T) {
@@ -1820,26 +1820,26 @@ func TestDecodeUnsetBehaviour(t *testing.T) {
 }
 
 type StructWithComputedFields struct {
-	RegStr            types.String                                             `tfsdk:"str" json:"str,optional"`
-	DerivedStr        types.String                                             `tfsdk:"str" json:"derived_str,optional"`
-	CompStr           types.String                                             `tfsdk:"comp_str" json:"comp_str,computed"`
-	CompOptStr        types.String                                             `tfsdk:"opt_str" json:"opt_str,computed_optional"`
-	CompTime          timetypes.RFC3339                                        `tfsdk:"time" json:"time,computed"`
-	CompOptTime       timetypes.RFC3339                                        `tfsdk:"opt_time" json:"opt_time,computed_optional"`
-	Nested            NestedStructWithComputedFields                           `tfsdk:"nested" json:"nested,optional"`
-	NestedCust        customfield.NestedObject[NestedStructWithComputedFields] `tfsdk:"nested_obj" json:"nested_obj,optional"`
-	CompOptNestedCust customfield.NestedObject[NestedStructWithComputedFields] `tfsdk:"opt_nested_obj" json:"opt_nested_obj,computed_optional"`
-	NestedList        *[]*NestedStructWithComputedFields                       `tfsdk:"nested_list" json:"nested_list,optional"`
-	MapCust           customfield.Map[customfield.List[types.String]]          `tfsdk:"map_cust" json:"map_cust,optional"`
-	MapRegular        *map[string][]*NestedStructWithComputedFields            `tfsdk:"map_regular" json:"map_regular,optional"`
-	CompMap           *map[string]*NestedStructWithComputedFields              `tfsdk:"comp_map" json:"comp_map,computed"`
-	CompMapList       *map[string][]*NestedStructWithComputedFields            `tfsdk:"comp_map_list" json:"comp_map_list,computed"`
+	RegStr            types.String                                             `tfsdk:"str" json:"str" api:"optional"`
+	DerivedStr        types.String                                             `tfsdk:"str" json:"derived_str" api:"optional"`
+	CompStr           types.String                                             `tfsdk:"comp_str" json:"comp_str" api:"computed"`
+	CompOptStr        types.String                                             `tfsdk:"opt_str" json:"opt_str" api:"computed_optional"`
+	CompTime          timetypes.RFC3339                                        `tfsdk:"time" json:"time" api:"computed"`
+	CompOptTime       timetypes.RFC3339                                        `tfsdk:"opt_time" json:"opt_time" api:"computed_optional"`
+	Nested            NestedStructWithComputedFields                           `tfsdk:"nested" json:"nested" api:"optional"`
+	NestedCust        customfield.NestedObject[NestedStructWithComputedFields] `tfsdk:"nested_obj" json:"nested_obj" api:"optional"`
+	CompOptNestedCust customfield.NestedObject[NestedStructWithComputedFields] `tfsdk:"opt_nested_obj" json:"opt_nested_obj" api:"computed_optional"`
+	NestedList        *[]*NestedStructWithComputedFields                       `tfsdk:"nested_list" json:"nested_list" api:"optional"`
+	MapCust           customfield.Map[customfield.List[types.String]]          `tfsdk:"map_cust" json:"map_cust" api:"optional"`
+	MapRegular        *map[string][]*NestedStructWithComputedFields            `tfsdk:"map_regular" json:"map_regular" api:"optional"`
+	CompMap           *map[string]*NestedStructWithComputedFields              `tfsdk:"comp_map" json:"comp_map" api:"computed"`
+	CompMapList       *map[string][]*NestedStructWithComputedFields            `tfsdk:"comp_map_list" json:"comp_map_list" api:"computed"`
 }
 
 type NestedStructWithComputedFields struct {
-	RegStr     types.String `tfsdk:"nested_str" json:"nested_str,required"`
-	CompStr    types.String `tfsdk:"nested_comp_str" json:"nested_comp_str,computed"`
-	CompOptInt types.Int64  `tfsdk:"nested_comp_opt_int" json:"nested_comp_opt_int,computed_optional"`
+	RegStr     types.String `tfsdk:"nested_str" json:"nested_str" api:"required"`
+	CompStr    types.String `tfsdk:"nested_comp_str" json:"nested_comp_str" api:"computed"`
+	CompOptInt types.Int64  `tfsdk:"nested_comp_opt_int" json:"nested_comp_opt_int" api:"computed_optional"`
 }
 
 var exampleNestedJson = `{
@@ -1860,70 +1860,70 @@ var exampleNestedJson = `{
 }`
 
 type nestedMapExample struct {
-	SomeStruct customfield.NestedObject[nestedMapStruct] `tfsdk:"some_struct" json:"some_struct,computed_optional"`
+	SomeStruct customfield.NestedObject[nestedMapStruct] `tfsdk:"some_struct" json:"some_struct" api:"computed_optional"`
 }
 
 type nestedMapStruct struct {
-	NestedMap map[string]types.Float64 `tfsdk:"nested_map" json:"nested_map,optional"`
+	NestedMap map[string]types.Float64 `tfsdk:"nested_map" json:"nested_map" api:"optional"`
 }
 
 type computedMapStruct struct {
-	ComputedMap map[string]types.Float64 `tfsdk:"computed_map" json:"computed_map,computed_optional"`
+	ComputedMap map[string]types.Float64 `tfsdk:"computed_map" json:"computed_map" api:"computed_optional"`
 }
 
 type primitiveListExample struct {
-	StrList customfield.List[types.String] `tfsdk:"str_list" json:"str_list,computed_optional"`
+	StrList customfield.List[types.String] `tfsdk:"str_list" json:"str_list" api:"computed_optional"`
 }
 
 type primitiveSetExample struct {
-	StrSet customfield.Set[types.String] `tfsdk:"str_set" json:"str_set,computed_optional"`
+	StrSet customfield.Set[types.String] `tfsdk:"str_set" json:"str_set" api:"computed_optional"`
 }
 
 type primitiveMapExample struct {
-	StrMap customfield.Map[types.String] `tfsdk:"str_map" json:"str_map,computed_optional"`
+	StrMap customfield.Map[types.String] `tfsdk:"str_map" json:"str_map" api:"computed_optional"`
 }
 
 type nestedObjectExample struct {
-	NestedObj customfield.NestedObject[computedMapStruct] `tfsdk:"nested_obj" json:"nested_obj,computed_optional"`
+	NestedObj customfield.NestedObject[computedMapStruct] `tfsdk:"nested_obj" json:"nested_obj" api:"computed_optional"`
 }
 
 type nestedObjectListExample struct {
-	ObjList customfield.NestedObjectList[computedMapStruct] `tfsdk:"obj_list" json:"obj_list,computed_optional"`
+	ObjList customfield.NestedObjectList[computedMapStruct] `tfsdk:"obj_list" json:"obj_list" api:"computed_optional"`
 }
 
 type nestedObjectSetExample struct {
-	ObjSet customfield.NestedObjectSet[computedMapStruct] `tfsdk:"obj_set" json:"obj_set,computed_optional"`
+	ObjSet customfield.NestedObjectSet[computedMapStruct] `tfsdk:"obj_set" json:"obj_set" api:"computed_optional"`
 }
 
 type listOfListsExample struct {
-	ListOfLists customfield.List[customfield.List[types.String]] `tfsdk:"list_of_lists" json:"list_of_lists,computed_optional"`
+	ListOfLists customfield.List[customfield.List[types.String]] `tfsdk:"list_of_lists" json:"list_of_lists" api:"computed_optional"`
 }
 
 type setOfSetsExample struct {
-	SetOfSets customfield.Set[customfield.Set[types.Int64]] `tfsdk:"set_of_sets" json:"set_of_sets,computed_optional"`
+	SetOfSets customfield.Set[customfield.Set[types.Int64]] `tfsdk:"set_of_sets" json:"set_of_sets" api:"computed_optional"`
 }
 
 type mapWithListExample struct {
-	MapWithList customfield.Map[customfield.List[types.String]] `tfsdk:"map_with_list" json:"map_with_list,computed_optional"`
+	MapWithList customfield.Map[customfield.List[types.String]] `tfsdk:"map_with_list" json:"map_with_list" api:"computed_optional"`
 }
 
 type tupleExample struct {
-	TupleVal types.Tuple `tfsdk:"tuple_val" json:"tuple_val,computed_optional"`
+	TupleVal types.Tuple `tfsdk:"tuple_val" json:"tuple_val" api:"computed_optional"`
 }
 
 type ComputedOptionalCollectionsExample struct {
-	Name        types.String                              `tfsdk:"name" json:"name,required"`
-	Tags        customfield.List[types.String]            `tfsdk:"tags" json:"tags,computed_optional"`
-	Metadata    customfield.Map[types.String]             `tfsdk:"metadata" json:"metadata,computed_optional"`
-	Ports       customfield.Set[types.Int64]              `tfsdk:"ports" json:"ports,computed_optional"`
-	Coordinates types.Tuple                               `tfsdk:"coordinates" json:"coordinates,computed_optional"`
-	Rules       customfield.NestedObjectList[RuleExample] `tfsdk:"rules" json:"rules,computed_optional"`
-	Status      types.String                              `tfsdk:"status" json:"status,computed_optional"`
+	Name        types.String                              `tfsdk:"name" json:"name" api:"required"`
+	Tags        customfield.List[types.String]            `tfsdk:"tags" json:"tags" api:"computed_optional"`
+	Metadata    customfield.Map[types.String]             `tfsdk:"metadata" json:"metadata" api:"computed_optional"`
+	Ports       customfield.Set[types.Int64]              `tfsdk:"ports" json:"ports" api:"computed_optional"`
+	Coordinates types.Tuple                               `tfsdk:"coordinates" json:"coordinates" api:"computed_optional"`
+	Rules       customfield.NestedObjectList[RuleExample] `tfsdk:"rules" json:"rules" api:"computed_optional"`
+	Status      types.String                              `tfsdk:"status" json:"status" api:"computed_optional"`
 }
 
 type RuleExample struct {
-	Priority types.Int64  `tfsdk:"priority" json:"priority,required"`
-	Action   types.String `tfsdk:"action" json:"action,computed"`
+	Priority types.Int64  `tfsdk:"priority" json:"priority" api:"required"`
+	Action   types.String `tfsdk:"action" json:"action" api:"computed"`
 }
 
 var decode_computed_only_tests = map[string]struct {

@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// Package customvalidator validates the types that dynamic Terraform attributes
+// accept.
 package customvalidator
 
 import (

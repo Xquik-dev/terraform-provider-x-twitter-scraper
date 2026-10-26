@@ -16,6 +16,6 @@ func TestWebhookModelSchemaParity(t *testing.T) {
 	t.Parallel()
 	model := (*webhook.WebhookModel)(nil)
 	schema := webhook.ResourceSchema(context.TODO())
-	errs := test_helpers.ValidateResourceModelSchemaIntegrity(model, schema)
+	errs := testhelpers.ValidateResourceModelSchemaIntegrity(model, schema)
 	errs.Report(t)
 }

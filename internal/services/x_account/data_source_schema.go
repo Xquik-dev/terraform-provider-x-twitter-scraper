@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package x_account
+package xaccount
 
 import (
 	"context"

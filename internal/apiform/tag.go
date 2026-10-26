@@ -11,6 +11,7 @@ import (
 
 const jsonStructTag = "json"
 const formStructTag = "form"
+const optionsStructTag = "api"
 const formatStructTag = "format"
 
 type parsedStructTag struct {
@@ -30,12 +31,9 @@ func parseFormStructTag(field reflect.StructField) (tag parsedStructTag, ok bool
 	if !ok {
 		return
 	}
-	parts := strings.Split(raw, ",")
-	if len(parts) == 0 {
-		return tag, false
-	}
-	tag.name = parts[0]
-	for _, part := range parts[1:] {
+	tag.name, _, _ = strings.Cut(raw, ",")
+	options, _ := field.Tag.Lookup(optionsStructTag)
+	for part := range strings.SplitSeq(options, ",") {
 		switch part {
 		case "required":
 			tag.required = true

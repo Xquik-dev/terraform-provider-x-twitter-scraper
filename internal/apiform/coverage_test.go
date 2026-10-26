@@ -128,7 +128,7 @@ func TestTagParsingAndDiagnosticFormatting(t *testing.T) {
 	t.Parallel()
 
 	type tagged struct {
-		Value string `form:"value,required,extras,metadata,computed,force_encode" format:"date-time"`
+		Value string `form:"value" api:"required,extras,metadata,computed,force_encode" format:"date-time"`
 		Other string
 	}
 	valueField, ok := reflect.TypeOf(tagged{}).FieldByName("Value")

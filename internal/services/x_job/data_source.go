@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package x_job
+// Package xjob implements the x-twitter-scraper_x_job data source.
+package xjob
 
 import (
 	"context"

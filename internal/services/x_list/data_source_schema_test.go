@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package x_list_test
+package xlist_test
 
 import (
 	"context"
@@ -14,8 +14,8 @@ import (
 
 func TestXListDataSourceModelSchemaParity(t *testing.T) {
 	t.Parallel()
-	model := (*x_list.XListDataSourceModel)(nil)
-	schema := x_list.DataSourceSchema(context.TODO())
-	errs := test_helpers.ValidateDataSourceModelSchemaIntegrity(model, schema)
+	model := (*xlist.XListDataSourceModel)(nil)
+	schema := xlist.DataSourceSchema(context.TODO())
+	errs := testhelpers.ValidateDataSourceModelSchemaIntegrity(model, schema)
 	errs.Report(t)
 }

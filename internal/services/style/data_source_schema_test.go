@@ -16,6 +16,6 @@ func TestStyleDataSourceModelSchemaParity(t *testing.T) {
 	t.Parallel()
 	model := (*style.StyleDataSourceModel)(nil)
 	schema := style.DataSourceSchema(context.TODO())
-	errs := test_helpers.ValidateDataSourceModelSchemaIntegrity(model, schema)
+	errs := testhelpers.ValidateDataSourceModelSchemaIntegrity(model, schema)
 	errs.Report(t)
 }

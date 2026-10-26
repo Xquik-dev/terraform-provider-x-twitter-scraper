@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package x_user_test
+package xuser_test
 
 import (
 	"context"
@@ -14,8 +14,8 @@ import (
 
 func TestXUserDataSourceModelSchemaParity(t *testing.T) {
 	t.Parallel()
-	model := (*x_user.XUserDataSourceModel)(nil)
-	schema := x_user.DataSourceSchema(context.TODO())
-	errs := test_helpers.ValidateDataSourceModelSchemaIntegrity(model, schema)
+	model := (*xuser.XUserDataSourceModel)(nil)
+	schema := xuser.DataSourceSchema(context.TODO())
+	errs := testhelpers.ValidateDataSourceModelSchemaIntegrity(model, schema)
 	errs.Report(t)
 }

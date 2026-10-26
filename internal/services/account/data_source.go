@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// Package account implements the x-twitter-scraper_account data source.
 package account
 
 import (

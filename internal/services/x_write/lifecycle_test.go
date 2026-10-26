@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package x_write
+package xwrite
 
 import (
 	"context"
@@ -198,7 +198,7 @@ func TestWriteResourceSchemasMatchStableStateModel(t *testing.T) {
 		op := op
 		t.Run(op.action, func(t *testing.T) {
 			t.Parallel()
-			errs := test_helpers.ValidateResourceModelSchemaIntegrity((*resourceModel)(nil), resourceSchema(context.Background(), op))
+			errs := testhelpers.ValidateResourceModelSchemaIntegrity((*resourceModel)(nil), resourceSchema(context.Background(), op))
 			errs.Report(t)
 		})
 	}

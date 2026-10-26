@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// Package draft implements the x-twitter-scraper_draft resource and data
+// source.
 package draft
 
 import (

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package x_space_test
+package xspace_test
 
 import (
 	"context"
@@ -14,8 +14,8 @@ import (
 
 func TestXSpaceDataSourceModelSchemaParity(t *testing.T) {
 	t.Parallel()
-	model := (*x_space.XSpaceDataSourceModel)(nil)
-	schema := x_space.DataSourceSchema(context.TODO())
-	errs := test_helpers.ValidateDataSourceModelSchemaIntegrity(model, schema)
+	model := (*xspace.XSpaceDataSourceModel)(nil)
+	schema := xspace.DataSourceSchema(context.TODO())
+	errs := testhelpers.ValidateDataSourceModelSchemaIntegrity(model, schema)
 	errs.Report(t)
 }

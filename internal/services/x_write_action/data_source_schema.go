@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package x_write_action
+package xwriteaction
 
 import (
 	"context"

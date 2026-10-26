@@ -16,6 +16,6 @@ func TestMonitorDataSourceModelSchemaParity(t *testing.T) {
 	t.Parallel()
 	model := (*monitor.MonitorDataSourceModel)(nil)
 	schema := monitor.DataSourceSchema(context.TODO())
-	errs := test_helpers.ValidateDataSourceModelSchemaIntegrity(model, schema)
+	errs := testhelpers.ValidateDataSourceModelSchemaIntegrity(model, schema)
 	errs.Report(t)
 }

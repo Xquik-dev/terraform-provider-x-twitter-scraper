@@ -16,6 +16,6 @@ func TestStyleModelSchemaParity(t *testing.T) {
 	t.Parallel()
 	model := (*style.StyleModel)(nil)
 	schema := style.ResourceSchema(context.TODO())
-	errs := test_helpers.ValidateResourceModelSchemaIntegrity(model, schema)
+	errs := testhelpers.ValidateResourceModelSchemaIntegrity(model, schema)
 	errs.Report(t)
 }

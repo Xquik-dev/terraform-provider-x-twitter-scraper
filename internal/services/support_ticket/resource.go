@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package support_ticket
+// Package supportticket implements the x-twitter-scraper_support_ticket
+// resource and data source.
+package supportticket
 
 import (
 	"context"

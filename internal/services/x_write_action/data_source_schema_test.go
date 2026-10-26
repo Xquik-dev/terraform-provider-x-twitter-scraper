@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package x_write_action_test
+package xwriteaction_test
 
 import (
 	"context"
@@ -14,8 +14,8 @@ import (
 
 func TestXWriteActionDataSourceModelSchemaParity(t *testing.T) {
 	t.Parallel()
-	model := (*x_write_action.XWriteActionDataSourceModel)(nil)
-	schema := x_write_action.DataSourceSchema(context.TODO())
-	errs := test_helpers.ValidateDataSourceModelSchemaIntegrity(model, schema)
+	model := (*xwriteaction.XWriteActionDataSourceModel)(nil)
+	schema := xwriteaction.DataSourceSchema(context.TODO())
+	errs := testhelpers.ValidateDataSourceModelSchemaIntegrity(model, schema)
 	errs.Report(t)
 }

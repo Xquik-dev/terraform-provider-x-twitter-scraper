@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// Package customfield defines typed Terraform list, set, map, object and
+// dynamic values for provider models.
 package customfield
 
 import (

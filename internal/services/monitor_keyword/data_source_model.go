@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package monitor_keyword
+package monitorkeyword
 
 import (
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/customfield"
@@ -12,9 +12,9 @@ import (
 
 type MonitorKeywordDataSourceModel struct {
 	ID            types.String                   `tfsdk:"id" path:"id,required"`
-	CreatedAt     timetypes.RFC3339              `tfsdk:"created_at" json:"createdAt,computed" format:"date-time"`
-	IsActive      types.Bool                     `tfsdk:"is_active" json:"isActive,computed"`
-	NextBillingAt timetypes.RFC3339              `tfsdk:"next_billing_at" json:"nextBillingAt,computed" format:"date-time"`
-	Query         types.String                   `tfsdk:"query" json:"query,computed"`
-	EventTypes    customfield.List[types.String] `tfsdk:"event_types" json:"eventTypes,computed"`
+	CreatedAt     timetypes.RFC3339              `tfsdk:"created_at" json:"createdAt" api:"computed" format:"date-time"`
+	IsActive      types.Bool                     `tfsdk:"is_active" json:"isActive" api:"computed"`
+	NextBillingAt timetypes.RFC3339              `tfsdk:"next_billing_at" json:"nextBillingAt" api:"computed" format:"date-time"`
+	Query         types.String                   `tfsdk:"query" json:"query" api:"computed"`
+	EventTypes    customfield.List[types.String] `tfsdk:"event_types" json:"eventTypes" api:"computed"`
 }

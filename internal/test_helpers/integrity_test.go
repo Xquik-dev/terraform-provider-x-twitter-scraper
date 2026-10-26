@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package test_helpers_test
+package testhelpers_test
 
 import (
 	"context"
@@ -22,7 +22,7 @@ type empty struct{}
 type builtin struct {
 	A bool                   `tfsdk:"A" path:"required"`
 	B *int                   `tfsdk:"B" query:"computed_optional"`
-	C **int64                `tfsdk:"C" json:"C,computed"`
+	C **int64                `tfsdk:"C" json:"C" api:"computed"`
 	D ***float64             `tfsdk:"D" path:"optional"`
 	E ****float64            `tfsdk:"E" query:"required"`
 	F *****string            `tfsdk:"F" json:"computed_optional"`
@@ -30,7 +30,7 @@ type builtin struct {
 	H *[]*bool               `tfsdk:"H" json:"optional"`
 	I map[**string]**bool    `tfsdk:"I" path:"required"`
 	J ***builtin             `tfsdk:"J" query:"computed_optional"`
-	K []builtin              `tfsdk:"K" json:"K,computed"`
+	K []builtin              `tfsdk:"K" json:"K" api:"computed"`
 	L *[]*builtin            `tfsdk:"L" path:"optional"`
 	M **map[string]**builtin `tfsdk:"M"`
 }
@@ -488,7 +488,7 @@ func TestParity(t *testing.T) {
 
 	for name, testcase := range datasourceTests {
 		t.Run("datasource_"+name, func(t *testing.T) {
-			errs := test_helpers.ValidateDataSourceModelSchemaIntegrity(testcase.model, testcase.schema)
+			errs := testhelpers.ValidateDataSourceModelSchemaIntegrity(testcase.model, testcase.schema)
 			errs.Ignore(t, testcase.errors...)
 			errs.Report(t)
 		})
@@ -496,7 +496,7 @@ func TestParity(t *testing.T) {
 
 	for name, testcase := range resourceTests {
 		t.Run("resource_"+name, func(t *testing.T) {
-			errs := test_helpers.ValidateResourceModelSchemaIntegrity(testcase.model, testcase.schema)
+			errs := testhelpers.ValidateResourceModelSchemaIntegrity(testcase.model, testcase.schema)
 			errs.Ignore(t, testcase.errors...)
 			errs.Report(t)
 		})

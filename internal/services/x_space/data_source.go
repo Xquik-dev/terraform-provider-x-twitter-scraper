@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package x_space
+// Package xspace implements the x-twitter-scraper_x_space data source.
+package xspace
 
 import (
 	"context"

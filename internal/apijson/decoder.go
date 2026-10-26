@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// Package apijson encodes Terraform models as API request bodies and decodes
+// API responses into them.
 package apijson
 
 import (
@@ -998,7 +1000,7 @@ func (d *decoderBuilder) newStructTypeDecoder(t reflect.Type) decoderFunc {
 			if d.unmarshalComputedOnly {
 				if ptag.required || ptag.optional {
 					d.updateBehavior = OnlyNested
-				} else if ptag.computed_optional {
+				} else if ptag.computedOptional {
 					d.updateBehavior = IfUnset
 				} else {
 					d.updateBehavior = Always

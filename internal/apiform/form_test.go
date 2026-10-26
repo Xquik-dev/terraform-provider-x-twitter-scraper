@@ -81,18 +81,18 @@ type DateTime struct {
 
 type AdditionalProperties struct {
 	A      bool           `json:"a"`
-	Extras map[string]any `json:"-,extras"`
+	Extras map[string]any `json:"-" api:"extras"`
 }
 
 type TypedAdditionalProperties struct {
 	A      bool           `json:"a"`
-	Extras map[string]int `json:"-,extras"`
+	Extras map[string]int `json:"-" api:"extras"`
 }
 
 type EmbeddedStructs struct {
 	AdditionalProperties
 	A      *int           `json:"number2"`
-	Extras map[string]any `json:"-,extras"`
+	Extras map[string]any `json:"-" api:"extras"`
 }
 
 type Recursive struct {

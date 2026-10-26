@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+// Package style implements the x-twitter-scraper_style resource and data
+// source.
 package style
 
 import (
