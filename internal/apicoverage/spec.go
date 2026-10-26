@@ -87,14 +87,8 @@ func serverPath(servers ...[]server) (string, error) {
 	return "", nil
 }
 
-type sentence string
-
-func (s sentence) Error() string {
-	return string(s)
-}
-
 func unreadableSpec(source string) error {
-	return sentence(fmt.Sprintf("Could not read the API spec from %s. Check network access, or set %s to a local copy of %s.", source, SpecVariable, defaultSpecSource))
+	return fmt.Errorf("could not read the API spec from %s. Check network access, or set %s to a local copy of %s", source, SpecVariable, defaultSpecSource)
 }
 
 func fetchSpec(source string, client *http.Client) ([]byte, error) {
@@ -148,7 +142,7 @@ func specOperations(source string, client *http.Client) (operations, error) {
 }
 
 func invalidExclusions(detail string) error {
-	return sentence(fmt.Sprintf("%s is not valid. %s.", exclusionFile, detail))
+	return fmt.Errorf("the file %s is not valid. %s", exclusionFile, detail)
 }
 
 func readExclusions(root fs.FS) (operations, error) {

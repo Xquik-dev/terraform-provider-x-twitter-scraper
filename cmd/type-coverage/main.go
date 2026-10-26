@@ -2,18 +2,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// Command type-coverage fails when a tracked Go file escapes static typing.
-//
-// It loads every package and test of the module in the current directory once
-// per platform it is given. It counts each declaration whose type holds an
-// empty interface as untyped, and it reports as escape hatches each written
-// any or interface{} outside a type parameter constraint, each type assertion
-// without the comma-ok form, each use of package unsafe or of the reflect
-// functions that bypass it, each linter suppression or linkname directive,
-// each generated-code header, each tracked file that no platform compiles and
-// each tracked staticcheck.conf, which can narrow what staticcheck reports
-// even under -checks all. It prints the share of typed declarations and exits
-// 1 on any finding.
 package main
 
 import (
@@ -136,7 +124,7 @@ func comparePositions(a, b token.Position) int {
 }
 
 func trackedFiles(root string) (map[string]bool, []string, error) {
-	command := exec.Command("git", "ls-files", "-z", "--", "*.go", "*staticcheck.conf")
+	command := exec.Command("git", "ls-files", "-z", "--", "*.go", ":(icase)*staticcheck.conf")
 	command.Dir = root
 	var stderr bytes.Buffer
 	command.Stderr = &stderr
@@ -150,7 +138,7 @@ func trackedFiles(root string) (map[string]bool, []string, error) {
 		switch {
 		case strings.HasSuffix(name, ".go"):
 			files[filepath.Join(root, name)] = true
-		case filepath.Base(name) == "staticcheck.conf":
+		case strings.EqualFold(filepath.Base(name), "staticcheck.conf"):
 			configs = append(configs, filepath.Join(root, name))
 		}
 	}

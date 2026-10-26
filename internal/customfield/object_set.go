@@ -125,10 +125,7 @@ func (v NestedObjectSet[T]) UnknownValue(ctx context.Context) NestedObjectListLi
 }
 
 func (v NestedObjectSet[T]) KnownValue(ctx context.Context, values reflect.Value) NestedObjectListLike {
-	ts, ok := reflect.TypeAssert[[]T](values)
-	if !ok {
-		return UnknownObjectSet[T](ctx)
-	}
+	ts, _ := reflect.TypeAssert[[]T](values)
 	r, diags := NewObjectSet(ctx, ts)
 	if diags.HasError() {
 		panic(fmt.Errorf("unexpected error creating NestedObjectSet: %v", diags))

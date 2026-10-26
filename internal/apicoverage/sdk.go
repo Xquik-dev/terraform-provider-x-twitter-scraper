@@ -5,6 +5,7 @@
 package apicoverage
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/token"
@@ -52,7 +53,7 @@ func readRequests(files *token.FileSet, function *ast.FuncDecl) sdkMethod {
 }
 
 func sdkBasePath(root fs.FS, files *token.FileSet) (string, error) {
-	unreadable := sentence("The coverage check could not read the default base URL from option.WithEnvironmentProduction in the Go SDK. Check the Go SDK version in go.mod.")
+	unreadable := errors.New("the coverage check could not read the default base URL from option.WithEnvironmentProduction in the Go SDK. Check the Go SDK version in go.mod")
 	sources, err := parseDir(root, "option", files)
 	if err != nil {
 		return "", unreadable
@@ -85,7 +86,7 @@ func readSDK(root fs.FS) (*sdk, error) {
 	files := token.NewFileSet()
 	sources, err := parseDir(root, ".", files)
 	if err != nil || len(sources) == 0 {
-		return nil, sentence("The coverage check could not read the Go SDK source. Run go mod download, then rerun.")
+		return nil, errors.New("the coverage check could not read the Go SDK source. Run go mod download, then rerun")
 	}
 	base, err := sdkBasePath(root, files)
 	if err != nil {

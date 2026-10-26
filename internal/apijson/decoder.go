@@ -16,12 +16,12 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/tidwall/gjson"
@@ -30,10 +30,7 @@ import (
 	type_helpers "github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/types"
 )
 
-var (
-	decodersMu sync.RWMutex
-	decoders   = map[decoderEntry]decoderFunc{}
-)
+var decoders Cache[decoderEntry, decoderFunc]
 
 func Unmarshal[T any](raw []byte, to *T) error {
 	d := &decoderBuilder{dateFormat: time.RFC3339, unmarshalComputedOnly: false}
@@ -119,35 +116,11 @@ func (d *decoderBuilder) typeDecoder(t reflect.Type) decoderFunc {
 		tfSkipBehavior:        d.updateBehavior,
 	}
 
-	decodersMu.RLock()
-	cached, ok := decoders[entry]
-	decodersMu.RUnlock()
-	if ok {
-		return cached
-	}
-
-	decodersMu.Lock()
-	if cached, ok := decoders[entry]; ok {
-		decodersMu.Unlock()
-		return cached
-	}
-	var (
-		wg sync.WaitGroup
-		f  decoderFunc
-	)
-	wg.Add(1)
-	decoders[entry] = func(node gjson.Result, v reflect.Value, state *decoderState) error {
-		wg.Wait()
-		return f(node, v, state)
-	}
-	decodersMu.Unlock()
-
-	f = d.newTypeDecoder(t)
-	wg.Done()
-	decodersMu.Lock()
-	decoders[entry] = f
-	decodersMu.Unlock()
-	return f
+	return decoders.Load(entry, func() decoderFunc { return d.newTypeDecoder(t) }, func(wait func() decoderFunc) decoderFunc {
+		return func(node gjson.Result, v reflect.Value, state *decoderState) error {
+			return wait()(node, v, state)
+		}
+	})
 }
 
 func unmarshalerDecoder(n gjson.Result, v reflect.Value, state *decoderState) error {
@@ -745,159 +718,19 @@ func (d *decoderBuilder) newTerraformTypeDecoder(t reflect.Type) decoderFunc {
 	}
 
 	if like, ok := reflect.TypeAssert[customfield.NestedObjectListLike](reflect.Zero(t)); ok {
-		structType := like.ModelType()
-		structSliceType := reflect.SliceOf(structType)
-		var dec decoderFunc
-		originalDec := d.typeDecoder(structSliceType)
-		return func(node gjson.Result, value reflect.Value, state *decoderState) error {
-			if !shouldUpdateNested(value, b) {
-				return nil
-			}
-			existingObjectListValue, err := valueAs[customfield.NestedObjectListLike](value)
-			if err != nil {
-				return err
-			}
-			if node.Type == gjson.Null {
-				if b == Always || existingObjectListValue.IsNullOrUnknown() {
-					nullValue := existingObjectListValue.NullValue(ctx)
-					value.Set(reflect.ValueOf(nullValue))
-					return nil
-				}
-			}
-			if b == IfUnset && (existingObjectListValue.IsNull() || existingObjectListValue.IsUnknown()) {
-				dec = d.alwaysUpdateDecoder(structSliceType)
-			} else {
-				dec = originalDec
-			}
-
-			newObjectListValue := reflect.New(structSliceType).Elem()
-			existing, _ := existingObjectListValue.AsStructSlice(ctx)
-			newObjectListValue.Set(existing)
-
-			err = dec(node, newObjectListValue, state)
-			if err != nil {
-				return err
-			}
-			updated := existingObjectListValue.KnownValue(ctx, newObjectListValue)
-			value.Set(reflect.ValueOf(updated))
-			return nil
-		}
+		return decodeCustomCollection(d, reflect.SliceOf(like.ModelType()), customfield.NestedObjectListLike.AsStructSlice)
 	}
 
 	if like, ok := reflect.TypeAssert[customfield.ListLike](reflect.Zero(t)); ok {
-		structType := like.ModelType()
-		sliceOfStruct := reflect.SliceOf(structType)
-		var dec decoderFunc
-		originalDec := d.typeDecoder(sliceOfStruct)
-		return func(node gjson.Result, value reflect.Value, state *decoderState) error {
-			if !shouldUpdateNested(value, b) {
-				return nil
-			}
-			objectListValue, err := valueAs[customfield.ListLike](value)
-			if err != nil {
-				return err
-			}
-			if node.Type == gjson.Null {
-				if b == Always || objectListValue.IsNullOrUnknown() {
-					nullValue := objectListValue.NullValue(ctx)
-					value.Set(reflect.ValueOf(nullValue))
-					return nil
-				}
-			}
-			if b == IfUnset && (objectListValue.IsNull() || objectListValue.IsUnknown()) {
-				dec = d.alwaysUpdateDecoder(sliceOfStruct)
-			} else {
-				dec = originalDec
-			}
-			lv, _ := objectListValue.ValueAttr(ctx)
-			val := reflect.New(sliceOfStruct).Elem()
-			val.Set(lv)
-			err = dec(node, val, state)
-			if err != nil {
-				return err
-			}
-			newObjectList := objectListValue.KnownValue(ctx, val)
-			value.Set(reflect.ValueOf(newObjectList))
-			return nil
-		}
+		return decodeCustomCollection(d, reflect.SliceOf(like.ModelType()), customfield.ListLike.ValueAttr)
 	}
 
 	if like, ok := reflect.TypeAssert[customfield.NestedObjectMapLike](reflect.Zero(t)); ok {
-		structType := like.ModelType()
-		structMapType := reflect.MapOf(reflect.TypeOf(""), structType)
-		var dec decoderFunc
-		originalDec := d.typeDecoder(structMapType)
-		return func(node gjson.Result, value reflect.Value, state *decoderState) error {
-			if !shouldUpdateNested(value, b) {
-				return nil
-			}
-			existingObjectMapValue, err := valueAs[customfield.NestedObjectMapLike](value)
-			if err != nil {
-				return err
-			}
-			if node.Type == gjson.Null {
-				if b == Always || existingObjectMapValue.IsNull() || existingObjectMapValue.IsUnknown() {
-					nullValue := existingObjectMapValue.NullValue(ctx)
-					value.Set(reflect.ValueOf(nullValue))
-					return nil
-				}
-			}
-
-			if b == IfUnset && (existingObjectMapValue.IsNull() || existingObjectMapValue.IsUnknown()) {
-				dec = d.alwaysUpdateDecoder(structMapType)
-			} else {
-				dec = originalDec
-			}
-
-			newObjectMapValue := reflect.New(structMapType).Elem()
-			existing, _ := existingObjectMapValue.AsStructMap(ctx)
-			newObjectMapValue.Set(existing)
-			err = dec(node, newObjectMapValue, state)
-			if err != nil {
-				return err
-			}
-			updated := existingObjectMapValue.KnownValue(ctx, newObjectMapValue)
-			value.Set(reflect.ValueOf(updated))
-			return nil
-		}
+		return decodeCustomCollection(d, reflect.MapOf(reflect.TypeFor[string](), like.ModelType()), customfield.NestedObjectMapLike.AsStructMap)
 	}
 
 	if like, ok := reflect.TypeAssert[customfield.MapLike](reflect.Zero(t)); ok {
-		structType := like.ModelType()
-		mapOfStruct := reflect.MapOf(reflect.TypeOf(""), structType)
-		var dec decoderFunc
-		originalDec := d.typeDecoder(mapOfStruct)
-		return func(node gjson.Result, value reflect.Value, state *decoderState) error {
-			if !shouldUpdateNested(value, b) {
-				return nil
-			}
-			objectMapValue, err := valueAs[customfield.MapLike](value)
-			if err != nil {
-				return err
-			}
-			if node.Type == gjson.Null {
-				if b == Always || objectMapValue.IsNull() || objectMapValue.IsUnknown() {
-					nullValue := objectMapValue.NullValue(ctx)
-					value.Set(reflect.ValueOf(nullValue))
-					return nil
-				}
-			}
-			if b == IfUnset && (objectMapValue.IsNull() || objectMapValue.IsUnknown()) {
-				dec = d.alwaysUpdateDecoder(mapOfStruct)
-			} else {
-				dec = originalDec
-			}
-			mv, _ := objectMapValue.ValueAttr(ctx)
-			val := reflect.New(mapOfStruct).Elem()
-			val.Set(mv)
-			err = dec(node, val, state)
-			if err != nil {
-				return err
-			}
-			newObjectMap := objectMapValue.KnownValue(ctx, val)
-			value.Set(reflect.ValueOf(newObjectMap))
-			return nil
-		}
+		return decodeCustomCollection(d, reflect.MapOf(reflect.TypeFor[string](), like.ModelType()), customfield.MapLike.ValueAttr)
 	}
 
 	if t.Implements(reflect.TypeOf((*basetypes.DynamicValuable)(nil)).Elem()) {
@@ -980,6 +813,44 @@ func (d *decoderBuilder) newTerraformTypeDecoder(t reflect.Type) decoderFunc {
 
 	return func(node gjson.Result, value reflect.Value, state *decoderState) error {
 		return fmt.Errorf("apijson: cannot deserialize terraform type %v", t)
+	}
+}
+
+type customCollection[L any] interface {
+	attr.Value
+	NullValue(ctx context.Context) L
+	KnownValue(ctx context.Context, values reflect.Value) L
+}
+
+func decodeCustomCollection[L customCollection[L]](d *decoderBuilder, container reflect.Type, current func(L, context.Context) (reflect.Value, diag.Diagnostics)) decoderFunc {
+	ctx := context.TODO()
+	b := d.updateBehavior
+	originalDec := d.typeDecoder(container)
+	return func(node gjson.Result, value reflect.Value, state *decoderState) error {
+		if !shouldUpdateNested(value, b) {
+			return nil
+		}
+		existing, err := valueAs[L](value)
+		if err != nil {
+			return err
+		}
+		unset := existing.IsNull() || existing.IsUnknown()
+		if node.Type == gjson.Null && (b == Always || unset) {
+			value.Set(reflect.ValueOf(existing.NullValue(ctx)))
+			return nil
+		}
+		dec := originalDec
+		if b == IfUnset && unset {
+			dec = d.alwaysUpdateDecoder(container)
+		}
+		decoded := reflect.New(container).Elem()
+		values, _ := current(existing, ctx)
+		decoded.Set(values)
+		if err := dec(node, decoded, state); err != nil {
+			return err
+		}
+		value.Set(reflect.ValueOf(existing.KnownValue(ctx, decoded)))
+		return nil
 	}
 }
 

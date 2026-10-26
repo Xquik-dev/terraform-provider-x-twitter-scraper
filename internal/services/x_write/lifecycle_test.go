@@ -509,19 +509,12 @@ func validCanonicalAction() writeAction {
 }
 
 func writeCanonicalAction(writer http.ResponseWriter, action string, statusURL string, terminal bool) {
-	response := canonicalAction(action, statusURL)
-	if !terminal {
-		response.Status = "accepted"
-		response.Terminal = false
-		response.Charged = false
-		response.Success = false
-		response.Billing.Status = "pending"
-		response.Billing.Charged = false
-		response.Result.ID, response.Result.State, response.Result.Type = "", "", ""
-		response.NextAction.Type = "poll"
+	state := acceptedWrite
+	if terminal {
+		state = succeededWrite
 	}
-	if err := json.NewEncoder(writer).Encode(response); err != nil {
-		panic(fmt.Sprintf("encode response: %v", err))
+	if _, err := io.WriteString(writer, writeActionJSON(action, statusURL, state)); err != nil {
+		panic(fmt.Sprintf("write response: %v", err))
 	}
 }
 

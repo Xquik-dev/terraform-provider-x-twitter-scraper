@@ -159,7 +159,7 @@ func (r *DraftResource) ImportState(ctx context.Context, req resource.ImportStat
 	diags := importpath.ParseImportID(
 		req.ID,
 		"<id>",
-		importpath.String(&path),
+		&path,
 	)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

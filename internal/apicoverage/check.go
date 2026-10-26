@@ -13,6 +13,8 @@ import (
 	"os"
 	"slices"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 )
 
 const (
@@ -77,13 +79,19 @@ func check(root, source string, client *http.Client) ([]string, string, error) {
 	return nil, fmt.Sprintf("The provider covers %d of %d API operations, and %s lists the other %d.", covered, len(api), exclusionFile, len(excluded)), nil
 }
 
+func sentence(err error) string {
+	text := err.Error()
+	first, size := utf8.DecodeRuneInString(text)
+	return string(unicode.ToUpper(first)) + text[size:] + "."
+}
+
 func Run(source, root string, client *http.Client, out, failures io.Writer) int {
 	if source == "" {
 		source = defaultSpecSource
 	}
 	lines, summary, err := check(root, source, client)
 	if err != nil {
-		lines = append(lines, err.Error())
+		lines = append(lines, sentence(err))
 	}
 	for _, line := range lines {
 		fmt.Fprintln(failures, line)

@@ -16,7 +16,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
@@ -29,10 +28,7 @@ import (
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/customfield"
 )
 
-var (
-	encodersMu sync.RWMutex
-	encoders   = map[encoderEntry]encoderFunc{}
-)
+var encoders apijson.Cache[encoderEntry, encoderFunc]
 
 func MarshalRoot[T any](value T, writer *multipart.Writer) error {
 	e := &encoder{root: true, dateFormat: time.RFC3339}
@@ -74,35 +70,11 @@ func (e *encoder) typeEncoder(t reflect.Type) encoderFunc {
 		root:       e.root,
 	}
 
-	encodersMu.RLock()
-	cached, ok := encoders[entry]
-	encodersMu.RUnlock()
-	if ok {
-		return cached
-	}
-
-	encodersMu.Lock()
-	if cached, ok := encoders[entry]; ok {
-		encodersMu.Unlock()
-		return cached
-	}
-	var (
-		wg sync.WaitGroup
-		f  encoderFunc
-	)
-	wg.Add(1)
-	encoders[entry] = func(key string, v reflect.Value, writer *multipart.Writer) error {
-		wg.Wait()
-		return f(key, v, writer)
-	}
-	encodersMu.Unlock()
-
-	f = e.newTypeEncoder(t)
-	wg.Done()
-	encodersMu.Lock()
-	encoders[entry] = f
-	encodersMu.Unlock()
-	return f
+	return encoders.Load(entry, func() encoderFunc { return e.newTypeEncoder(t) }, func(wait func() encoderFunc) encoderFunc {
+		return func(key string, v reflect.Value, writer *multipart.Writer) error {
+			return wait()(key, v, writer)
+		}
+	})
 }
 
 func (e *encoder) newTypeEncoder(t reflect.Type) encoderFunc {

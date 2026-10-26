@@ -131,15 +131,9 @@ func (v Map[T]) UnknownValue(ctx context.Context) MapLike {
 }
 
 func (v Map[T]) KnownValue(ctx context.Context, values reflect.Value) MapLike {
-	if ts, ok := reflect.TypeAssert[map[string]T](values); ok {
-		r, _ := NewMap(ctx, ts)
-		return r
-	}
-	if attrs, ok := reflect.TypeAssert[map[string]attr.Value](values); ok {
-		r, _ := NewMapFromAttributes[T](ctx, attrs)
-		return r
-	}
-	return UnknownMap[T](ctx)
+	ts, _ := reflect.TypeAssert[map[string]T](values)
+	r, _ := NewMap(ctx, ts)
+	return r
 }
 
 func (v Map[T]) ModelType() reflect.Type {

@@ -4,7 +4,7 @@
 
 /**
  * @name Code comment
- * @description Code has no comments. A comment needs a legal marker, a functional directive or an https link that proves it.
+ * @description Code has no comments. A comment needs a legal marker, a functional directive or an https link that proves it. Each Go package may keep 1 package comment, which staticcheck ST1000 requires.
  * @kind problem
  * @problem.severity error
  * @id go/no-code-comments
@@ -24,9 +24,24 @@ predicate directive(Comment comment) {
   comment.getText().regexpMatch("(?s)(go:[a-z]+|\\+build|nolint|line )\\b.*|\\s*(Deprecated: .*|(//\\s*)?indirect\\s*)")
 }
 
+predicate packageDocumentation(Comment comment) {
+  exists(File file |
+    comment = file.getDocumentation().getAComment() and
+    file =
+      min(File sibling |
+        exists(sibling.getDocumentation()) and
+        sibling.getParentContainer() = file.getParentContainer() and
+        sibling.getPackageName() = file.getPackageName()
+      |
+        sibling order by sibling.getAbsolutePath()
+      )
+  )
+}
+
 from Comment comment
 where
   exists(comment.getFile().getRelativePath()) and
   not proven(comment) and
-  not directive(comment)
+  not directive(comment) and
+  not packageDocumentation(comment)
 select comment, "Code has no comments. Put the meaning in names, types and tests."

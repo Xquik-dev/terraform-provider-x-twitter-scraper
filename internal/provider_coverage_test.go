@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strings"
 	"testing"
 
@@ -140,7 +141,7 @@ func TestRegisteredSurfaceRejectsInvalidAPIResponses(t *testing.T) {
 
 			for _, factory := range providerUnderTest.Resources(context.Background()) {
 				resourceUnderTest := factory()
-				if strings.Contains(fmt.Sprintf("%T", resourceUnderTest), "xwrite.") {
+				if isWriteResource(resourceUnderTest) {
 					continue
 				}
 				t.Run(fmt.Sprintf("resource/%T", resourceUnderTest), func(t *testing.T) {
@@ -166,7 +167,7 @@ func TestRegisteredResourcesHandleNotFoundResponses(t *testing.T) {
 
 	for _, factory := range providerUnderTest.Resources(context.Background()) {
 		resourceUnderTest := factory()
-		if strings.Contains(fmt.Sprintf("%T", resourceUnderTest), "xwrite.") {
+		if isWriteResource(resourceUnderTest) {
 			continue
 		}
 		t.Run(fmt.Sprintf("%T", resourceUnderTest), func(t *testing.T) {
@@ -395,10 +396,21 @@ func responseClient(statusCode int, body string) (xtwitterscraper.Client, func()
 }
 
 func resourceSupportsRead(resourceUnderTest resource.Resource) bool {
-	typeName := fmt.Sprintf("%T", resourceUnderTest)
-	return !strings.Contains(typeName, "compose.") &&
-		!strings.Contains(typeName, "guestwallet.") &&
-		!strings.Contains(typeName, "webhook.")
+	return !slices.Contains([]string{
+		"x-twitter-scraper_compose",
+		"x-twitter-scraper_guest_wallet",
+		"x-twitter-scraper_webhook",
+	}, resourceTypeName(resourceUnderTest))
+}
+
+func isWriteResource(resourceUnderTest resource.Resource) bool {
+	return strings.HasPrefix(resourceTypeName(resourceUnderTest), "x-twitter-scraper_x_")
+}
+
+func resourceTypeName(resourceUnderTest resource.Resource) string {
+	var metadata resource.MetadataResponse
+	resourceUnderTest.Metadata(context.Background(), resource.MetadataRequest{ProviderTypeName: "x-twitter-scraper"}, &metadata)
+	return metadata.TypeName
 }
 
 func exerciseDataSource(t *testing.T, dataSourceUnderTest datasource.DataSource, client *xtwitterscraper.Client) {

@@ -15,7 +15,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
@@ -29,10 +28,7 @@ import (
 )
 
 var explicitJSONNull = []byte("null")
-var (
-	encodersMu sync.RWMutex
-	encoders   = map[encoderEntry]encoderFunc{}
-)
+var encoders Cache[encoderEntry, encoderFunc]
 
 var EscapeSJSONKey = strings.NewReplacer("\\", "\\\\", "|", "\\|", "#", "\\#", "@", "\\@", "*", "\\*", ".", "\\.", ":", "\\:", "?", "\\?").Replace
 
@@ -115,35 +111,11 @@ func (e *encoder) typeEncoder(t reflect.Type) encoderFunc {
 		patch:      e.patch,
 	}
 
-	encodersMu.RLock()
-	cached, ok := encoders[entry]
-	encodersMu.RUnlock()
-	if ok {
-		return cached
-	}
-
-	encodersMu.Lock()
-	if cached, ok := encoders[entry]; ok {
-		encodersMu.Unlock()
-		return cached
-	}
-	var (
-		wg sync.WaitGroup
-		f  encoderFunc
-	)
-	wg.Add(1)
-	encoders[entry] = func(state reflect.Value, plan reflect.Value) ([]byte, error) {
-		wg.Wait()
-		return f(state, plan)
-	}
-	encodersMu.Unlock()
-
-	f = e.newTypeEncoder(t)
-	wg.Done()
-	encodersMu.Lock()
-	encoders[entry] = f
-	encodersMu.Unlock()
-	return f
+	return encoders.Load(entry, func() encoderFunc { return e.newTypeEncoder(t) }, func(wait func() encoderFunc) encoderFunc {
+		return func(plan reflect.Value, state reflect.Value) ([]byte, error) {
+			return wait()(plan, state)
+		}
+	})
 }
 
 func (e *encoder) newTypeEncoder(t reflect.Type) encoderFunc {

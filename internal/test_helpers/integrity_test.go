@@ -26,9 +26,9 @@ type builtin struct {
 	C **int64                `tfsdk:"C" json:"C" api:"computed"`
 	D ***float64             `tfsdk:"D" path:"optional"`
 	E ****float64            `tfsdk:"E" query:"required"`
-	F *****string            `tfsdk:"F" json:"computed_optional"`
+	F *****string            `tfsdk:"F" json:"F" api:"computed_optional"`
 	G []bool                 `tfsdk:"G" query:"computed"`
-	H *[]*bool               `tfsdk:"H" json:"optional"`
+	H *[]*bool               `tfsdk:"H" json:"H" api:"optional"`
 	I map[**string]**bool    `tfsdk:"I" path:"required"`
 	J ***builtin             `tfsdk:"J" query:"computed_optional"`
 	K []builtin              `tfsdk:"K" json:"K" api:"computed"`

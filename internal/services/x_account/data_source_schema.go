@@ -23,6 +23,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 			"id": schema.StringAttribute{
 				Required: true,
 			},
+			"connected_at": schema.StringAttribute{
+				Description: "Last connection or reconnection time of this account. Omitted before its first login.",
+				Computed:    true,
+				CustomType:  timetypes.RFC3339Type{},
+			},
 			"created_at": schema.StringAttribute{
 				Computed:   true,
 				CustomType: timetypes.RFC3339Type{},

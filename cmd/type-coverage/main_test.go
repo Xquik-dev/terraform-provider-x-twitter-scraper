@@ -135,6 +135,10 @@ func TestEscapeHatchesFail(t *testing.T) {
 			map[string]string{"probe.go": "package probe\n", "internal/staticcheck.conf": "initialisms = []\n"},
 			"internal/staticcheck.conf: staticcheck.conf can narrow what staticcheck reports",
 		},
+		"staticcheck config in another case": {
+			map[string]string{"probe.go": "package probe\n", "Staticcheck.conf": "initialisms = []\n"},
+			"Staticcheck.conf: staticcheck.conf can narrow what staticcheck reports",
+		},
 		"skipped file": {
 			map[string]string{"probe.go": "package probe\n", "skipped.go": "//go:build ignore\n\npackage probe\n"},
 			"skipped.go: no checked platform compiles this tracked file",

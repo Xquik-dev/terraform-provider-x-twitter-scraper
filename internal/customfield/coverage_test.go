@@ -69,8 +69,6 @@ func TestPrimitiveCollectionContracts(t *testing.T) {
 		_, diags = known.ValueAttr(ctx)
 		requireNoDiagnostics(t, diags)
 
-		assertFalse(t, "list known attributes", known.KnownValue(ctx, reflect.ValueOf([]attr.Value{stringValue})).IsNull())
-		assertTrue(t, "list known invalid", known.KnownValue(ctx, reflect.ValueOf("invalid")).IsUnknown())
 		_, diags = List[basetypes.StringValue]{ListValue: basetypes.NewListValueMust(types.Int64Type, []attr.Value{types.Int64Value(1)})}.Value(ctx)
 		requireDiagnostics(t, diags)
 		assertPanics(t, "invalid list must", func() {
@@ -120,8 +118,6 @@ func TestPrimitiveCollectionContracts(t *testing.T) {
 		_, diags = known.ValueAttr(ctx)
 		requireNoDiagnostics(t, diags)
 
-		assertFalse(t, "set known attributes", known.KnownValue(ctx, reflect.ValueOf([]attr.Value{stringValue})).IsNull())
-		assertTrue(t, "set known invalid", known.KnownValue(ctx, reflect.ValueOf("invalid")).IsUnknown())
 		_, diags = Set[basetypes.StringValue]{SetValue: basetypes.NewSetValueMust(types.Int64Type, []attr.Value{types.Int64Value(1)})}.Value(ctx)
 		requireDiagnostics(t, diags)
 		assertPanics(t, "invalid set must", func() {
@@ -169,8 +165,6 @@ func TestPrimitiveCollectionContracts(t *testing.T) {
 		_, diags = known.ValueAttr(ctx)
 		requireNoDiagnostics(t, diags)
 
-		assertFalse(t, "map known attributes", known.KnownValue(ctx, reflect.ValueOf(map[string]attr.Value{"key": stringValue})).IsNull())
-		assertTrue(t, "map known invalid", known.KnownValue(ctx, reflect.ValueOf("invalid")).IsUnknown())
 		_, diags = NewMapFromAttributes[basetypes.StringValue](ctx, map[string]attr.Value{"key": types.Int64Value(1)})
 		requireDiagnostics(t, diags)
 		_, diags = Map[basetypes.StringValue]{MapValue: basetypes.NewMapValueMust(types.Int64Type, map[string]attr.Value{"key": types.Int64Value(1)})}.Value(ctx)
@@ -211,7 +205,6 @@ func TestNestedObjectCollectionContracts(t *testing.T) {
 	assertTrue(t, "object null helper", object.NullValue(ctx).IsNull())
 	assertTrue(t, "object unknown helper", object.UnknownValue(ctx).IsUnknown())
 	assertFalse(t, "object known helper", object.KnownValue(ctx, reflect.ValueOf(&item)).IsNull())
-	assertTrue(t, "object known invalid", object.KnownValue(ctx, reflect.ValueOf(item)).IsUnknown())
 	assertTrue(t, "object equality", object.Equal(object))
 	assertFalse(t, "object value mismatch", object.Equal(types.StringValue("value")))
 	assertNotNil(t, "object value type", object.Type(ctx))
@@ -251,7 +244,6 @@ func TestNestedObjectCollectionContracts(t *testing.T) {
 		assertTrue(t, "object list null helper", known.NullValue(ctx).IsNull())
 		assertTrue(t, "object list unknown helper", known.UnknownValue(ctx).IsUnknown())
 		assertFalse(t, "object list known helper", known.KnownValue(ctx, reflect.ValueOf([]coverageObject{item})).IsNull())
-		assertTrue(t, "object list known invalid", known.KnownValue(ctx, reflect.ValueOf(item)).IsUnknown())
 		assertTrue(t, "object list equality", known.Equal(known))
 		assertFalse(t, "object list mismatch", known.Equal(types.StringValue("value")))
 		assertNotNil(t, "object list type", known.Type(ctx))
@@ -296,7 +288,6 @@ func TestNestedObjectCollectionContracts(t *testing.T) {
 		assertTrue(t, "object map null helper", known.NullValue(ctx).IsNull())
 		assertTrue(t, "object map unknown helper", known.UnknownValue(ctx).IsUnknown())
 		assertFalse(t, "object map known helper", known.KnownValue(ctx, reflect.ValueOf(map[string]coverageObject{"key": item})).IsNull())
-		assertTrue(t, "object map known invalid", known.KnownValue(ctx, reflect.ValueOf(item)).IsUnknown())
 		assertTrue(t, "object map equality", known.Equal(known))
 		assertFalse(t, "object map mismatch", known.Equal(types.StringValue("value")))
 		assertNotNil(t, "object map type", known.Type(ctx))
@@ -336,7 +327,6 @@ func TestNestedObjectCollectionContracts(t *testing.T) {
 		assertTrue(t, "object set null helper", known.NullValue(ctx).IsNull())
 		assertTrue(t, "object set unknown helper", known.UnknownValue(ctx).IsUnknown())
 		assertFalse(t, "object set known helper", known.KnownValue(ctx, reflect.ValueOf([]coverageObject{item})).IsNull())
-		assertTrue(t, "object set known invalid", known.KnownValue(ctx, reflect.ValueOf(item)).IsUnknown())
 		assertFalse(t, "known object set state", known.IsNullOrUnknown())
 		assertTrue(t, "null object set state", NullObjectSet[coverageObject](ctx).IsNullOrUnknown())
 		assertTrue(t, "object set equality", known.Equal(known))

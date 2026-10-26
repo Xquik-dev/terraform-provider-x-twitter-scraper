@@ -5,8 +5,8 @@ package xwrite
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -202,19 +202,8 @@ func TestWriteResourceReportsTerminalFailure(t *testing.T) {
 
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("Content-Type", "application/json")
-		response := canonicalAction(operations[0].action, serverURL(request)+"/x/write-actions/write-action-123")
-		response.Status = "failed"
-		response.Terminal = true
-		response.Success = false
-		response.SendDispatched = false
-		response.Billing.Status = "not_charged"
-		response.Billing.Charged = false
-		response.Billing.ChargedCredits = ""
-		response.Billing.PlannedCredits = "10"
-		response.Charged = false
-		response.ChargedCredits = ""
-		if err := json.NewEncoder(writer).Encode(response); err != nil {
-			t.Errorf("encode response: %v", err)
+		if _, err := io.WriteString(writer, writeActionJSON(operations[0].action, serverURL(request)+"/x/write-actions/write-action-123", failedWrite)); err != nil {
+			t.Errorf("write response: %v", err)
 		}
 	}))
 	t.Cleanup(server.Close)
@@ -256,26 +245,48 @@ func TestUnknownWriteResourcePanics(t *testing.T) {
 	_ = resourceFor("unknown")
 }
 
-func canonicalAction(action string, statusURL string) writeAction {
-	response := writeAction{
-		Object: "x_write_action", ID: "write-action-123", WriteActionID: "write-action-123",
-		Action: action, Status: "success", Terminal: true, StatusURL: statusURL,
-		Charged: true, ChargedCredits: "10", TargetID: "target-123",
-		RequestID: "request-123", SendDispatched: true, Success: true,
+type writeActionState struct {
+	status         string
+	terminal       bool
+	charged        bool
+	chargedCredits string
+	billingStatus  string
+	result         string
+	nextAction     string
+	sendDispatched bool
+	success        bool
+}
+
+var (
+	succeededWrite = writeActionState{
+		status: "success", terminal: true, charged: true, chargedCredits: "10", billingStatus: "charged",
+		result: `{"id":"result-123","state":"confirmed","type":"state_change"}`, nextAction: "verify_result",
+		sendDispatched: true, success: true,
 	}
-	response.Billing.Status = "charged"
-	response.Billing.Charged = true
-	response.Billing.ChargedCredits = "10"
-	response.Billing.PlannedCredits = "10"
-	response.Request.Hash = "request-hash"
-	response.Request.Payload = json.RawMessage(`{"account":"sanitized"}`)
-	response.Account.ID = "account-123"
-	response.Account.Username = "response-account"
-	response.Result.ID, response.Result.State, response.Result.Type = "result-123", "confirmed", "state_change"
-	response.Target.ID, response.Target.Type = "target-123", "tweet"
-	response.NextAction.Type = "verify_result"
-	response.NextAction.URL = statusURL
-	return response
+	acceptedWrite = writeActionState{
+		status: "accepted", chargedCredits: "10", billingStatus: "pending",
+		result: `{}`, nextAction: "poll", sendDispatched: true,
+	}
+	failedWrite = writeActionState{
+		status: "failed", terminal: true, billingStatus: "not_charged",
+		result: `{"id":"result-123","state":"confirmed","type":"state_change"}`, nextAction: "verify_result",
+	}
+)
+
+func writeActionJSON(action string, statusURL string, state writeActionState) string {
+	return fmt.Sprintf(`{"object":"x_write_action","id":"write-action-123","writeActionId":"write-action-123",`+
+		`"action":%q,"status":%q,"terminal":%t,"retryable":false,"safeToRetry":false,"statusUrl":%q,"pollAfterMs":0,`+
+		`"charged":%t,"chargedCredits":%q,"targetId":"target-123",`+
+		`"billing":{"status":%q,"charged":%t,"chargedCredits":%q,"plannedCredits":"10"},`+
+		`"request":{"hash":"request-hash","payload":{"account":"sanitized"}},`+
+		`"account":{"id":"account-123","username":"response-account"},"result":%s,`+
+		`"target":{"id":"target-123","type":"tweet"},`+
+		`"nextAction":{"type":%q,"afterMs":0,"requiresNewIdempotencyKey":false,"url":%q},`+
+		`"requestId":"request-123","sendDispatched":%t,"success":%t}`,
+		action, state.status, state.terminal, statusURL,
+		state.charged, state.chargedCredits,
+		state.billingStatus, state.charged, state.chargedCredits,
+		state.result, state.nextAction, statusURL, state.sendDispatched, state.success)
 }
 
 func writeResourceFor(t *testing.T, action string) *writeResource {

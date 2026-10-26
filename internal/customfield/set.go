@@ -117,15 +117,9 @@ func (v Set[T]) UnknownValue(ctx context.Context) ListLike {
 }
 
 func (v Set[T]) KnownValue(ctx context.Context, values reflect.Value) ListLike {
-	if ts, ok := reflect.TypeAssert[[]T](values); ok {
-		r, _ := NewSet(ctx, ts)
-		return r
-	}
-	if attrs, ok := reflect.TypeAssert[[]attr.Value](values); ok {
-		r, _ := NewSetFromAttributes[T](ctx, attrs)
-		return r
-	}
-	return UnknownSet[T](ctx)
+	ts, _ := reflect.TypeAssert[[]T](values)
+	r, _ := NewSet(ctx, ts)
+	return r
 }
 
 func (v Set[T]) ModelType() reflect.Type {

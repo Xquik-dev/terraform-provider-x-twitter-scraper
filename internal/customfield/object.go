@@ -159,10 +159,7 @@ func (v NestedObject[T]) UnknownValue(ctx context.Context) NestedObjectLike {
 }
 
 func (v NestedObject[T]) KnownValue(ctx context.Context, value reflect.Value) NestedObjectLike {
-	t, ok := reflect.TypeAssert[*T](value)
-	if !ok {
-		return UnknownObject[T](ctx)
-	}
+	t, _ := reflect.TypeAssert[*T](value)
 	r, _ := NewObject(ctx, t)
 	return r
 }

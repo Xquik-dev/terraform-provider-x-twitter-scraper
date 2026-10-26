@@ -39,13 +39,13 @@ func loadConfig(root string, mode packages.LoadMode) *packages.Config {
 func sdkDir(root string) (string, error) {
 	found, err := packages.Load(loadConfig(root, packages.NeedName|packages.NeedModule), SDKModule)
 	if err != nil || len(found) != 1 || found[0].Module == nil || found[0].Module.Dir == "" {
-		return "", sentence(fmt.Sprintf("The coverage check could not find the source of %s. Run go mod download, then rerun.", SDKModule))
+		return "", fmt.Errorf("the coverage check could not find the source of %s. Run go mod download, then rerun", SDKModule)
 	}
 	return found[0].Module.Dir, nil
 }
 
 func loadProvider(root string) ([]*packages.Package, []string, error) {
-	noPackages := sentence(fmt.Sprintf("The coverage check found no Go packages under %s. Run it from the repository root.", servicesRoot))
+	noPackages := fmt.Errorf("the coverage check found no Go packages under %s. Run it from the repository root", servicesRoot)
 	if info, err := os.Stat(filepath.Join(root, servicesRoot)); err != nil || !info.IsDir() {
 		return nil, nil, noPackages
 	}
@@ -60,7 +60,7 @@ func loadProvider(root string) ([]*packages.Package, []string, error) {
 		}
 	}
 	if len(problems) > 0 {
-		return nil, problems, sentence(fmt.Sprintf("The coverage check could not compile the Go packages under %s. Fix the errors above, then rerun.", servicesRoot))
+		return nil, problems, fmt.Errorf("the coverage check could not compile the Go packages under %s. Fix the errors above, then rerun", servicesRoot)
 	}
 	return loaded, nil, nil
 }

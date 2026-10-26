@@ -134,10 +134,7 @@ func (v NestedObjectMap[T]) UnknownValue(ctx context.Context) NestedObjectMapLik
 }
 
 func (v NestedObjectMap[T]) KnownValue(ctx context.Context, values reflect.Value) NestedObjectMapLike {
-	ts, ok := reflect.TypeAssert[map[string]T](values)
-	if !ok {
-		return UnknownObjectMap[T](ctx)
-	}
+	ts, _ := reflect.TypeAssert[map[string]T](values)
 	r, diags := NewObjectMap(ctx, ts)
 	if diags.HasError() {
 		panic(fmt.Errorf("unexpected error creating NestedObjectMap: %v", diags))

@@ -1,10 +1,16 @@
 # Changelog
 
-## Unreleased
+## 0.9.0 (2026-10-26)
 
-### Bug Fixes
+[Full changelog from v0.8.0 to v0.9.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.8.0...v0.9.0)
 
-* The `x_account` data source drops a timestamp attribute that the API never sent, so it always read null.
+### Breaking changes
+
+* The `x_account` data source drops a timestamp attribute that the API contract does not document. Read `connected_at` instead, the last time the account connected or reconnected.
+
+### Chores
+
+* Lint fails on any untyped declaration, type escape hatch or staticcheck finding.
 
 ## 0.8.0 (2026-10-16)
 
