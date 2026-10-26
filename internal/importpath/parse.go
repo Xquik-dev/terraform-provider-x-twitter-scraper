@@ -16,12 +16,12 @@ import (
 func ParseImportID(id string) (string, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	if strings.Contains(id, "/") {
-		diags.AddError("invalid ID", fmt.Sprintf("The import ID must be 1 URL-encoded segment without a slash, got %q.", id))
+		diags.AddError("Invalid import ID", fmt.Sprintf("The import ID must be 1 URL-encoded segment without a slash, got %q.", id))
 		return "", diags
 	}
 	segment, err := url.PathUnescape(id)
 	if err != nil {
-		diags.AddError("invalid urlencoded segment", fmt.Sprintf("The import ID %q has an invalid URL escape. %s", id, err.Error()))
+		diags.AddError("Invalid import ID", fmt.Sprintf("The import ID %q has an %s.", id, err))
 	}
 	return segment, diags
 }

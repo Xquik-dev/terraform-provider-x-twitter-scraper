@@ -38,6 +38,7 @@ type builtin struct {
 
 type wireNameMode struct {
 	A bool `tfsdk:"A" path:"required"`
+	B bool `tfsdk:"B" query:"B,required"`
 }
 
 type reallysimple struct {
@@ -98,9 +99,12 @@ var datasourceTests = map[string]struct {
 				"A": rs.BoolAttribute{
 					Required: true,
 				},
+				"B": rs.BoolAttribute{
+					Required: true,
+				},
 			},
 		},
-		[]string{".@wireNameMode.A"},
+		[]string{".@wireNameMode.A", ".@wireNameMode.B"},
 	},
 	"builtin": {
 		reflect.TypeOf((*builtin)(nil)),

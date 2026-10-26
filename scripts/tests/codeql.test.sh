@@ -65,7 +65,7 @@ case "$1 $2" in
     output="$(option --output "$@")"
     case "$output" in
       */comment-fixture.sarif)
-        flagged="cmd/tool/main.go:1 first.go:4 first_test.go:1 second.go:1 second.go:4 second.go:5"
+        flagged="a_test.go:1 cmd/tool/main.go:1 first.go:4 second.go:1 second.go:4 second.go:5"
         [ -z "${FAKE_COMMENT_DRIFT:-}" ] || flagged="first.go:4 second.go:4 second.go:5"
         results=""
         for flag in $flagged; do
@@ -147,10 +147,10 @@ test_a_comment_query_that_spares_a_second_package_comment_fails_the_run() {
 first.go:4
 second.go:4
 second.go:5
-It must flag these lines, every comment except the first package comment of each non-main package.
+It must flag every comment except the first non-test package comment of each package other than main.
+a_test.go:1
 cmd/tool/main.go:1
 first.go:4
-first_test.go:1
 second.go:1
 second.go:4
 second.go:5" "$run_stderr" "stderr"

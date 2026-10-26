@@ -170,7 +170,7 @@ package commentfixture
 // A line comment.
 var second = Value // A trailing comment.
 GO
-cat >"$fixture_root/first_test.go" <<'GO'
+cat >"$fixture_root/a_test.go" <<'GO'
 // Package commentfixture has a test package comment.
 package commentfixture
 GO
@@ -196,16 +196,16 @@ codeql database analyze "$fixture_database" "$comment_pack" \
 flagged="$(jq -r '.runs[].results[]
   | .locations[0].physicalLocation
   | "\(.artifactLocation.uri):\(.region.startLine)"' "$fixture_results" | LC_ALL=C sort)"
-readonly expected_flags="cmd/tool/main.go:1
+readonly expected_flags="a_test.go:1
+cmd/tool/main.go:1
 first.go:4
-first_test.go:1
 second.go:1
 second.go:4
 second.go:5"
 if [[ "$flagged" != "$expected_flags" ]]; then
   echo "The comment query flagged these fixture lines." >&2
   printf '%s\n' "$flagged" >&2
-  echo "It must flag these lines, every comment except the first package comment of each non-main package." >&2
+  echo "It must flag every comment except the first non-test package comment of each package other than main." >&2
   printf '%s\n' "$expected_flags" >&2
   exit 1
 fi

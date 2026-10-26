@@ -28,7 +28,6 @@ predicate packageDocumentation(Comment comment) {
   exists(File file |
     comment = file.getDocumentation().getAComment() and
     file.getPackageName() != "main" and
-    not file.getBaseName().matches("%\\_test.go") and
     file =
       min(File sibling |
         exists(sibling.getDocumentation()) and

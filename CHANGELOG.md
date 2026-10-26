@@ -6,7 +6,7 @@
 
 ### Breaking changes
 
-* The `x_account` data source drops a timestamp attribute that repeated `connected_at`. If `terraform plan` reports an unsupported `x_account` attribute, read `connected_at` instead.
+* The `x_account` data source replaces a timestamp attribute with `connected_at`, which holds the same value. If `terraform plan` reports an unsupported `x_account` attribute, read `connected_at` instead.
 
 ### Chores
 
