@@ -6,6 +6,7 @@ package testhelpers_test
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	ds "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -77,17 +78,17 @@ type custype struct {
 var ctx = context.TODO()
 
 var datasourceTests = map[string]struct {
-	model  any
+	model  reflect.Type
 	schema ds.Schema
 	errors []string
 }{
 	"empty": {
-		(*empty)(nil),
+		reflect.TypeOf((*empty)(nil)),
 		ds.Schema{},
 		[]string{},
 	},
 	"builtin": {
-		(*builtin)(nil),
+		reflect.TypeOf((*builtin)(nil)),
 		ds.Schema{
 			Attributes: map[string]ds.Attribute{
 				"A": rs.BoolAttribute{
@@ -171,7 +172,7 @@ var datasourceTests = map[string]struct {
 		[]string{},
 	},
 	"basetypes": {
-		(*bstype)(nil),
+		reflect.TypeOf((*bstype)(nil)),
 		ds.Schema{
 			Attributes: map[string]ds.Attribute{
 				"A": rs.DynamicAttribute{
@@ -224,7 +225,7 @@ var datasourceTests = map[string]struct {
 		},
 	},
 	"customfield": {
-		(*custype)(nil),
+		reflect.TypeOf((*custype)(nil)),
 		ds.Schema{
 			Attributes: map[string]ds.Attribute{
 				"A": ds.ListAttribute{
@@ -280,17 +281,17 @@ var datasourceTests = map[string]struct {
 }
 
 var resourceTests = map[string]struct {
-	model  any
+	model  reflect.Type
 	schema rs.Schema
 	errors []string
 }{
 	"empty": {
-		(*empty)(nil),
+		reflect.TypeOf((*empty)(nil)),
 		rs.Schema{},
 		[]string{},
 	},
 	"builtin": {
-		(*builtin)(nil),
+		reflect.TypeOf((*builtin)(nil)),
 		rs.Schema{
 			Attributes: map[string]rs.Attribute{
 				"A": ds.BoolAttribute{
@@ -374,7 +375,7 @@ var resourceTests = map[string]struct {
 		[]string{},
 	},
 	"basetypes": {
-		(*bstype)(nil),
+		reflect.TypeOf((*bstype)(nil)),
 		rs.Schema{
 			Attributes: map[string]rs.Attribute{
 				"A": ds.DynamicAttribute{},
@@ -425,7 +426,7 @@ var resourceTests = map[string]struct {
 		},
 	},
 	"customfield": {
-		(*custype)(nil),
+		reflect.TypeOf((*custype)(nil)),
 		rs.Schema{
 			Attributes: map[string]rs.Attribute{
 				"A": rs.ListAttribute{
@@ -488,7 +489,7 @@ func TestParity(t *testing.T) {
 
 	for name, testcase := range datasourceTests {
 		t.Run("datasource_"+name, func(t *testing.T) {
-			errs := testhelpers.ValidateDataSourceModelSchemaIntegrity(testcase.model, testcase.schema)
+			errs := testhelpers.ValidateDataSourceModelTypeIntegrity(testcase.model, testcase.schema)
 			errs.Ignore(t, testcase.errors...)
 			errs.Report(t)
 		})
@@ -496,7 +497,7 @@ func TestParity(t *testing.T) {
 
 	for name, testcase := range resourceTests {
 		t.Run("resource_"+name, func(t *testing.T) {
-			errs := testhelpers.ValidateResourceModelSchemaIntegrity(testcase.model, testcase.schema)
+			errs := testhelpers.ValidateResourceModelTypeIntegrity(testcase.model, testcase.schema)
 			errs.Ignore(t, testcase.errors...)
 			errs.Report(t)
 		})

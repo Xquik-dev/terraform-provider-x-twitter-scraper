@@ -102,7 +102,7 @@ func TestRegisteredResourcesAndDataSources(t *testing.T) {
 		option.WithBaseURL(server.URL+"/"),
 		option.WithMaxRetries(0),
 	)
-	providerUnderTest := NewProvider("test")().(*XTwitterScraperProvider)
+	providerUnderTest := testProvider(t)
 
 	for _, factory := range providerUnderTest.Resources(context.Background()) {
 		resourceUnderTest := factory()
@@ -122,7 +122,7 @@ func TestRegisteredResourcesAndDataSources(t *testing.T) {
 func TestRegisteredSurfaceRejectsInvalidAPIResponses(t *testing.T) {
 	t.Parallel()
 
-	providerUnderTest := NewProvider("test")().(*XTwitterScraperProvider)
+	providerUnderTest := testProvider(t)
 	scenarios := []struct {
 		name       string
 		statusCode int
@@ -162,7 +162,7 @@ func TestRegisteredResourcesHandleNotFoundResponses(t *testing.T) {
 
 	client, closeServer := responseClient(http.StatusNotFound, `{"error":"not found"}`)
 	t.Cleanup(closeServer)
-	providerUnderTest := NewProvider("test")().(*XTwitterScraperProvider)
+	providerUnderTest := testProvider(t)
 
 	for _, factory := range providerUnderTest.Resources(context.Background()) {
 		resourceUnderTest := factory()
@@ -327,7 +327,10 @@ func exerciseRejectedDataSourceResponse(t *testing.T, dataSourceUnderTest dataso
 	ctx := context.Background()
 	var schemaResponse datasource.SchemaResponse
 	dataSourceUnderTest.Schema(ctx, datasource.SchemaRequest{}, &schemaResponse)
-	configurable := dataSourceUnderTest.(datasource.DataSourceWithConfigure)
+	configurable, ok := dataSourceUnderTest.(datasource.DataSourceWithConfigure)
+	if !ok {
+		t.Fatal("data source does not accept a configured client")
+	}
 	var configureResponse datasource.ConfigureResponse
 	configurable.Configure(ctx, datasource.ConfigureRequest{ProviderData: client}, &configureResponse)
 	if configureResponse.Diagnostics.HasError() {
@@ -362,7 +365,10 @@ func resourceSchema(t *testing.T, resourceUnderTest resource.Resource) resource.
 
 func configureResource(t *testing.T, resourceUnderTest resource.Resource, client *xtwitterscraper.Client) {
 	t.Helper()
-	configurable := resourceUnderTest.(resource.ResourceWithConfigure)
+	configurable, ok := resourceUnderTest.(resource.ResourceWithConfigure)
+	if !ok {
+		t.Fatal("resource does not accept a configured client")
+	}
 	var configureResponse resource.ConfigureResponse
 	configurable.Configure(
 		context.Background(),
@@ -463,11 +469,11 @@ func rawObject(objectType attr.Type, stringsByName map[string]string) tftypes.Va
 
 	attributes := make(map[string]tftypes.Value, len(object.AttributeTypes))
 	for name, attributeType := range object.AttributeTypes {
-		value := any(nil)
 		if stringValue, ok := stringsByName[name]; ok && attributeType.Is(tftypes.String) {
-			value = stringValue
+			attributes[name] = tftypes.NewValue(attributeType, stringValue)
+			continue
 		}
-		attributes[name] = tftypes.NewValue(attributeType, value)
+		attributes[name] = tftypes.NewValue(attributeType, nil)
 	}
 	return tftypes.NewValue(object, attributes)
 }

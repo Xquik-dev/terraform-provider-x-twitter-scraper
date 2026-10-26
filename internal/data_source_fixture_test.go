@@ -12,7 +12,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path"
-	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -36,84 +36,78 @@ func TestDataSourcesReadTheSpecExamples(t *testing.T) {
 		id       string
 		path     string
 		fixture  string
-		want     map[string]any
+		want     map[string]stateWant
 	}{
-		{"x-twitter-scraper_x_list", "4143408", "/api/v1/x/lists/4143408", "x_list.json", map[string]any{
-			"id":                    "4143408",
-			"list.id":               "4143408",
-			"list.name":             "NASA Centers",
-			"list.description":      "NASA has 10 centers",
-			"list.member_count":     int64(11),
-			"list.subscriber_count": int64(859),
-			"list.owner.id":         "11348282",
-			"list.owner.username":   "NASA",
-			"list.url":              "https://x.com/i/lists/4143408",
-			"list.created_at":       "2009-12-02T22:41:02.000Z",
-			"list.banner_url":       "https://pbs.twimg.com/media/example.png",
-			"list.members_context":  "11 members",
+		{"x-twitter-scraper_x_list", "4143408", "/api/v1/x/lists/4143408", "x_list.json", map[string]stateWant{
+			"id":                    wantText("4143408"),
+			"list.id":               wantText("4143408"),
+			"list.name":             wantText("NASA Centers"),
+			"list.description":      wantText("NASA has 10 centers"),
+			"list.member_count":     wantNumber(11),
+			"list.subscriber_count": wantNumber(859),
+			"list.owner.id":         wantText("11348282"),
+			"list.owner.username":   wantText("NASA"),
+			"list.url":              wantText("https://x.com/i/lists/4143408"),
+			"list.created_at":       wantText("2009-12-02T22:41:02.000Z"),
+			"list.banner_url":       wantText("https://pbs.twimg.com/media/example.png"),
+			"list.members_context":  wantText("11 members"),
 		}},
-		{"x-twitter-scraper_x_job", "1899202395210649861", "/api/v1/x/jobs/1899202395210649861", "x_job.json", map[string]any{
-			"job.id":                    "1899202395210649861",
-			"job.title":                 "Engineer",
-			"job.location_type":         "remote",
-			"job.employment_type":       "full_time",
-			"job.seniority_level":       "lead",
-			"job.salary_min":            float64(225000),
-			"job.salary_currency_code":  "USD",
-			"job.featured":              true,
-			"job.description_markdown":  "# What is Commonware?",
-			"job.account.username":      "commonwarexyz",
-			"job.account.verified":      true,
-			"job.account.verified_type": "Business",
+		{"x-twitter-scraper_x_job", "1899202395210649861", "/api/v1/x/jobs/1899202395210649861", "x_job.json", map[string]stateWant{
+			"job.id":                    wantText("1899202395210649861"),
+			"job.title":                 wantText("Engineer"),
+			"job.location_type":         wantText("remote"),
+			"job.employment_type":       wantText("full_time"),
+			"job.seniority_level":       wantText("lead"),
+			"job.salary_min":            wantNumber(225000),
+			"job.salary_currency_code":  wantText("USD"),
+			"job.featured":              wantBool(true),
+			"job.description_markdown":  wantText("# What is Commonware?"),
+			"job.account.username":      wantText("commonwarexyz"),
+			"job.account.verified":      wantBool(true),
+			"job.account.verified_type": wantText("Business"),
 		}},
-		{"x-twitter-scraper_x_space", "1OGwblLjnQMKB", "/api/v1/x/spaces/1OGwblLjnQMKB", "x_space.json", map[string]any{
-			"space.id":                   "1OGwblLjnQMKB",
-			"space.title":                "Extending the Network to the Edge",
-			"space.state":                "Ended",
-			"space.started_at":           "2026-03-11T17:00:26.227Z",
-			"space.total_live_listeners": int64(841),
-			"space.total_replay_watched": int64(609),
-			"space.creator.username":     "solana",
-			"space.admins.0.id":          "951329744804392960",
-			"space.admins.0.username":    "solana",
-			"space.tweet.text":           "Extending the Network to the Edge",
-			"space.sharings.0.tweet": map[string]any{
-				"text":     "Join the Space",
-				"entities": map[string]any{"urls": []any{}},
-			},
-			"space.sharings.1.tweet": map[string]any{
-				"text":     "Replay the Space",
-				"entities": map[string]any{"urls": []any{map[string]any{"url": "https://x.com/i/spaces/1OGwblLjnQMKB"}}},
-			},
+		{"x-twitter-scraper_x_space", "1OGwblLjnQMKB", "/api/v1/x/spaces/1OGwblLjnQMKB", "x_space.json", map[string]stateWant{
+			"space.id":                   wantText("1OGwblLjnQMKB"),
+			"space.title":                wantText("Extending the Network to the Edge"),
+			"space.state":                wantText("Ended"),
+			"space.started_at":           wantText("2026-03-11T17:00:26.227Z"),
+			"space.total_live_listeners": wantNumber(841),
+			"space.total_replay_watched": wantNumber(609),
+			"space.creator.username":     wantText("solana"),
+			"space.admins.0.id":          wantText("951329744804392960"),
+			"space.admins.0.username":    wantText("solana"),
+			"space.tweet.text":           wantText("Extending the Network to the Edge"),
+			"space.sharings.0.tweet":     wantTweetJSON{text: "Join the Space", urls: []string{}},
+			"space.sharings.1.tweet":     wantTweetJSON{text: "Replay the Space", urls: []string{"https://x.com/i/spaces/1OGwblLjnQMKB"}},
 		}},
-		{"x-twitter-scraper_x_user", "NASA", "/api/v1/x/users/NASA", "x_user.json", map[string]any{
-			"username":                                "NASA",
-			"followers":                               int64(92376187),
-			"verified_type":                           "Government",
-			"profile_picture_original":                "https://pbs.twimg.com/profile_images/1321163587679784960/0ZxKlEKB.jpg",
-			"birthdate.year":                          int64(1958),
-			"birthdate.month":                         int64(10),
-			"contact_info.links.0.url":                "http://www.nasa.gov/",
-			"contact_info.links.0.network":            "website",
-			"verification_reason.entities.0.url_type": "ExternalUrl",
+		{"x-twitter-scraper_x_user", "NASA", "/api/v1/x/users/NASA", "x_user.json", map[string]stateWant{
+			"username":                                wantText("NASA"),
+			"followers":                               wantNumber(92376187),
+			"verified_type":                           wantText("Government"),
+			"profile_picture_original":                wantText("https://pbs.twimg.com/profile_images/1321163587679784960/0ZxKlEKB.jpg"),
+			"birthdate.year":                          wantNumber(1958),
+			"birthdate.month":                         wantNumber(10),
+			"contact_info.links.0.url":                wantText("http://www.nasa.gov/"),
+			"contact_info.links.0.network":            wantText("website"),
+			"verification_reason.entities.0.url_type": wantText("ExternalUrl"),
 		}},
-		{"x-twitter-scraper_x_broadcast", "1nGeLMWbkpaKX", "/api/v1/x/broadcasts/1nGeLMWbkpaKX", "x_broadcast.json", map[string]any{
-			"broadcast.id":             "1nGeLMWbkpaKX",
-			"broadcast.title":          "USSF-259 Mission",
-			"broadcast.state":          "Ended",
-			"broadcast.ended_at":       "2026-09-17T01:17:35.036Z",
-			"broadcast.total_watched":  int64(161758),
-			"broadcast.total_watching": int64(21639),
-			"broadcast.width":          int64(3840),
-			"broadcast.creator.name":   "SpaceX",
-			"broadcast.tweet.text":     "USSF-259 Mission",
+		{"x-twitter-scraper_x_broadcast", "1nGeLMWbkpaKX", "/api/v1/x/broadcasts/1nGeLMWbkpaKX", "x_broadcast.json", map[string]stateWant{
+			"broadcast.id":             wantText("1nGeLMWbkpaKX"),
+			"broadcast.title":          wantText("USSF-259 Mission"),
+			"broadcast.state":          wantText("Ended"),
+			"broadcast.ended_at":       wantText("2026-09-17T01:17:35.036Z"),
+			"broadcast.total_watched":  wantNumber(161758),
+			"broadcast.total_watching": wantNumber(21639),
+			"broadcast.width":          wantNumber(3840),
+			"broadcast.creator.name":   wantText("SpaceX"),
+			"broadcast.tweet.text":     wantText("USSF-259 Mission"),
 		}},
-		{"x-twitter-scraper_x_tweet", "2031735300000000000", "/api/v1/x/tweets/2031735300000000000", "x_tweet.json", map[string]any{
-			"tweet.id":                                   "2031735300000000000",
-			"tweet.quoted_tweet.quoted_tweet.text":       "Quoted quote",
-			"tweet.quoted_tweet.retweeted_tweet.text":    "Quoted retweet",
-			"tweet.retweeted_tweet.quoted_tweet.text":    "Retweeted quote",
-			"tweet.retweeted_tweet.retweeted_tweet.text": "Retweeted retweet",
+		{"x-twitter-scraper_x_tweet", "2031735300000000000", "/api/v1/x/tweets/2031735300000000000", "x_tweet.json", map[string]stateWant{
+			"tweet.id":                                   wantText("2031735300000000000"),
+			"tweet.quoted_tweet.quoted_tweet.text":       wantText("Quoted quote"),
+			"tweet.quoted_tweet.retweeted_tweet.text":    wantText("Quoted retweet"),
+			"tweet.retweeted_tweet.quoted_tweet.text":    wantText("Retweeted quote"),
+			"tweet.retweeted_tweet.retweeted_tweet.text": wantText("Retweeted retweet"),
 		}},
 	} {
 		t.Run(test.typeName, func(t *testing.T) {
@@ -141,7 +135,7 @@ func TestDataSourcesReadTheSpecExamples(t *testing.T) {
 
 			assertEqual(t, "request", requested, "GET "+test.path)
 			for attributePath, want := range test.want {
-				assertState(t, state, attributePath, want)
+				want.check(t, attributePath, stateAt(t, state, attributePath))
 			}
 		})
 	}
@@ -151,7 +145,7 @@ func TestDataSourceSchemasHaveNoDynamicAttributesInCollections(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	providerUnderTest := NewProvider("test")().(*XTwitterScraperProvider)
+	providerUnderTest := testProvider(t)
 	for _, factory := range providerUnderTest.DataSources(ctx) {
 		dataSourceUnderTest := factory()
 		var metadata datasource.MetadataResponse
@@ -188,9 +182,18 @@ func TestDataSourceSchemasHaveNoDynamicAttributesInCollections(t *testing.T) {
 	}
 }
 
+func testProvider(t *testing.T) *XTwitterScraperProvider {
+	t.Helper()
+	providerUnderTest, ok := NewProvider("test")().(*XTwitterScraperProvider)
+	if !ok {
+		t.Fatal("NewProvider did not return *XTwitterScraperProvider")
+	}
+	return providerUnderTest
+}
+
 func dataSourceNamed(t *testing.T, typeName string) datasource.DataSource {
 	t.Helper()
-	providerUnderTest := NewProvider("test")().(*XTwitterScraperProvider)
+	providerUnderTest := testProvider(t)
 	for _, factory := range providerUnderTest.DataSources(context.Background()) {
 		dataSourceUnderTest := factory()
 		var metadata datasource.MetadataResponse
@@ -209,7 +212,11 @@ func readDataSource(t *testing.T, dataSourceUnderTest datasource.DataSource, cli
 	var schemaResponse datasource.SchemaResponse
 	dataSourceUnderTest.Schema(ctx, datasource.SchemaRequest{}, &schemaResponse)
 	var configureResponse datasource.ConfigureResponse
-	dataSourceUnderTest.(datasource.DataSourceWithConfigure).Configure(ctx, datasource.ConfigureRequest{ProviderData: client}, &configureResponse)
+	configurable, ok := dataSourceUnderTest.(datasource.DataSourceWithConfigure)
+	if !ok {
+		t.Fatal("data source does not accept a configured client")
+	}
+	configurable.Configure(ctx, datasource.ConfigureRequest{ProviderData: client}, &configureResponse)
 	if configureResponse.Diagnostics.HasError() {
 		t.Fatalf("configure data source: %v", configureResponse.Diagnostics)
 	}
@@ -233,51 +240,93 @@ func readDataSource(t *testing.T, dataSourceUnderTest datasource.DataSource, cli
 	return state
 }
 
-func assertState(t *testing.T, state tftypes.Value, attributePath string, want any) {
+type stateWant interface {
+	check(t *testing.T, attributePath string, value tftypes.Value)
+}
+
+type wantText string
+
+func (want wantText) check(t *testing.T, attributePath string, value tftypes.Value) {
 	t.Helper()
-	steps := tftypes.NewAttributePath()
+	var text string
+	if err := value.As(&text); err != nil || text != string(want) {
+		t.Fatalf("%s = %q (%v), want %q", attributePath, text, err, string(want))
+	}
+}
+
+type wantBool bool
+
+func (want wantBool) check(t *testing.T, attributePath string, value tftypes.Value) {
+	t.Helper()
+	var flag bool
+	if err := value.As(&flag); err != nil || flag != bool(want) {
+		t.Fatalf("%s = %t (%v), want %t", attributePath, flag, err, bool(want))
+	}
+}
+
+type wantNumber float64
+
+func (want wantNumber) check(t *testing.T, attributePath string, value tftypes.Value) {
+	t.Helper()
+	number := new(big.Float)
+	err := value.As(&number)
+	if expected := big.NewFloat(float64(want)).String(); err != nil || number.String() != expected {
+		t.Fatalf("%s = %s (%v), want %s", attributePath, number.String(), err, expected)
+	}
+}
+
+type wantTweetJSON struct {
+	text string
+	urls []string
+}
+
+func (want wantTweetJSON) check(t *testing.T, attributePath string, value tftypes.Value) {
+	t.Helper()
+	var text string
+	err := value.As(&text)
+	var tweet struct {
+		Text     string `json:"text"`
+		Entities struct {
+			URLs []struct {
+				URL string `json:"url"`
+			} `json:"urls"`
+		} `json:"entities"`
+	}
+	if err == nil {
+		decoder := json.NewDecoder(strings.NewReader(text))
+		decoder.DisallowUnknownFields()
+		err = decoder.Decode(&tweet)
+	}
+	urls := []string{}
+	for _, url := range tweet.Entities.URLs {
+		urls = append(urls, url.URL)
+	}
+	if err != nil || tweet.Text != want.text || !slices.Equal(urls, want.urls) {
+		t.Fatalf("%s = %s (%v), want text %q and URLs %v", attributePath, text, err, want.text, want.urls)
+	}
+}
+
+func stateAt(t *testing.T, state tftypes.Value, attributePath string) tftypes.Value {
+	t.Helper()
+	value := state
 	for _, step := range strings.Split(attributePath, ".") {
 		if index, err := strconv.Atoi(step); err == nil {
-			steps = steps.WithElementKeyInt(index)
-		} else {
-			steps = steps.WithAttributeName(step)
+			var elements []tftypes.Value
+			if err := value.As(&elements); err != nil || index >= len(elements) {
+				t.Fatalf("%s is not in the state: %v", attributePath, err)
+			}
+			value = elements[index]
+			continue
 		}
-	}
-	found, _, err := tftypes.WalkAttributePath(state, steps)
-	if err != nil {
-		t.Fatalf("%s is not in the state: %v", attributePath, err)
-	}
-	value := found.(tftypes.Value)
-	var got, expected any
-	switch want := want.(type) {
-	case string:
-		var text string
-		err = value.As(&text)
-		got, expected = text, want
-	case bool:
-		var flag bool
-		err = value.As(&flag)
-		got, expected = flag, want
-	case int64:
-		number := new(big.Float)
-		err = value.As(&number)
-		got, expected = number.String(), big.NewFloat(float64(want)).String()
-	case float64:
-		number := new(big.Float)
-		err = value.As(&number)
-		got, expected = number.String(), big.NewFloat(want).String()
-	case map[string]any:
-		var text string
-		err = value.As(&text)
-		var object map[string]any
-		if err == nil {
-			err = json.Unmarshal([]byte(text), &object)
+		var attributes map[string]tftypes.Value
+		if err := value.As(&attributes); err != nil {
+			t.Fatalf("%s is not in the state: %v", attributePath, err)
 		}
-		got, expected = object, want
-	default:
-		t.Fatalf("%s has an unhandled expected value type %T", attributePath, want)
+		child, ok := attributes[step]
+		if !ok {
+			t.Fatalf("%s is not in the state", attributePath)
+		}
+		value = child
 	}
-	if err != nil || !reflect.DeepEqual(got, expected) {
-		t.Fatalf("%s = %v (%v), want %v", attributePath, got, err, expected)
-	}
+	return value
 }

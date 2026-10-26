@@ -19,7 +19,7 @@ func TestRegisteredSurfaceRejectsInvalidTerraformValues(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	providerUnderTest := NewProvider("test")().(*XTwitterScraperProvider)
+	providerUnderTest := testProvider(t)
 	invalidRaw := tftypes.NewValue(tftypes.String, "invalid")
 
 	for _, factory := range providerUnderTest.Resources(ctx) {

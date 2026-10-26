@@ -43,7 +43,7 @@ func TestCanonicalWritesDispatchOnceAndReachTerminalState(t *testing.T) {
 			var capturedMethod string
 			var capturedPath string
 			var capturedKey string
-			var capturedBody map[string]any
+			var capturedBody map[string]json.RawMessage
 
 			server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 				writer.Header().Set("Content-Type", "application/json")
@@ -92,7 +92,7 @@ func TestCanonicalWritesDispatchOnceAndReachTerminalState(t *testing.T) {
 			assertEqual(t, "method", capturedMethod, op.method)
 			assertEqual(t, "path", capturedPath, "/"+op.path(targetID))
 			assertEqual(t, "idempotency key", capturedKey, idempotencyKey)
-			assertEqual(t, "request account", capturedBody["account"], requestAccount)
+			assertEqual(t, "request account", string(capturedBody["account"]), `"`+requestAccount+`"`)
 			assertEqual(t, "write ID", action.ID, writeActionID)
 			assertEqual(t, "writeActionId", action.WriteActionID, writeActionID)
 			assertEqual(t, "action", action.Action, op.action)
@@ -114,7 +114,7 @@ func TestCanonicalWritesDispatchOnceAndReachTerminalState(t *testing.T) {
 			assertEqual(t, "response account username", action.Account.Username, responseUser)
 			assertEqual(t, "request account remains separate", requestAccount, "@request-account")
 			for field, expected := range op.testPayload {
-				assertEqual(t, "payload "+field, capturedBody[field], expected)
+				assertEqual(t, "payload "+field, string(capturedBody[field]), string(expected))
 			}
 		})
 	}
@@ -167,10 +167,10 @@ func TestOperationValidationRejectsAccountCollisionAndInvalidFields(t *testing.T
 	if err == nil || !strings.Contains(err.Error(), "at least one") {
 		t.Fatalf("null payload error = %v", err)
 	}
-	if present([]any{}) {
+	if present(json.RawMessage("[]")) {
 		t.Fatal("empty list is present")
 	}
-	if !present(true) {
+	if !present(json.RawMessage("true")) {
 		t.Fatal("boolean value is not present")
 	}
 }
@@ -238,7 +238,7 @@ func TestWriteActionPathPreservesSDKBasePath(t *testing.T) {
 	}
 	path := writeActionPath(writeActionID)
 	client := xtwitterscraper.NewClient(option.WithBaseURL(server.URL + "/api/v1/"))
-	var response map[string]any
+	var response json.RawMessage
 	if err := client.Get(context.Background(), path, nil, &response, option.WithMaxRetries(0)); err != nil {
 		t.Fatalf("Client.Get: %v", err)
 	}
@@ -509,27 +509,16 @@ func validCanonicalAction() writeAction {
 }
 
 func writeCanonicalAction(writer http.ResponseWriter, action string, statusURL string, terminal bool) {
-	status := "accepted"
-	billingStatus := "pending"
-	result := map[string]any{}
-	nextActionType := "poll"
-	if terminal {
-		status = "success"
-		billingStatus = "charged"
-		result = map[string]any{"id": "result-123", "state": "confirmed", "type": "state_change"}
-		nextActionType = "verify_result"
-	}
-	response := map[string]any{
-		"object": "x_write_action", "id": "write-action-123", "writeActionId": "write-action-123",
-		"action": action, "status": status, "terminal": terminal, "retryable": false,
-		"safeToRetry": false, "statusUrl": statusURL, "pollAfterMs": 0,
-		"charged": terminal, "chargedCredits": "10", "targetId": "target-123",
-		"billing": map[string]any{"status": billingStatus, "charged": terminal, "chargedCredits": "10", "plannedCredits": "10"},
-		"request": map[string]any{"hash": "request-hash", "payload": map[string]any{"account": "sanitized"}},
-		"account": map[string]any{"id": "account-123", "username": "response-account"}, "result": result,
-		"target":     map[string]any{"id": "target-123", "type": "tweet"},
-		"nextAction": map[string]any{"type": nextActionType, "afterMs": 0, "requiresNewIdempotencyKey": false, "url": statusURL},
-		"requestId":  "request-123", "sendDispatched": true, "success": terminal,
+	response := canonicalAction(action, statusURL)
+	if !terminal {
+		response.Status = "accepted"
+		response.Terminal = false
+		response.Charged = false
+		response.Success = false
+		response.Billing.Status = "pending"
+		response.Billing.Charged = false
+		response.Result.ID, response.Result.State, response.Result.Type = "", "", ""
+		response.NextAction.Type = "poll"
 	}
 	if err := json.NewEncoder(writer).Encode(response); err != nil {
 		panic(fmt.Sprintf("encode response: %v", err))
