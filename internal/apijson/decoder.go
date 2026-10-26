@@ -21,7 +21,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/tidwall/gjson"
@@ -685,8 +684,7 @@ func (d *decoderBuilder) newTerraformTypeDecoder(t reflect.Type) decoderFunc {
 	}
 
 	if like, ok := reflect.TypeAssert[customfield.NestedObjectLike](reflect.Zero(t)); ok {
-		structType := like.ModelType()
-		decoderFunc := d.newStructTypeDecoder(structType)
+		decoderFunc := d.newStructTypeDecoder(like.ModelType())
 		return func(node gjson.Result, value reflect.Value, state *decoderState) error {
 			if !shouldUpdateNested(value, b) {
 				return nil
@@ -695,42 +693,33 @@ func (d *decoderBuilder) newTerraformTypeDecoder(t reflect.Type) decoderFunc {
 			if err != nil {
 				return err
 			}
-			if node.Type == gjson.Null {
-				if b == Always || objectValue.IsNull() || objectValue.IsUnknown() {
-					nullValue := objectValue.NullValue(ctx)
-					value.Set(reflect.ValueOf(nullValue))
-					return nil
-				}
+			if node.Type == gjson.Null && (b == Always || objectValue.IsNull() || objectValue.IsUnknown()) {
+				value.Set(reflect.ValueOf(objectValue.NullValue(ctx)))
+				return nil
 			}
-
-			structValue := reflect.New(structType)
-			if !objectValue.IsNull() && !objectValue.IsUnknown() {
-				structValue, _ = objectValue.ValueAny(ctx)
-			}
-			err = decoderFunc(node, structValue.Elem(), state)
-			if err != nil {
+			target, known := objectValue.DecodeTarget(ctx)
+			if err := decoderFunc(node, target, state); err != nil {
 				return err
 			}
-			updated := objectValue.KnownValue(ctx, structValue)
-			value.Set(reflect.ValueOf(updated))
+			value.Set(reflect.ValueOf(known()))
 			return nil
 		}
 	}
 
 	if like, ok := reflect.TypeAssert[customfield.NestedObjectListLike](reflect.Zero(t)); ok {
-		return decodeCustomCollection(d, reflect.SliceOf(like.ModelType()), customfield.NestedObjectListLike.AsStructSlice)
+		return decodeCustomCollection[customfield.NestedObjectListLike](d, reflect.SliceOf(like.ModelType()))
 	}
 
 	if like, ok := reflect.TypeAssert[customfield.ListLike](reflect.Zero(t)); ok {
-		return decodeCustomCollection(d, reflect.SliceOf(like.ModelType()), customfield.ListLike.ValueAttr)
+		return decodeCustomCollection[customfield.ListLike](d, reflect.SliceOf(like.ModelType()))
 	}
 
 	if like, ok := reflect.TypeAssert[customfield.NestedObjectMapLike](reflect.Zero(t)); ok {
-		return decodeCustomCollection(d, reflect.MapOf(reflect.TypeFor[string](), like.ModelType()), customfield.NestedObjectMapLike.AsStructMap)
+		return decodeCustomCollection[customfield.NestedObjectMapLike](d, reflect.MapOf(reflect.TypeFor[string](), like.ModelType()))
 	}
 
 	if like, ok := reflect.TypeAssert[customfield.MapLike](reflect.Zero(t)); ok {
-		return decodeCustomCollection(d, reflect.MapOf(reflect.TypeFor[string](), like.ModelType()), customfield.MapLike.ValueAttr)
+		return decodeCustomCollection[customfield.MapLike](d, reflect.MapOf(reflect.TypeFor[string](), like.ModelType()))
 	}
 
 	if t.Implements(reflect.TypeOf((*basetypes.DynamicValuable)(nil)).Elem()) {
@@ -819,10 +808,10 @@ func (d *decoderBuilder) newTerraformTypeDecoder(t reflect.Type) decoderFunc {
 type customCollection[L any] interface {
 	attr.Value
 	NullValue(ctx context.Context) L
-	KnownValue(ctx context.Context, values reflect.Value) L
+	DecodeTarget(ctx context.Context) (reflect.Value, func() L)
 }
 
-func decodeCustomCollection[L customCollection[L]](d *decoderBuilder, container reflect.Type, current func(L, context.Context) (reflect.Value, diag.Diagnostics)) decoderFunc {
+func decodeCustomCollection[L customCollection[L]](d *decoderBuilder, container reflect.Type) decoderFunc {
 	ctx := context.TODO()
 	b := d.updateBehavior
 	originalDec := d.typeDecoder(container)
@@ -843,13 +832,11 @@ func decodeCustomCollection[L customCollection[L]](d *decoderBuilder, container 
 		if b == IfUnset && unset {
 			dec = d.alwaysUpdateDecoder(container)
 		}
-		decoded := reflect.New(container).Elem()
-		values, _ := current(existing, ctx)
-		decoded.Set(values)
-		if err := dec(node, decoded, state); err != nil {
+		target, known := existing.DecodeTarget(ctx)
+		if err := dec(node, target, state); err != nil {
 			return err
 		}
-		value.Set(reflect.ValueOf(existing.KnownValue(ctx, decoded)))
+		value.Set(reflect.ValueOf(known()))
 		return nil
 	}
 }

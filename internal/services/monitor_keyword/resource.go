@@ -204,12 +204,7 @@ func (r *MonitorKeywordResource) Delete(ctx context.Context, req resource.Delete
 func (r *MonitorKeywordResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	var data = new(MonitorKeywordModel)
 
-	path := ""
-	diags := importpath.ParseImportID(
-		req.ID,
-		"<id>",
-		&path,
-	)
+	path, diags := importpath.ParseImportID(req.ID)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

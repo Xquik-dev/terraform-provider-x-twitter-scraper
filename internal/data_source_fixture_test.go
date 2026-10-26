@@ -102,6 +102,14 @@ func TestDataSourcesReadTheSpecExamples(t *testing.T) {
 			"broadcast.creator.name":   wantText("SpaceX"),
 			"broadcast.tweet.text":     wantText("USSF-259 Mission"),
 		}},
+		{"x-twitter-scraper_x_account", "42", "/api/v1/x/accounts/42", "x_account.json", map[string]stateWant{
+			"x_username":   wantText("example"),
+			"connected_at": wantText("2025-03-10T08:30:00Z"),
+		}},
+		{"x-twitter-scraper_x_account", "43", "/api/v1/x/accounts/43", "x_account_before_login.json", map[string]stateWant{
+			"x_username":   wantText("example_new"),
+			"connected_at": wantNull{},
+		}},
 		{"x-twitter-scraper_x_tweet", "2031735300000000000", "/api/v1/x/tweets/2031735300000000000", "x_tweet.json", map[string]stateWant{
 			"tweet.id":                                   wantText("2031735300000000000"),
 			"tweet.quoted_tweet.quoted_tweet.text":       wantText("Quoted quote"),
@@ -251,6 +259,15 @@ func (want wantText) check(t *testing.T, attributePath string, value tftypes.Val
 	var text string
 	if err := value.As(&text); err != nil || text != string(want) {
 		t.Fatalf("%s = %q (%v), want %q", attributePath, text, err, string(want))
+	}
+}
+
+type wantNull struct{}
+
+func (wantNull) check(t *testing.T, attributePath string, value tftypes.Value) {
+	t.Helper()
+	if !value.IsNull() {
+		t.Fatalf("%s = %v, want null", attributePath, value)
 	}
 }
 

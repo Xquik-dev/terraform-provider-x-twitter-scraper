@@ -124,13 +124,15 @@ func (v NestedObjectSet[T]) UnknownValue(ctx context.Context) NestedObjectListLi
 	return UnknownObjectSet[T](ctx)
 }
 
-func (v NestedObjectSet[T]) KnownValue(ctx context.Context, values reflect.Value) NestedObjectListLike {
-	ts, _ := reflect.TypeAssert[[]T](values)
-	r, diags := NewObjectSet(ctx, ts)
-	if diags.HasError() {
-		panic(fmt.Errorf("unexpected error creating NestedObjectSet: %v", diags))
+func (v NestedObjectSet[T]) DecodeTarget(ctx context.Context) (reflect.Value, func() NestedObjectListLike) {
+	values, _ := v.AsStructSliceT(ctx)
+	return reflect.ValueOf(&values).Elem(), func() NestedObjectListLike {
+		r, diags := NewObjectSet(ctx, values)
+		if diags.HasError() {
+			panic(fmt.Errorf("unexpected error creating NestedObjectSet: %v", diags))
+		}
+		return r
 	}
-	return r
 }
 
 func (v NestedObjectSet[T]) IsNullOrUnknown() bool {

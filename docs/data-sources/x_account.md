@@ -17,7 +17,7 @@ Connected X account management
 
 ### Read-Only
 
-- `connected_at` (String) Last connection or reconnection time of this account. Omitted before its first login.
+- `connected_at` (String) The last time the account connected or reconnected. Null before its first login.
 - `created_at` (String)
 - `health` (String) Available values are "healthy", "locked", "needsReauth", "recovering", "suspended" and "temporaryIssue".
 - `id` (String) The ID of this resource.

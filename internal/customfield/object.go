@@ -125,7 +125,7 @@ type NestedObjectLike interface {
 	ValueAny(ctx context.Context) (reflect.Value, diag.Diagnostics)
 	NullValue(ctx context.Context) NestedObjectLike
 	UnknownValue(ctx context.Context) NestedObjectLike
-	KnownValue(ctx context.Context, value reflect.Value) NestedObjectLike
+	DecodeTarget(ctx context.Context) (reflect.Value, func() NestedObjectLike)
 	ModelType() reflect.Type
 }
 
@@ -158,10 +158,17 @@ func (v NestedObject[T]) UnknownValue(ctx context.Context) NestedObjectLike {
 	return UnknownObject[T](ctx)
 }
 
-func (v NestedObject[T]) KnownValue(ctx context.Context, value reflect.Value) NestedObjectLike {
-	t, _ := reflect.TypeAssert[*T](value)
-	r, _ := NewObject(ctx, t)
-	return r
+func (v NestedObject[T]) DecodeTarget(ctx context.Context) (reflect.Value, func() NestedObjectLike) {
+	target := new(T)
+	if !v.IsNull() && !v.IsUnknown() {
+		if current, _ := v.Value(ctx); current != nil {
+			target = current
+		}
+	}
+	return reflect.ValueOf(target).Elem(), func() NestedObjectLike {
+		r, _ := NewObject(ctx, target)
+		return r
+	}
 }
 
 func (v NestedObject[T]) ModelType() reflect.Type {

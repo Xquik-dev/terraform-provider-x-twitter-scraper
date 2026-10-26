@@ -25,7 +25,7 @@ type MapLike interface {
 	ValueAttr(ctx context.Context) (reflect.Value, diag.Diagnostics)
 	NullValue(ctx context.Context) MapLike
 	UnknownValue(ctx context.Context) MapLike
-	KnownValue(ctx context.Context, values reflect.Value) MapLike
+	DecodeTarget(ctx context.Context) (reflect.Value, func() MapLike)
 	ModelType() reflect.Type
 }
 
@@ -130,10 +130,12 @@ func (v Map[T]) UnknownValue(ctx context.Context) MapLike {
 	return UnknownMap[T](ctx)
 }
 
-func (v Map[T]) KnownValue(ctx context.Context, values reflect.Value) MapLike {
-	ts, _ := reflect.TypeAssert[map[string]T](values)
-	r, _ := NewMap(ctx, ts)
-	return r
+func (v Map[T]) DecodeTarget(ctx context.Context) (reflect.Value, func() MapLike) {
+	values, _ := v.Value(ctx)
+	return reflect.ValueOf(&values).Elem(), func() MapLike {
+		r, _ := NewMap(ctx, values)
+		return r
+	}
 }
 
 func (v Map[T]) ModelType() reflect.Type {

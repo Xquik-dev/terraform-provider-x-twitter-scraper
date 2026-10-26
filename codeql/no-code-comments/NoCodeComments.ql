@@ -4,7 +4,7 @@
 
 /**
  * @name Code comment
- * @description Code has no comments. A comment needs a legal marker, a functional directive or an https link that proves it. Each Go package may keep 1 package comment, which staticcheck ST1000 requires.
+ * @description Code has no comments. A comment needs a legal marker, a functional directive or an https link that proves it. Each Go package other than main may keep 1 package comment, which staticcheck ST1000 requires.
  * @kind problem
  * @problem.severity error
  * @id go/no-code-comments
@@ -27,6 +27,7 @@ predicate directive(Comment comment) {
 predicate packageDocumentation(Comment comment) {
   exists(File file |
     comment = file.getDocumentation().getAComment() and
+    file.getPackageName() != "main" and
     file =
       min(File sibling |
         exists(sibling.getDocumentation()) and

@@ -6,7 +6,7 @@
 
 ### Breaking changes
 
-* The `x_account` data source drops a timestamp attribute that the API contract does not document. Read `connected_at` instead, the last time the account connected or reconnected.
+* The `x_account` data source drops a timestamp attribute that always read null. If `terraform plan` calls an `x_account` attribute unsupported, read `connected_at` instead.
 
 ### Chores
 

@@ -98,7 +98,7 @@ type ListLike interface {
 	ValueAttr(ctx context.Context) (reflect.Value, diag.Diagnostics)
 	NullValue(ctx context.Context) ListLike
 	UnknownValue(ctx context.Context) ListLike
-	KnownValue(ctx context.Context, values reflect.Value) ListLike
+	DecodeTarget(ctx context.Context) (reflect.Value, func() ListLike)
 	ModelType() reflect.Type
 	IsNullOrUnknown() bool
 	attr.Value
@@ -126,10 +126,12 @@ func (v List[T]) UnknownValue(ctx context.Context) ListLike {
 	return UnknownList[T](ctx)
 }
 
-func (v List[T]) KnownValue(ctx context.Context, values reflect.Value) ListLike {
-	ts, _ := reflect.TypeAssert[[]T](values)
-	r, _ := NewList(ctx, ts)
-	return r
+func (v List[T]) DecodeTarget(ctx context.Context) (reflect.Value, func() ListLike) {
+	values, _ := v.Value(ctx)
+	return reflect.ValueOf(&values).Elem(), func() ListLike {
+		r, _ := NewList(ctx, values)
+		return r
+	}
 }
 
 func (v List[T]) ModelType() reflect.Type {

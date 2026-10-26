@@ -9,44 +9,25 @@ import (
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/importpath"
 )
 
-func TestParseID(t *testing.T) {
-	first, second := "", ""
-	diags := importpath.ParseImportID("tweet%20search/hi", "query/name", &first, &second)
+func TestParseIDDecodesTheID(t *testing.T) {
+	t.Parallel()
+
+	id, diags := importpath.ParseImportID("tweet%20search")
 	if diags.HasError() {
 		t.Fatalf("unexpected error: %v", diags)
 	}
-	if first != "tweet search" || second != "hi" {
-		t.Fatalf("unexpected values: %q %q", first, second)
+	if id != "tweet search" {
+		t.Fatalf("unexpected ID: %q", id)
 	}
 }
 
-func TestParseIDRejectsInvalidSegments(t *testing.T) {
+func TestParseIDRejectsInvalidIDs(t *testing.T) {
 	t.Parallel()
 
-	var text string
-	if diagnostics := importpath.ParseImportID("%", "text", &text); !diagnostics.HasError() {
+	if _, diagnostics := importpath.ParseImportID("%"); !diagnostics.HasError() {
 		t.Fatal("invalid URL encoding produced no diagnostic")
 	}
-	if diagnostics := importpath.ParseImportID("one", "one/two", &text, &text); !diagnostics.HasError() {
-		t.Fatal("wrong segment count produced no diagnostic")
+	if _, diagnostics := importpath.ParseImportID("one/two"); !diagnostics.HasError() {
+		t.Fatal("an ID with 2 segments produced no diagnostic")
 	}
-}
-
-func TestParseIDRejectsInvalidCallers(t *testing.T) {
-	t.Parallel()
-
-	assertPanics(t, func() {
-		var text string
-		importpath.ParseImportID("one", "one/two", &text)
-	})
-}
-
-func assertPanics(t *testing.T, action func()) {
-	t.Helper()
-	defer func() {
-		if recover() == nil {
-			t.Fatal("operation did not panic")
-		}
-	}()
-	action()
 }

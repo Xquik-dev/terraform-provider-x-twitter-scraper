@@ -107,7 +107,7 @@ type NestedObjectMapLike interface {
 	AsStructMap(ctx context.Context) (reflect.Value, diag.Diagnostics)
 	NullValue(ctx context.Context) NestedObjectMapLike
 	UnknownValue(ctx context.Context) NestedObjectMapLike
-	KnownValue(ctx context.Context, values reflect.Value) NestedObjectMapLike
+	DecodeTarget(ctx context.Context) (reflect.Value, func() NestedObjectMapLike)
 	ModelType() reflect.Type
 }
 
@@ -133,13 +133,15 @@ func (v NestedObjectMap[T]) UnknownValue(ctx context.Context) NestedObjectMapLik
 	return UnknownObjectMap[T](ctx)
 }
 
-func (v NestedObjectMap[T]) KnownValue(ctx context.Context, values reflect.Value) NestedObjectMapLike {
-	ts, _ := reflect.TypeAssert[map[string]T](values)
-	r, diags := NewObjectMap(ctx, ts)
-	if diags.HasError() {
-		panic(fmt.Errorf("unexpected error creating NestedObjectMap: %v", diags))
+func (v NestedObjectMap[T]) DecodeTarget(ctx context.Context) (reflect.Value, func() NestedObjectMapLike) {
+	values, _ := v.AsStructMapT(ctx)
+	return reflect.ValueOf(&values).Elem(), func() NestedObjectMapLike {
+		r, diags := NewObjectMap(ctx, values)
+		if diags.HasError() {
+			panic(fmt.Errorf("unexpected error creating NestedObjectMap: %v", diags))
+		}
+		return r
 	}
-	return r
 }
 
 func (v NestedObjectMap[T]) Equal(o attr.Value) bool {

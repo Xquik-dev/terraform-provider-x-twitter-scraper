@@ -116,10 +116,12 @@ func (v Set[T]) UnknownValue(ctx context.Context) ListLike {
 	return UnknownSet[T](ctx)
 }
 
-func (v Set[T]) KnownValue(ctx context.Context, values reflect.Value) ListLike {
-	ts, _ := reflect.TypeAssert[[]T](values)
-	r, _ := NewSet(ctx, ts)
-	return r
+func (v Set[T]) DecodeTarget(ctx context.Context) (reflect.Value, func() ListLike) {
+	values, _ := v.Value(ctx)
+	return reflect.ValueOf(&values).Elem(), func() ListLike {
+		r, _ := NewSet(ctx, values)
+		return r
+	}
 }
 
 func (v Set[T]) ModelType() reflect.Type {

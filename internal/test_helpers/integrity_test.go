@@ -21,18 +21,18 @@ import (
 type empty struct{}
 
 type builtin struct {
-	A bool                   `tfsdk:"A" path:"required"`
-	B *int                   `tfsdk:"B" query:"computed_optional"`
+	A bool                   `tfsdk:"A" path:"A,required"`
+	B *int                   `tfsdk:"B" query:"B,computed_optional"`
 	C **int64                `tfsdk:"C" json:"C" api:"computed"`
-	D ***float64             `tfsdk:"D" path:"optional"`
-	E ****float64            `tfsdk:"E" query:"required"`
+	D ***float64             `tfsdk:"D" path:"D,optional"`
+	E ****float64            `tfsdk:"E" query:"E,required"`
 	F *****string            `tfsdk:"F" json:"F" api:"computed_optional"`
-	G []bool                 `tfsdk:"G" query:"computed"`
+	G []bool                 `tfsdk:"G" query:"G,computed"`
 	H *[]*bool               `tfsdk:"H" json:"H" api:"optional"`
-	I map[**string]**bool    `tfsdk:"I" path:"required"`
-	J ***builtin             `tfsdk:"J" query:"computed_optional"`
+	I map[**string]**bool    `tfsdk:"I" path:"I,required"`
+	J ***builtin             `tfsdk:"J" query:"J,computed_optional"`
 	K []builtin              `tfsdk:"K" json:"K" api:"computed"`
-	L *[]*builtin            `tfsdk:"L" path:"optional"`
+	L *[]*builtin            `tfsdk:"L" path:"L,optional"`
 	M **map[string]**builtin `tfsdk:"M"`
 }
 

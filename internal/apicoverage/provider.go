@@ -171,7 +171,10 @@ func (p *providerPackage) readPath(expression ast.Expr, helperAllowed bool) (str
 	}
 	switch expression := ast.Unparen(expression).(type) {
 	case *ast.Ident:
-		variable, _ := p.pkg.TypesInfo.Uses[expression].(*types.Var)
+		variable, ok := p.pkg.TypesInfo.Uses[expression].(*types.Var)
+		if !ok {
+			return "", false
+		}
 		values := p.assignedValues(variable)
 		if len(values) != 1 {
 			return "", false

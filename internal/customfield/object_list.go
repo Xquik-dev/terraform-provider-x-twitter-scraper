@@ -110,7 +110,7 @@ type NestedObjectListLike interface {
 	AsStructSlice(ctx context.Context) (reflect.Value, diag.Diagnostics)
 	NullValue(ctx context.Context) NestedObjectListLike
 	UnknownValue(ctx context.Context) NestedObjectListLike
-	KnownValue(ctx context.Context, values reflect.Value) NestedObjectListLike
+	DecodeTarget(ctx context.Context) (reflect.Value, func() NestedObjectListLike)
 	ModelType() reflect.Type
 	IsNullOrUnknown() bool
 	attr.Value
@@ -138,13 +138,15 @@ func (v NestedObjectList[T]) UnknownValue(ctx context.Context) NestedObjectListL
 	return UnknownObjectList[T](ctx)
 }
 
-func (v NestedObjectList[T]) KnownValue(ctx context.Context, values reflect.Value) NestedObjectListLike {
-	ts, _ := reflect.TypeAssert[[]T](values)
-	r, diags := NewObjectList(ctx, ts)
-	if diags.HasError() {
-		panic(fmt.Errorf("unexpected error creating NestedObjectList: %v", diags))
+func (v NestedObjectList[T]) DecodeTarget(ctx context.Context) (reflect.Value, func() NestedObjectListLike) {
+	values, _ := v.AsStructSliceT(ctx)
+	return reflect.ValueOf(&values).Elem(), func() NestedObjectListLike {
+		r, diags := NewObjectList(ctx, values)
+		if diags.HasError() {
+			panic(fmt.Errorf("unexpected error creating NestedObjectList: %v", diags))
+		}
+		return r
 	}
-	return r
 }
 
 func (v NestedObjectList[T]) IsNullOrUnknown() bool {

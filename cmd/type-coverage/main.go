@@ -240,6 +240,14 @@ func (a *audit) inspectFile(file *ast.File, info *types.Info, at func(token.Pos)
 			if _, checked := info.Types[node].Type.(*types.Tuple); node.Type != nil && !checked {
 				a.hatches[at(node.Lparen)] = hatch{"unchecked assertion", "type assertion without the comma-ok form"}
 			}
+		case *ast.AssignStmt:
+			if len(node.Lhs) == 2 && len(node.Rhs) == 1 && blank(node.Lhs[1]) && assertion(node.Rhs[0], info) {
+				a.hatches[at(node.Lhs[1].Pos())] = hatch{"unchecked assertion", "type assertion that discards its ok result"}
+			}
+		case *ast.ValueSpec:
+			if len(node.Names) == 2 && len(node.Values) == 1 && blank(node.Names[1]) && assertion(node.Values[0], info) {
+				a.hatches[at(node.Names[1].Pos())] = hatch{"unchecked assertion", "type assertion that discards its ok result"}
+			}
 		case *ast.SelectorExpr:
 			if function, ok := info.Uses[node.Sel].(*types.Func); ok && function.Pkg() != nil &&
 				function.Pkg().Path() == "reflect" && unsafeReflect[function.Name()] {
@@ -256,6 +264,30 @@ func (a *audit) inspectFile(file *ast.File, info *types.Info, at func(token.Pos)
 		}
 		return true
 	})
+}
+
+func blank(expression ast.Expr) bool {
+	identifier, ok := expression.(*ast.Ident)
+	return ok && identifier.Name == "_"
+}
+
+func assertion(expression ast.Expr, info *types.Info) bool {
+	switch expression := ast.Unparen(expression).(type) {
+	case *ast.TypeAssertExpr:
+		return expression.Type != nil
+	case *ast.CallExpr:
+		function := expression.Fun
+		if index, ok := function.(*ast.IndexExpr); ok {
+			function = index.X
+		}
+		selector, ok := function.(*ast.SelectorExpr)
+		if !ok {
+			return false
+		}
+		object, ok := info.Uses[selector.Sel].(*types.Func)
+		return ok && object.Pkg() != nil && object.Pkg().Path() == "reflect" && object.Name() == "TypeAssert"
+	}
+	return false
 }
 
 func markConstraints(parameters *ast.FieldList, constraints map[ast.Expr]bool) {
