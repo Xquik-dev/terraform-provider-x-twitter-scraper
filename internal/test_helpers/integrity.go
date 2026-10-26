@@ -283,11 +283,13 @@ func checkTag(path []string, attr attrlike, field reflect.StructField) (errs cod
 	tagged, tags := false, []string{}
 
 	for _, label := range []string{"path", "query", "json"} {
-		if labelled, ok := field.Tag.Lookup(label); ok {
+		if _, ok := field.Tag.Lookup(label); ok {
 			tagged = true
-			if _, options, found := strings.Cut(labelled, ","); found {
-				tags = append(tags, strings.Split(options, ",")...)
-			}
+		}
+	}
+	if path, ok := field.Tag.Lookup("path"); ok {
+		if _, options, found := strings.Cut(path, ","); found {
+			tags = append(tags, strings.Split(options, ",")...)
 		}
 	}
 	if options, ok := field.Tag.Lookup("api"); ok {

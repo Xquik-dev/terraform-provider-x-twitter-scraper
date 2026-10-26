@@ -22,18 +22,22 @@ type empty struct{}
 
 type builtin struct {
 	A bool                   `tfsdk:"A" path:"A,required"`
-	B *int                   `tfsdk:"B" query:"B,computed_optional"`
+	B *int                   `tfsdk:"B" json:"B" api:"computed_optional"`
 	C **int64                `tfsdk:"C" json:"C" api:"computed"`
 	D ***float64             `tfsdk:"D" path:"D,optional"`
-	E ****float64            `tfsdk:"E" query:"E,required"`
+	E ****float64            `tfsdk:"E" json:"E" api:"required"`
 	F *****string            `tfsdk:"F" json:"F" api:"computed_optional"`
-	G []bool                 `tfsdk:"G" query:"G,computed"`
+	G []bool                 `tfsdk:"G" json:"G" api:"computed"`
 	H *[]*bool               `tfsdk:"H" json:"H" api:"optional"`
 	I map[**string]**bool    `tfsdk:"I" path:"I,required"`
-	J ***builtin             `tfsdk:"J" query:"J,computed_optional"`
+	J ***builtin             `tfsdk:"J" json:"J" api:"computed_optional"`
 	K []builtin              `tfsdk:"K" json:"K" api:"computed"`
 	L *[]*builtin            `tfsdk:"L" path:"L,optional"`
 	M **map[string]**builtin `tfsdk:"M"`
+}
+
+type wireNameMode struct {
+	A bool `tfsdk:"A" path:"required"`
 }
 
 type reallysimple struct {
@@ -86,6 +90,17 @@ var datasourceTests = map[string]struct {
 		reflect.TypeOf((*empty)(nil)),
 		ds.Schema{},
 		[]string{},
+	},
+	"mode in the wire name": {
+		reflect.TypeOf((*wireNameMode)(nil)),
+		ds.Schema{
+			Attributes: map[string]ds.Attribute{
+				"A": rs.BoolAttribute{
+					Required: true,
+				},
+			},
+		},
+		[]string{".@wireNameMode.A"},
 	},
 	"builtin": {
 		reflect.TypeOf((*builtin)(nil)),

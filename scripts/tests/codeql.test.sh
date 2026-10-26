@@ -65,7 +65,7 @@ case "$1 $2" in
     output="$(option --output "$@")"
     case "$output" in
       */comment-fixture.sarif)
-        flagged="cmd/tool/main.go:1 first.go:4 second.go:1 second.go:4 second.go:5"
+        flagged="cmd/tool/main.go:1 first.go:4 first_test.go:1 second.go:1 second.go:4 second.go:5"
         [ -z "${FAKE_COMMENT_DRIFT:-}" ] || flagged="first.go:4 second.go:4 second.go:5"
         results=""
         for flag in $flagged; do
@@ -118,6 +118,7 @@ test_codeql_scans_a_copy_with_the_pinned_pack_and_leaves_the_working_tree_alone(
   assert_contains "$(log_of codeql)" "database analyze" "the CodeQL calls"
   assert_contains "$(log_of codeql)" " codeql/go-queries@1.6.12:codeql-suites/go-security-extended.qls codeql/no-code-comments --additional-packs=$sandbox/tmp/" "the analysis"
   assert_contains "$(log_of codeql)" "pack install codeql/no-code-comments --common-caches=$sandbox/tmp/" "the comment query install"
+  assert_contains "$(log_of codeql)" "--build-mode=autobuild --extractor-option=go.extract_tests=true --source-root=$sandbox/tmp/" "the test file extraction"
   assert_contains "$(log_of codeql)" "/comment-fixture --common-caches=$sandbox/tmp/" "the fixture database"
   assert_contains "$(log_of codeql)" "/comment-fixture-database codeql/no-code-comments --common-caches=$sandbox/tmp/" "the fixture analysis"
   assert_equal 6 "$(grep -c -- "--common-caches=$sandbox/tmp/xquik-terraform-codeql." "$sandbox_logs/codeql")" "the calls with a private cache"
@@ -146,9 +147,10 @@ test_a_comment_query_that_spares_a_second_package_comment_fails_the_run() {
 first.go:4
 second.go:4
 second.go:5
-It must flag every comment except the first package comment of a package other than main, which are these lines.
+It must flag these lines, every comment except the first package comment of each non-main package.
 cmd/tool/main.go:1
 first.go:4
+first_test.go:1
 second.go:1
 second.go:4
 second.go:5" "$run_stderr" "stderr"

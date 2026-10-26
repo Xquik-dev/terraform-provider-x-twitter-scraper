@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// Package importpath parses Terraform import IDs into their path segments.
+// Package importpath decodes a Terraform import ID.
 package importpath
 
 import (
@@ -16,12 +16,12 @@ import (
 func ParseImportID(id string) (string, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	if strings.Contains(id, "/") {
-		diags.AddError("invalid ID", fmt.Sprintf("expected urlencoded segments %q, got %q", "<id>", id))
+		diags.AddError("invalid ID", fmt.Sprintf("The import ID must be 1 URL-encoded segment without a slash, got %q.", id))
 		return "", diags
 	}
 	segment, err := url.PathUnescape(id)
 	if err != nil {
-		diags.AddError("invalid urlencoded segment", fmt.Sprintf("for %q : %s -> %q", "<id>", err.Error(), id))
+		diags.AddError("invalid urlencoded segment", fmt.Sprintf("The import ID %q has an invalid URL escape. %s", id, err.Error()))
 	}
 	return segment, diags
 }
