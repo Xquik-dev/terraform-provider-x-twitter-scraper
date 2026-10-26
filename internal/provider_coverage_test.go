@@ -140,7 +140,7 @@ func TestRegisteredSurfaceRejectsInvalidAPIResponses(t *testing.T) {
 
 			for _, factory := range providerUnderTest.Resources(context.Background()) {
 				resourceUnderTest := factory()
-				if strings.Contains(fmt.Sprintf("%T", resourceUnderTest), "x_write.") {
+				if strings.Contains(fmt.Sprintf("%T", resourceUnderTest), "xwrite.") {
 					continue
 				}
 				t.Run(fmt.Sprintf("resource/%T", resourceUnderTest), func(t *testing.T) {
@@ -166,7 +166,7 @@ func TestRegisteredResourcesHandleNotFoundResponses(t *testing.T) {
 
 	for _, factory := range providerUnderTest.Resources(context.Background()) {
 		resourceUnderTest := factory()
-		if strings.Contains(fmt.Sprintf("%T", resourceUnderTest), "x_write.") {
+		if strings.Contains(fmt.Sprintf("%T", resourceUnderTest), "xwrite.") {
 			continue
 		}
 		t.Run(fmt.Sprintf("%T", resourceUnderTest), func(t *testing.T) {
@@ -391,7 +391,7 @@ func responseClient(statusCode int, body string) (xtwitterscraper.Client, func()
 func resourceSupportsRead(resourceUnderTest resource.Resource) bool {
 	typeName := fmt.Sprintf("%T", resourceUnderTest)
 	return !strings.Contains(typeName, "compose.") &&
-		!strings.Contains(typeName, "guest_wallet.") &&
+		!strings.Contains(typeName, "guestwallet.") &&
 		!strings.Contains(typeName, "webhook.")
 }
 

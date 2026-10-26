@@ -134,15 +134,15 @@ func TestRegisteredSurfaceRejectsInvalidTerraformValues(t *testing.T) {
 func resourceSupportsUpdate(resourceUnderTest resource.Resource) bool {
 	typeName := fmt.Sprintf("%T", resourceUnderTest)
 	return strings.Contains(typeName, "monitor.") ||
-		strings.Contains(typeName, "monitor_keyword.") ||
+		strings.Contains(typeName, "monitorkeyword.") ||
 		strings.Contains(typeName, "style.") ||
-		strings.Contains(typeName, "support_ticket.") ||
+		strings.Contains(typeName, "supportticket.") ||
 		strings.Contains(typeName, "webhook.")
 }
 
 func resourceSupportsDelete(resourceUnderTest resource.Resource) bool {
 	typeName := fmt.Sprintf("%T", resourceUnderTest)
 	return strings.Contains(typeName, "draft.") ||
-		strings.Contains(typeName, "monitor_keyword.") ||
+		strings.Contains(typeName, "monitorkeyword.") ||
 		strings.Contains(typeName, "style.")
 }

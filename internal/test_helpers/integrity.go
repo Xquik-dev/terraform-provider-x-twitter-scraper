@@ -274,7 +274,7 @@ func checkTag(path []string, attr attrlike, field reflect.StructField) (errs cod
 	}
 	tagged, tags := false, []string{}
 
-	for _, label := range []string{"path", "query", "json"} {
+	for _, label := range []string{"path", "query", "json", "api"} {
 		if labelled, ok := field.Tag.Lookup(label); ok {
 			tagged = true
 			tags = append(tags, strings.Split(labelled, ",")...)
