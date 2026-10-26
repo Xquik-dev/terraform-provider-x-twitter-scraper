@@ -17,7 +17,6 @@ Connected X account management
 
 ### Read-Only
 
-- `cookies_obtained_at` (String)
 - `created_at` (String)
 - `health` (String) Available values are "healthy", "locked", "needsReauth", "recovering", "suspended" and "temporaryIssue".
 - `id` (String) The ID of this resource.

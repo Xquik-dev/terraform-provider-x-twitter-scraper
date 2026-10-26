@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Bug Fixes
+
+* The `x_account` data source drops a timestamp attribute that the API never sent, so it always read null.
+
 ## 0.8.0 (2026-10-16)
 
 [Full changelog from v0.7.5 to v0.8.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.7.5...v0.8.0)
