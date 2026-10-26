@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 	"mime/multipart"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -80,8 +81,8 @@ type DateTime struct {
 }
 
 type AdditionalProperties struct {
-	A      bool           `json:"a"`
-	Extras map[string]any `json:"-" api:"extras"`
+	A      bool              `json:"a"`
+	Extras map[string]string `json:"-" api:"extras"`
 }
 
 type TypedAdditionalProperties struct {
@@ -91,17 +92,13 @@ type TypedAdditionalProperties struct {
 
 type EmbeddedStructs struct {
 	AdditionalProperties
-	A      *int           `json:"number2"`
-	Extras map[string]any `json:"-" api:"extras"`
+	A      *int              `json:"number2"`
+	Extras map[string]string `json:"-" api:"extras"`
 }
 
 type Recursive struct {
 	Name  string     `json:"name"`
 	Child *Recursive `json:"child"`
-}
-
-type UnknownStruct struct {
-	Unknown any `json:"unknown"`
 }
 
 type UnionStruct struct {
@@ -140,7 +137,7 @@ type ReaderStruct struct {
 
 var tests = map[string]struct {
 	buf string
-	val any
+	val reflect.Value
 }{
 	"map_string": {
 		`--xxx
@@ -149,7 +146,7 @@ Content-Disposition: form-data; name="foo"
 bar
 --xxx--
 `,
-		map[string]string{"foo": "bar"},
+		reflect.ValueOf(map[string]string{"foo": "bar"}),
 	},
 
 	"map_interface": {
@@ -167,7 +164,7 @@ Content-Disposition: form-data; name="c"
 false
 --xxx--
 `,
-		map[string]any{"a": float64(1), "b": "str", "c": false},
+		reflect.ValueOf(map[string]string{"a": "1", "b": "str", "c": "false"}),
 	},
 
 	"primitive_struct": {
@@ -209,7 +206,7 @@ Content-Disposition: form-data; name="f"
 4
 --xxx--
 `,
-		Primitives{A: false, B: 237628372683, C: uint(654), D: 9999.43, E: 43.76, F: []int{1, 2, 3, 4}},
+		reflect.ValueOf(Primitives{A: false, B: 237628372683, C: uint(654), D: 9999.43, E: 43.76, F: []int{1, 2, 3, 4}}),
 	},
 
 	"terraform_types": {
@@ -327,7 +324,7 @@ Content-Type: application/json
 {"dynamic_hello":"dynamic_world"}
 --xxx--
 `,
-		TerraformTypes{
+		reflect.ValueOf(TerraformTypes{
 			A: types.BoolValue(true),
 			B: types.Int64Value(237628372683),
 			C: type_helpers.NewFloat64ValueFromStringUnsafe("654"),
@@ -370,7 +367,7 @@ Content-Type: application/json
 			}),
 			R: jsontypes.NewNormalizedValue(`{"hello": "world"}`),
 			S: customfield.RawNormalizedDynamicValue(types.DynamicValue(types.ObjectValueMust(map[string]attr.Type{"dynamic_hello": basetypes.StringType{}}, map[string]attr.Value{"dynamic_hello": basetypes.NewStringValue("dynamic_world")}))),
-		},
+		}),
 	},
 
 	"slices": {
@@ -381,9 +378,9 @@ Content-Type: application/json
 {"a":false,"b":237628372683,"c":654,"d":9999.43,"e":43.76,"f":[1,2,3,4]}
 --xxx--
 `,
-		Slices{
+		reflect.ValueOf(Slices{
 			Slice: []Primitives{{A: false, B: 237628372683, C: uint(654), D: 9999.43, E: 43.76, F: []int{1, 2, 3, 4}}},
-		},
+		}),
 	},
 
 	"primitive_pointer_struct": {
@@ -429,14 +426,14 @@ Content-Disposition: form-data; name="f"
 5
 --xxx--
 `,
-		PrimitivePointers{
+		reflect.ValueOf(PrimitivePointers{
 			A: P(false),
 			B: P(237628372683),
 			C: P(uint(654)),
 			D: P(9999.43),
 			E: P(float32(43.76)),
 			F: &[]int{1, 2, 3, 4, 5},
-		},
+		}),
 	},
 
 	"datetime_struct": {
@@ -450,10 +447,10 @@ Content-Disposition: form-data; name="date-time"
 2006-01-02T15:04:05Z
 --xxx--
 `,
-		DateTime{
+		reflect.ValueOf(DateTime{
 			Date:     time.Date(2006, time.January, 2, 0, 0, 0, 0, time.UTC),
 			DateTime: time.Date(2006, time.January, 2, 15, 4, 5, 0, time.UTC),
-		},
+		}),
 	},
 
 	"additional_properties": {
@@ -471,13 +468,13 @@ Content-Disposition: form-data; name="foo"
 true
 --xxx--
 `,
-		AdditionalProperties{
+		reflect.ValueOf(AdditionalProperties{
 			A: true,
-			Extras: map[string]any{
+			Extras: map[string]string{
 				"bar": "value",
-				"foo": true,
+				"foo": "true",
 			},
-		},
+		}),
 	},
 
 	"recursive_struct": {
@@ -492,33 +489,7 @@ Content-Disposition: form-data; name="name"
 Robert
 --xxx--
 `,
-		Recursive{Name: "Robert", Child: &Recursive{Name: "Alex"}},
-	},
-
-	"unknown_struct_number": {
-		`--xxx
-Content-Disposition: form-data; name="unknown"
-
-12
---xxx--
-`,
-		UnknownStruct{
-			Unknown: 12.,
-		},
-	},
-
-	"unknown_struct_map": {
-		`--xxx
-Content-Disposition: form-data; name="unknown.foo"
-
-bar
---xxx--
-`,
-		UnknownStruct{
-			Unknown: map[string]any{
-				"foo": "bar",
-			},
-		},
+		reflect.ValueOf(Recursive{Name: "Robert", Child: &Recursive{Name: "Alex"}}),
 	},
 
 	"union_integer": {
@@ -528,9 +499,9 @@ Content-Disposition: form-data; name="union"
 12
 --xxx--
 `,
-		UnionStruct{
+		reflect.ValueOf(UnionStruct{
 			Union: UnionInteger(12),
-		},
+		}),
 	},
 
 	"union_struct_discriminated_a": {
@@ -542,13 +513,13 @@ Content-Type: application/json
 --xxx--
 `,
 
-		UnionStruct{
+		reflect.ValueOf(UnionStruct{
 			Union: UnionStructA{
 				Type: "typeA",
 				A:    "foo",
 				B:    "bar",
 			},
-		},
+		}),
 	},
 
 	"union_struct_discriminated_b": {
@@ -559,12 +530,12 @@ Content-Type: application/json
 {"a":"foo","type":"typeB"}
 --xxx--
 `,
-		UnionStruct{
+		reflect.ValueOf(UnionStruct{
 			Union: UnionStructB{
 				Type: "typeB",
 				A:    "foo",
 			},
-		},
+		}),
 	},
 
 	"union_struct_time": {
@@ -574,9 +545,9 @@ Content-Disposition: form-data; name="union"
 2010-05-23
 --xxx--
 `,
-		UnionStruct{
+		reflect.ValueOf(UnionStruct{
 			Union: UnionTime(time.Date(2010, 05, 23, 0, 0, 0, 0, time.UTC)),
-		},
+		}),
 	},
 }
 
@@ -589,7 +560,7 @@ func TestEncode(t *testing.T) {
 			if err != nil {
 				t.Errorf("serialization of %v\nfailed with error:\n%v", test.val, err)
 			}
-			err = MarshalRoot(test.val, writer)
+			err = (&encoder{root: true, dateFormat: time.RFC3339}).marshal(test.val, writer)
 			if err != nil {
 				t.Errorf("serialization of %v\nfailed with error:\n%v", test.val, err)
 			}

@@ -4,7 +4,6 @@
 package apijson
 
 import (
-	"encoding/json"
 	"math/big"
 	"reflect"
 	"strings"
@@ -15,6 +14,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/tidwall/gjson"
 )
+
+type coverageTarget struct {
+	Value string `json:"value"`
+}
 
 type coverageUnmarshaler string
 
@@ -56,13 +59,11 @@ func (unknownFloat) IsKnown() bool {
 func TestUnmarshalInputValidationAndRootBehavior(t *testing.T) {
 	t.Parallel()
 
-	var target struct {
-		Value string `json:"value"`
-	}
-	for name, unmarshal := range map[string]func([]byte, any) error{
-		"default":  Unmarshal,
-		"computed": UnmarshalComputed,
-		"root":     UnmarshalRoot,
+	var target coverageTarget
+	for name, unmarshal := range map[string]func([]byte, *coverageTarget) error{
+		"default":  Unmarshal[coverageTarget],
+		"computed": UnmarshalComputed[coverageTarget],
+		"root":     UnmarshalRoot[coverageTarget],
 	} {
 		t.Run(name, func(t *testing.T) {
 			if err := unmarshal([]byte(`{`), &target); err == nil {
@@ -70,9 +71,6 @@ func TestUnmarshalInputValidationAndRootBehavior(t *testing.T) {
 			}
 			if err := unmarshal([]byte(`{}`), nil); err == nil {
 				t.Fatal("nil destination was accepted")
-			}
-			if err := unmarshal([]byte(`{}`), target); err == nil {
-				t.Fatal("non-pointer destination was accepted")
 			}
 		})
 	}
@@ -100,19 +98,19 @@ func TestDecoderPrimitiveFailuresAndSpecialTypes(t *testing.T) {
 	builder := &decoderBuilder{dateFormat: "2006-01-02"}
 	tests := []struct {
 		name  string
-		value any
+		value reflect.Value
 		json  string
 	}{
-		{name: "string", value: new(string), json: `{}`},
-		{name: "bool", value: new(bool), json: `"invalid"`},
-		{name: "int", value: new(int), json: `"invalid"`},
-		{name: "uint", value: new(uint), json: `-1`},
-		{name: "float", value: new(float64), json: `"invalid"`},
+		{name: "string", value: reflect.ValueOf(new(string)), json: `{}`},
+		{name: "bool", value: reflect.ValueOf(new(bool)), json: `"invalid"`},
+		{name: "int", value: reflect.ValueOf(new(int)), json: `"invalid"`},
+		{name: "uint", value: reflect.ValueOf(new(uint)), json: `-1`},
+		{name: "float", value: reflect.ValueOf(new(float64)), json: `"invalid"`},
 	}
 	for _, testCase := range tests {
 		testCase := testCase
 		t.Run(testCase.name, func(t *testing.T) {
-			value := reflect.ValueOf(testCase.value).Elem()
+			value := testCase.value.Elem()
 			decoder := builder.newPrimitiveTypeDecoder(value.Type())
 			if err := decoder(gjson.Parse(testCase.json), value, &decoderState{strict: true, exactness: exact}); err == nil {
 				t.Fatal("strict decoder accepted an invalid value")
@@ -178,18 +176,18 @@ func TestDecoderLooseAndUnknownPrimitiveFailures(t *testing.T) {
 	builder := &decoderBuilder{}
 	looseFailures := []struct {
 		name  string
-		value any
+		value reflect.Value
 		json  string
 	}{
-		{name: "string object", value: new(string), json: `{}`},
-		{name: "bool string", value: new(bool), json: `"invalid"`},
-		{name: "int string", value: new(int), json: `"invalid"`},
-		{name: "uint string", value: new(uint), json: `"invalid"`},
-		{name: "float string", value: new(float64), json: `"invalid"`},
+		{name: "string object", value: reflect.ValueOf(new(string)), json: `{}`},
+		{name: "bool string", value: reflect.ValueOf(new(bool)), json: `"invalid"`},
+		{name: "int string", value: reflect.ValueOf(new(int)), json: `"invalid"`},
+		{name: "uint string", value: reflect.ValueOf(new(uint)), json: `"invalid"`},
+		{name: "float string", value: reflect.ValueOf(new(float64)), json: `"invalid"`},
 	}
 	for _, testCase := range looseFailures {
 		t.Run(testCase.name, func(t *testing.T) {
-			value := reflect.ValueOf(testCase.value).Elem()
+			value := testCase.value.Elem()
 			if err := builder.newPrimitiveTypeDecoder(value.Type())(
 				gjson.Parse(testCase.json),
 				value,
@@ -202,17 +200,17 @@ func TestDecoderLooseAndUnknownPrimitiveFailures(t *testing.T) {
 
 	unknownFailures := []struct {
 		name  string
-		value any
+		value reflect.Value
 		json  string
 	}{
-		{name: "bool enum", value: new(unknownBool), json: `true`},
-		{name: "int enum", value: new(unknownInt), json: `1`},
-		{name: "uint enum", value: new(unknownUint), json: `1`},
-		{name: "float enum", value: new(unknownFloat), json: `1.5`},
+		{name: "bool enum", value: reflect.ValueOf(new(unknownBool)), json: `true`},
+		{name: "int enum", value: reflect.ValueOf(new(unknownInt)), json: `1`},
+		{name: "uint enum", value: reflect.ValueOf(new(unknownUint)), json: `1`},
+		{name: "float enum", value: reflect.ValueOf(new(unknownFloat)), json: `1.5`},
 	}
 	for _, testCase := range unknownFailures {
 		t.Run(testCase.name, func(t *testing.T) {
-			value := reflect.ValueOf(testCase.value).Elem()
+			value := testCase.value.Elem()
 			if err := builder.newPrimitiveTypeDecoder(value.Type())(
 				gjson.Parse(testCase.json),
 				value,
@@ -236,15 +234,14 @@ func TestEncoderPatchAndArrayErrorBranches(t *testing.T) {
 	t.Parallel()
 
 	patchEncoder := &encoder{patch: true}
-	for name, value := range map[string]any{
-		"string":  "same",
-		"int":     int64(1),
-		"uint":    uint64(1),
-		"float32": float32(1.5),
-		"float64": float64(1.5),
+	for name, reflected := range map[string]reflect.Value{
+		"string":  reflect.ValueOf("same"),
+		"int":     reflect.ValueOf(int64(1)),
+		"uint":    reflect.ValueOf(uint64(1)),
+		"float32": reflect.ValueOf(float32(1.5)),
+		"float64": reflect.ValueOf(float64(1.5)),
 	} {
 		t.Run(name, func(t *testing.T) {
-			reflected := reflect.ValueOf(value)
 			encoded, err := patchEncoder.newPrimitiveTypeEncoder(
 				reflected.Type(),
 			)(reflected, reflected)
@@ -282,10 +279,10 @@ func TestEncoderPatchAndArrayErrorBranches(t *testing.T) {
 	}
 
 	marshalEncoder := &encoder{}
-	if encoded, err := marshalEncoder.marshal(nil, "state"); err != nil || encoded != nil {
+	if encoded, err := marshalEncoder.marshal(reflect.Value{}, reflect.ValueOf("state")); err != nil || encoded != nil {
 		t.Fatalf("nil plan result = %q, %v", encoded, err)
 	}
-	if encoded, err := marshalEncoder.marshal("plan", nil); err != nil || encoded != nil {
+	if encoded, err := marshalEncoder.marshal(reflect.ValueOf("plan"), reflect.Value{}); err != nil || encoded != nil {
 		t.Fatalf("nil state result = %q, %v", encoded, err)
 	}
 
@@ -367,30 +364,10 @@ func TestDecoderTerraformInferenceAndInternalGuards(t *testing.T) {
 	if canParseAsNumber("not-a-number") {
 		t.Fatal("invalid number was accepted")
 	}
-
-	type private struct {
-		value string
-	}
-	holder := private{}
-	setUnexportedField(reflect.ValueOf(&holder).Elem().FieldByName("value"), "set")
-	if holder.value != "set" {
-		t.Fatalf("private value = %q, want set", holder.value)
-	}
 }
 
-func TestUnionRegistrationAndDiagnosticFormatting(t *testing.T) {
+func TestDiagnosticFormatting(t *testing.T) {
 	t.Parallel()
-
-	unionType := reflect.TypeOf((*json.Unmarshaler)(nil)).Elem()
-	RegisterUnion(
-		unionType,
-		"type",
-		UnionVariant{TypeFilter: gjson.String, DiscriminatorValue: "value", Type: reflect.TypeOf("")},
-	)
-	entry, ok := unionRegistry[unionType]
-	if !ok || entry.discriminatorKey != "type" || len(entry.variants) != 1 {
-		t.Fatal("union registration was not preserved")
-	}
 
 	if err := errorFromDiagnostics(nil); err != nil {
 		t.Fatalf("nil diagnostics returned an error: %v", err)

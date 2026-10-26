@@ -122,16 +122,16 @@ func (t NestedObjectType[T]) NullValue(ctx context.Context) (attr.Value, diag.Di
 
 type NestedObjectLike interface {
 	basetypes.ObjectValuable
-	ValueAny(ctx context.Context) (any, diag.Diagnostics)
+	ValueAny(ctx context.Context) (reflect.Value, diag.Diagnostics)
 	NullValue(ctx context.Context) NestedObjectLike
 	UnknownValue(ctx context.Context) NestedObjectLike
-	KnownValue(ctx context.Context, t any) NestedObjectLike
+	KnownValue(ctx context.Context, value reflect.Value) NestedObjectLike
+	ModelType() reflect.Type
 }
 
 var _ NestedObjectLike = (*NestedObject[struct{}])(nil)
 
 type NestedObject[T any] struct {
-	placeholder T
 	basetypes.ObjectValue
 }
 
@@ -158,9 +158,17 @@ func (v NestedObject[T]) UnknownValue(ctx context.Context) NestedObjectLike {
 	return UnknownObject[T](ctx)
 }
 
-func (v NestedObject[T]) KnownValue(ctx context.Context, t any) NestedObjectLike {
-	r, _ := NewObject(ctx, t.(*T))
+func (v NestedObject[T]) KnownValue(ctx context.Context, value reflect.Value) NestedObjectLike {
+	t, ok := reflect.TypeAssert[*T](value)
+	if !ok {
+		return UnknownObject[T](ctx)
+	}
+	r, _ := NewObject(ctx, t)
 	return r
+}
+
+func (v NestedObject[T]) ModelType() reflect.Type {
+	return reflect.TypeFor[T]()
 }
 
 func (v NestedObject[T]) Equal(o attr.Value) bool {
@@ -176,8 +184,9 @@ func (v NestedObject[T]) Type(ctx context.Context) attr.Type {
 	return NewNestedObjectType[T](ctx)
 }
 
-func (v NestedObject[T]) ValueAny(ctx context.Context) (any, diag.Diagnostics) {
-	return v.Value(ctx)
+func (v NestedObject[T]) ValueAny(ctx context.Context) (reflect.Value, diag.Diagnostics) {
+	t, diags := v.Value(ctx)
+	return reflect.ValueOf(t), diags
 }
 
 func (v NestedObject[T]) Value(ctx context.Context) (*T, diag.Diagnostics) {

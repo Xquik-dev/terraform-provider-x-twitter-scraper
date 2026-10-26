@@ -7,6 +7,7 @@ package customfield
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -21,10 +22,11 @@ var (
 
 type MapLike interface {
 	basetypes.MapValuable
-	ValueAttr(ctx context.Context) (any, diag.Diagnostics)
+	ValueAttr(ctx context.Context) (reflect.Value, diag.Diagnostics)
 	NullValue(ctx context.Context) MapLike
 	UnknownValue(ctx context.Context) MapLike
-	KnownValue(ctx context.Context, T any) MapLike
+	KnownValue(ctx context.Context, values reflect.Value) MapLike
+	ModelType() reflect.Type
 }
 
 type MapType[T attr.Value] struct {
@@ -109,7 +111,6 @@ func (t MapType[T]) NullValue(ctx context.Context) (attr.Value, diag.Diagnostics
 var _ MapLike = (*Map[basetypes.StringValue])(nil)
 
 type Map[T attr.Value] struct {
-	placeholder T
 	basetypes.MapValue
 }
 
@@ -129,9 +130,20 @@ func (v Map[T]) UnknownValue(ctx context.Context) MapLike {
 	return UnknownMap[T](ctx)
 }
 
-func (v Map[T]) KnownValue(ctx context.Context, values any) MapLike {
-	r, _ := NewMap[T](ctx, values)
-	return r
+func (v Map[T]) KnownValue(ctx context.Context, values reflect.Value) MapLike {
+	if ts, ok := reflect.TypeAssert[map[string]T](values); ok {
+		r, _ := NewMap(ctx, ts)
+		return r
+	}
+	if attrs, ok := reflect.TypeAssert[map[string]attr.Value](values); ok {
+		r, _ := NewMapFromAttributes[T](ctx, attrs)
+		return r
+	}
+	return UnknownMap[T](ctx)
+}
+
+func (v Map[T]) ModelType() reflect.Type {
+	return reflect.TypeFor[T]()
 }
 
 func (v Map[T]) Equal(o attr.Value) bool {
@@ -147,16 +159,23 @@ func (v Map[T]) Type(ctx context.Context) attr.Type {
 	return NewMapType[T](ctx)
 }
 
-func (v Map[T]) ValueAttr(ctx context.Context) (any, diag.Diagnostics) {
-	return v.Value(ctx)
+func (v Map[T]) ValueAttr(ctx context.Context) (reflect.Value, diag.Diagnostics) {
+	ts, diags := v.Value(ctx)
+	return reflect.ValueOf(ts), diags
 }
 
 func (v Map[T]) Value(ctx context.Context) (map[string]T, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	ts := map[string]T{}
 	for key, elem := range v.MapValue.Elements() {
-		ts[key] = elem.(T)
+		t, ok := elem.(T)
+		if !ok {
+			diags.AddError("unexpected element type", fmt.Sprintf("expected %T, got %T", t, elem))
+			return nil, diags
+		}
+		ts[key] = t
 	}
-	return ts, nil
+	return ts, diags
 }
 
 func NullMap[T attr.Value](ctx context.Context) Map[T] {
@@ -167,21 +186,16 @@ func UnknownMap[T attr.Value](ctx context.Context) Map[T] {
 	return Map[T]{MapValue: basetypes.NewMapUnknown(elemType[T](ctx))}
 }
 
-func NewMap[T attr.Value](ctx context.Context, values any) (Map[T], diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	attrs, ok := values.(map[string]attr.Value)
-	if !ok {
-		ts, ok := values.(map[string]T)
-		if !ok {
-			diags.AddError("unexpected type of values", fmt.Sprintf("expected %T or map[string]attr.Value, got %T", map[string]T{}, values))
-			return UnknownMap[T](ctx), diags
-		}
-		attrs = make(map[string]attr.Value, len(ts))
-		for i, v := range ts {
-			attrs[i] = v
-		}
+func NewMap[T attr.Value](ctx context.Context, values map[string]T) (Map[T], diag.Diagnostics) {
+	attrs := make(map[string]attr.Value, len(values))
+	for i, v := range values {
+		attrs[i] = v
 	}
+	return NewMapFromAttributes[T](ctx, attrs)
+}
+
+func NewMapFromAttributes[T attr.Value](ctx context.Context, attrs map[string]attr.Value) (Map[T], diag.Diagnostics) {
+	var diags diag.Diagnostics
 
 	setValue, d := basetypes.NewMapValue(elemType[T](ctx), attrs)
 	diags.Append(d...)

@@ -7,6 +7,7 @@ package customfield
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -96,7 +97,6 @@ func (t SetType[T]) NullValue(ctx context.Context) (attr.Value, diag.Diagnostics
 var _ ListLike = (*Set[basetypes.StringValue])(nil)
 
 type Set[T attr.Value] struct {
-	placeholder T
 	basetypes.SetValue
 }
 
@@ -116,9 +116,20 @@ func (v Set[T]) UnknownValue(ctx context.Context) ListLike {
 	return UnknownSet[T](ctx)
 }
 
-func (v Set[T]) KnownValue(ctx context.Context, values any) ListLike {
-	r, _ := NewSet[T](ctx, values)
-	return r
+func (v Set[T]) KnownValue(ctx context.Context, values reflect.Value) ListLike {
+	if ts, ok := reflect.TypeAssert[[]T](values); ok {
+		r, _ := NewSet(ctx, ts)
+		return r
+	}
+	if attrs, ok := reflect.TypeAssert[[]attr.Value](values); ok {
+		r, _ := NewSetFromAttributes[T](ctx, attrs)
+		return r
+	}
+	return UnknownSet[T](ctx)
+}
+
+func (v Set[T]) ModelType() reflect.Type {
+	return reflect.TypeFor[T]()
 }
 
 func (v Set[T]) IsNullOrUnknown() bool {
@@ -138,16 +149,23 @@ func (v Set[T]) Type(ctx context.Context) attr.Type {
 	return NewSetType[T](ctx)
 }
 
-func (v Set[T]) ValueAttr(ctx context.Context) (any, diag.Diagnostics) {
-	return v.Value(ctx)
+func (v Set[T]) ValueAttr(ctx context.Context) (reflect.Value, diag.Diagnostics) {
+	ts, diags := v.Value(ctx)
+	return reflect.ValueOf(ts), diags
 }
 
 func (v Set[T]) Value(ctx context.Context) ([]T, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	ts := []T{}
 	for _, elem := range v.SetValue.Elements() {
-		ts = append(ts, elem.(T))
+		t, ok := elem.(T)
+		if !ok {
+			diags.AddError("unexpected element type", fmt.Sprintf("expected %T, got %T", t, elem))
+			return nil, diags
+		}
+		ts = append(ts, t)
 	}
-	return ts, nil
+	return ts, diags
 }
 
 func NullSet[T attr.Value](ctx context.Context) Set[T] {
@@ -158,21 +176,16 @@ func UnknownSet[T attr.Value](ctx context.Context) Set[T] {
 	return Set[T]{SetValue: basetypes.NewSetUnknown(elemType[T](ctx))}
 }
 
-func NewSet[T attr.Value](ctx context.Context, values any) (Set[T], diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	attrs, ok := values.([]attr.Value)
-	if !ok {
-		ts, ok := values.([]T)
-		if !ok {
-			diags.AddError("unexpected type of values", fmt.Sprintf("expected %T or []attr.Value, got %T", []T{}, values))
-			return UnknownSet[T](ctx), diags
-		}
-		attrs = make([]attr.Value, len(ts))
-		for i, v := range ts {
-			attrs[i] = v
-		}
+func NewSet[T attr.Value](ctx context.Context, values []T) (Set[T], diag.Diagnostics) {
+	attrs := make([]attr.Value, len(values))
+	for i, v := range values {
+		attrs[i] = v
 	}
+	return NewSetFromAttributes[T](ctx, attrs)
+}
+
+func NewSetFromAttributes[T attr.Value](ctx context.Context, attrs []attr.Value) (Set[T], diag.Diagnostics) {
+	var diags diag.Diagnostics
 
 	setValue, d := basetypes.NewSetValue(elemType[T](ctx), attrs)
 	diags.Append(d...)
@@ -184,7 +197,7 @@ func NewSet[T attr.Value](ctx context.Context, values any) (Set[T], diag.Diagnos
 }
 
 func NewSetMust[T attr.Value](ctx context.Context, values []attr.Value) Set[T] {
-	o, diags := NewSet[T](ctx, values)
+	o, diags := NewSetFromAttributes[T](ctx, values)
 	if diags.HasError() {
 		panic(fmt.Errorf("unexpected error creating a customfield.Set: %v", diags))
 	}

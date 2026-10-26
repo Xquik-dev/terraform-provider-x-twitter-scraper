@@ -107,10 +107,11 @@ func (t NestedObjectListType[T]) NullValue(ctx context.Context) (attr.Value, dia
 }
 
 type NestedObjectListLike interface {
-	AsStructSlice(ctx context.Context) (any, diag.Diagnostics)
+	AsStructSlice(ctx context.Context) (reflect.Value, diag.Diagnostics)
 	NullValue(ctx context.Context) NestedObjectListLike
 	UnknownValue(ctx context.Context) NestedObjectListLike
-	KnownValue(ctx context.Context, T any) NestedObjectListLike
+	KnownValue(ctx context.Context, values reflect.Value) NestedObjectListLike
+	ModelType() reflect.Type
 	IsNullOrUnknown() bool
 	attr.Value
 }
@@ -118,7 +119,6 @@ type NestedObjectListLike interface {
 var _ NestedObjectListLike = (*NestedObjectList[basetypes.StringValue])(nil)
 
 type NestedObjectList[T any] struct {
-	placeholder T
 	basetypes.ListValue
 }
 
@@ -138,8 +138,12 @@ func (v NestedObjectList[T]) UnknownValue(ctx context.Context) NestedObjectListL
 	return UnknownObjectList[T](ctx)
 }
 
-func (v NestedObjectList[T]) KnownValue(ctx context.Context, anyValues any) NestedObjectListLike {
-	r, diags := NewObjectList(ctx, anyValues.([]T))
+func (v NestedObjectList[T]) KnownValue(ctx context.Context, values reflect.Value) NestedObjectListLike {
+	ts, ok := reflect.TypeAssert[[]T](values)
+	if !ok {
+		return UnknownObjectList[T](ctx)
+	}
+	r, diags := NewObjectList(ctx, ts)
 	if diags.HasError() {
 		panic(fmt.Errorf("unexpected error creating NestedObjectList: %v", diags))
 	}
@@ -163,8 +167,13 @@ func (v NestedObjectList[T]) Type(ctx context.Context) attr.Type {
 	return NewNestedObjectListType[T](ctx)
 }
 
-func (v NestedObjectList[T]) AsStructSlice(ctx context.Context) (any, diag.Diagnostics) {
-	return v.AsStructSliceT(ctx)
+func (v NestedObjectList[T]) AsStructSlice(ctx context.Context) (reflect.Value, diag.Diagnostics) {
+	ts, diags := v.AsStructSliceT(ctx)
+	return reflect.ValueOf(ts), diags
+}
+
+func (v NestedObjectList[T]) ModelType() reflect.Type {
+	return reflect.TypeFor[T]()
 }
 
 func (v NestedObjectList[T]) AsStructSliceT(ctx context.Context) ([]T, diag.Diagnostics) {
