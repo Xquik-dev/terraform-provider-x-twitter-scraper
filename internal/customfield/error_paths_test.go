@@ -78,20 +78,21 @@ func TestNestedObjectRejectsInvalidSchemasAndValues(t *testing.T) {
 		t.Fatal("object value accepted mismatched attributes")
 	}
 
+	private := privateCoverageObject{hidden: "hidden", Name: "name"}
 	attributes, diagnostics := StructToAttributes[privateCoverageObject](ctx)
 	requireNoDiagnostics(t, diagnostics)
-	if len(attributes) != 1 {
+	if _, included := attributes[private.hidden]; included || len(attributes) != 1 {
 		t.Fatalf("private field was included: %v", attributes)
 	}
-	for name, model := range map[string]any{
-		"nested": nestedUnsupportedCoverageObject{},
-		"list":   listUnsupportedCoverageObject{},
-		"map":    mapUnsupportedCoverageObject{},
+	for name, model := range map[string]reflect.Value{
+		"nested": reflect.ValueOf(nestedUnsupportedCoverageObject{}),
+		"list":   reflect.ValueOf(listUnsupportedCoverageObject{}),
+		"map":    reflect.ValueOf(mapUnsupportedCoverageObject{}),
 	} {
 		t.Run(name, func(t *testing.T) {
 			_, nestedDiagnostics := StructFromAttributesGeneric(
 				ctx,
-				reflect.ValueOf(model),
+				model,
 			)
 			requireDiagnostics(t, nestedDiagnostics)
 		})

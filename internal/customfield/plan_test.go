@@ -168,7 +168,7 @@ func TestPlanReadAndWrite(t *testing.T) {
 	})
 }
 
-func EnsurePlanEquals(t *testing.T, diags diag.Diagnostics, expected any, actual any) {
+func EnsurePlanEquals[T any](t *testing.T, diags diag.Diagnostics, expected T, actual T) {
 	ExpectNoDiagnostics(t, diags)
 
 	if !reflect.DeepEqual(actual, expected) {

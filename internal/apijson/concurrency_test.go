@@ -10,7 +10,13 @@ import (
 )
 
 type concurrentEnvelope struct {
-	Value any `json:"value"`
+	Value fmt.Stringer `json:"value"`
+}
+
+type concurrentValues []concurrentValue
+
+func (values concurrentValues) String() string {
+	return fmt.Sprint(len(values))
 }
 
 type concurrentValue struct {
@@ -36,7 +42,7 @@ func TestMarshalRootIsConcurrencySafe(t *testing.T) {
 			<-start
 
 			encoded, err := MarshalRoot(concurrentEnvelope{
-				Value: []concurrentValue{{Count: worker}},
+				Value: concurrentValues{{Count: worker}},
 			})
 			if err != nil {
 				errors <- err

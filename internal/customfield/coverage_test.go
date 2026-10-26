@@ -5,6 +5,7 @@ package customfield
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -401,7 +402,10 @@ func TestNormalizedDynamicContracts(t *testing.T) {
 	dynamicString := types.DynamicValue(types.StringValue("value"))
 	normalizedValue, diags := normalizedType.ValueFromDynamic(ctx, dynamicString)
 	requireNoDiagnostics(t, diags)
-	converted := normalizedValue.(NormalizedDynamicValue)
+	converted, ok := normalizedValue.(NormalizedDynamicValue)
+	if !ok {
+		t.Fatalf("normalized value is a %T", normalizedValue)
+	}
 	_, diags = converted.ToDynamicValue(ctx)
 	requireNoDiagnostics(t, diags)
 	assertNotNil(t, "normalized value type", converted.Type(ctx))
@@ -504,7 +508,7 @@ func assertNotEmpty(t *testing.T, label string, value string) {
 	}
 }
 
-func assertNotNil(t *testing.T, label string, value any) {
+func assertNotNil(t *testing.T, label string, value fmt.Stringer) {
 	t.Helper()
 	if value == nil {
 		t.Fatalf("%s is nil", label)

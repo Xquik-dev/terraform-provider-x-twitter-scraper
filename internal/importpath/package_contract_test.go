@@ -9,7 +9,7 @@ func TestParseImportIDDecodesPathSegments(t *testing.T) {
 	t.Parallel()
 
 	var value string
-	diagnostics := ParseImportID("tweet%20search", "query", &value)
+	diagnostics := ParseImportID("tweet%20search", "query", String(&value))
 	if diagnostics.HasError() {
 		t.Fatalf("unexpected diagnostics: %v", diagnostics)
 	}

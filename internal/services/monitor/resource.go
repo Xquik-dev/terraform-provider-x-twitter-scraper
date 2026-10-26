@@ -183,7 +183,7 @@ func (r *MonitorResource) ImportState(ctx context.Context, req resource.ImportSt
 	diags := importpath.ParseImportID(
 		req.ID,
 		"<id>",
-		&path,
+		importpath.String(&path),
 	)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

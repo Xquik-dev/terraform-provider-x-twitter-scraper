@@ -14,44 +14,69 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
-func ParseImportID(str string, format string, args ...any) (diag diag.Diagnostics) {
-	path_spec, path := strings.Split(format, "/"), strings.Split(str, "/")
+type Segment interface {
+	parse(spec string, segment string) diag.Diagnostics
+}
 
-	if len(args) != len(path_spec) {
+type boolSegment struct{ target *bool }
+type int64Segment struct{ target *int64 }
+type float64Segment struct{ target *float64 }
+type stringSegment struct{ target *string }
+
+func Bool(target *bool) Segment       { return boolSegment{target} }
+func Int64(target *int64) Segment     { return int64Segment{target} }
+func Float64(target *float64) Segment { return float64Segment{target} }
+func String(target *string) Segment   { return stringSegment{target} }
+
+func (s boolSegment) parse(spec string, segment string) (diags diag.Diagnostics) {
+	var err error
+	*s.target, err = strconv.ParseBool(segment)
+	if err != nil {
+		diags.AddError("invalid bool segment", fmt.Sprintf("for %q : %s -> %q", spec, err.Error(), segment))
+	}
+	return
+}
+
+func (s int64Segment) parse(spec string, segment string) (diags diag.Diagnostics) {
+	var err error
+	*s.target, err = strconv.ParseInt(segment, 10, 64)
+	if err != nil {
+		diags.AddError("invalid int segment", fmt.Sprintf("for %q : %s -> %q", spec, err.Error(), segment))
+	}
+	return
+}
+
+func (s float64Segment) parse(spec string, segment string) (diags diag.Diagnostics) {
+	var err error
+	*s.target, err = strconv.ParseFloat(segment, 64)
+	if err != nil {
+		diags.AddError("invalid float segment", fmt.Sprintf("for %q : %s -> %q", spec, err.Error(), segment))
+	}
+	return
+}
+
+func (s stringSegment) parse(spec string, segment string) (diags diag.Diagnostics) {
+	var err error
+	*s.target, err = url.PathUnescape(segment)
+	if err != nil {
+		diags.AddError("invalid urlencoded segment", fmt.Sprintf("for %q : %s -> %q", spec, err.Error(), segment))
+	}
+	return
+}
+
+func ParseImportID(str string, format string, segments ...Segment) (diags diag.Diagnostics) {
+	pathSpec, path := strings.Split(format, "/"), strings.Split(str, "/")
+
+	if len(segments) != len(pathSpec) {
 		panic(fmt.Sprintf("argument count does not match format: %q", format))
 	}
-	if len(path) != len(path_spec) {
-		diag.AddError("invalid ID", fmt.Sprintf("expected urlencoded segments %q, got %q", format, str))
+	if len(path) != len(pathSpec) {
+		diags.AddError("invalid ID", fmt.Sprintf("expected urlencoded segments %q, got %q", format, str))
 		return
 	}
 
-	var err error
-	for i, arg := range args {
-		spec, segment := path_spec[i], path[i]
-		switch ptr := arg.(type) {
-		case *bool:
-			*ptr, err = strconv.ParseBool(segment)
-			if err != nil {
-				diag.AddError("invalid bool segment", fmt.Sprintf("for %q : %s -> %q", spec, err.Error(), segment))
-			}
-		case *int64:
-			*ptr, err = strconv.ParseInt(segment, 10, 64)
-			if err != nil {
-				diag.AddError("invalid int segment", fmt.Sprintf("for %q : %s -> %q", spec, err.Error(), segment))
-			}
-		case *float64:
-			*ptr, err = strconv.ParseFloat(segment, 64)
-			if err != nil {
-				diag.AddError("invalid float segment", fmt.Sprintf("for %q : %s -> %q", spec, err.Error(), segment))
-			}
-		case *string:
-			*ptr, err = url.PathUnescape(segment)
-			if err != nil {
-				diag.AddError("invalid urlencoded segment", fmt.Sprintf("for %q : %s -> %q", spec, err.Error(), segment))
-			}
-		default:
-			panic(fmt.Sprintf("invalid argument type for segment: %q", segment))
-		}
+	for i, segment := range segments {
+		diags.Append(segment.parse(pathSpec[i], path[i])...)
 	}
 	return
 }
