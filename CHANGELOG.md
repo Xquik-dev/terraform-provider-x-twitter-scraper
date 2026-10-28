@@ -10,7 +10,7 @@
 
 ### Security
 
-* Build with golang.org/x/net 0.62.0, which fixes GO-2026-6860 and GO-2026-6866. Both sit in its HTML parser, which the provider never imports.
+* Build with golang.org/x/net 0.62.0, which fixes GO-2026-6860 and GO-2026-6866. Both are in its `html` package, which the provider never imports.
 
 ### Chores
 
