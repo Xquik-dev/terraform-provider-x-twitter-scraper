@@ -43,7 +43,7 @@ Run `terraform validate` before applying changes.
 
 ```hcl
 resource "x-twitter-scraper_monitor" "product_updates" {
-  username    = "xquik"
+  username    = "NASA"
   event_types = ["tweet.new"]
 }
 
