@@ -363,4 +363,27 @@ test_an_unknown_option_stops_with_the_usage_line() {
   assert_equal "" "$(log_of order)" "the checks that ran"
 }
 
+test_a_configured_runner_takes_the_checkout_and_the_arguments() {
+  prepare_checks
+  printf '#!/usr/bin/env bash\necho "$*" >"%s/runner"\nexit 3\n' "$sandbox_logs" >"$sandbox/runner"
+  chmod 755 "$sandbox/runner"
+  run_env+=("GIT_CONFIG_COUNT=1" "GIT_CONFIG_KEY_0=checklocal.runner" "GIT_CONFIG_VALUE_0=$sandbox/runner")
+
+  run_in_repo bin/check-local --no-status "two words"
+
+  assert_equal 3 "$run_status" "the exit code"
+  assert_equal "$(cd -- "$sandbox_repo" && pwd -P) --no-status two words" "$(log_of runner)" "the runner call"
+  assert_equal "" "$(log_of order)" "the checks run here"
+}
+
+test_CHECK_LOCAL_HERE_runs_the_checks_here_despite_a_configured_runner() {
+  prepare_checks
+  run_env+=("CHECK_LOCAL_HERE=1" "GIT_CONFIG_COUNT=1" "GIT_CONFIG_KEY_0=checklocal.runner" "GIT_CONFIG_VALUE_0=$sandbox/missing-runner")
+
+  run_in_repo bin/check-local --no-status
+
+  assert_equal 0 "$run_status" "the exit code"
+  assert_equal "$check_order" "$(log_of order)" "the order of the checks"
+}
+
 run_tests
