@@ -8,6 +8,10 @@
 
 * The `x_account` data source replaces a timestamp attribute with `connected_at`, which holds the same value. If `terraform plan` reports an unsupported `x_account` attribute, read `connected_at` instead.
 
+### Security
+
+* Build with golang.org/x/net 0.62.0, which fixes GO-2026-6860 and GO-2026-6866. Both sit in its HTML parser, which the provider never imports.
+
 ### Chores
 
 * Lint fails on any untyped declaration, type escape hatch or staticcheck finding.
