@@ -42,8 +42,8 @@ Run `terraform validate` before applying changes.
 ## Monitor accounts & deliver events
 
 ```hcl
-resource "x-twitter-scraper_monitor" "product_updates" {
-  username    = "xquik"
+resource "x-twitter-scraper_monitor" "nasa" {
+  username    = "NASA"
   event_types = ["tweet.new"]
 }
 
