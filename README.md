@@ -1,6 +1,7 @@
 # X API & Twitter API Terraform provider by Xquik
 
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13729/badge)](https://www.bestpractices.dev/projects/13729)
+[![Convex Component](https://www.convex.dev/components/badge/convex-xquik)](https://www.convex.dev/components/convex-xquik)
 
 Use this X API & Twitter API Terraform provider to manage X automation as code.
 It turns Xquik monitors, signed webhooks, drafts & X actions into Terraform resources.
