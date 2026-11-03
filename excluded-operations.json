@@ -7,6 +7,17 @@
     ]
   },
   {
+    "reason": "OAuth 2.1 and agent sign-up endpoints that issue the tokens the provider sends. They live at https://xquik.com, outside the base URL https://xquik.com/api/v1.",
+    "operations": [
+      "GET /api/oauth/authorize",
+      "POST /api/oauth/token",
+      "POST /api/oauth/revoke",
+      "POST /api/oauth/register",
+      "POST /agent/identity",
+      "POST /agent/identity/claim"
+    ]
+  },
+  {
     "reason": "Needs a dashboard sign-in cookie, which API keys and bearer tokens cannot use.",
     "operations": [
       "GET /api/v1/api-keys",
@@ -14,7 +25,8 @@
       "DELETE /api/v1/api-keys/{id}",
       "POST /api/v1/credits/quick-topup",
       "PATCH /api/v1/api-keys/{id}",
-      "POST /api/v1/api-keys/bulk-revoke"
+      "POST /api/v1/api-keys/bulk-revoke",
+      "PATCH /api/v1/api-keys"
     ]
   },
   {
@@ -93,7 +105,8 @@
       "GET /api/v1/x/sports/{league}/games/{id}/plays",
       "GET /api/v1/x/sports/{league}/games/{id}/player-props",
       "GET /api/v1/x/sports/{league}/games/{id}/posts",
-      "GET /api/v1/x/sports/{league}/games/{id}/roster"
+      "GET /api/v1/x/sports/{league}/games/{id}/roster",
+      "GET /api/v1/x/users/{id}/shadowban"
     ]
   },
   {
@@ -131,7 +144,8 @@
       "GET /api/v1/support/tickets",
       "GET /api/v1/x/accounts",
       "GET /api/v1/monitors/posts",
-      "GET /api/v1/monitors/posts/{id}/metrics"
+      "GET /api/v1/monitors/posts/{id}/metrics",
+      "GET /api/v1/activity"
     ]
   },
   {
