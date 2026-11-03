@@ -1,0 +1,42 @@
+{
+  "object": "activity",
+  "id": "Q7wErTyUiOpA",
+  "kind": "monitor_change",
+  "type": "pause",
+  "status": "completed",
+  "url": "https://dashboard.xquik.com/activity/Q7wErTyUiOpA",
+  "requestId": null,
+  "timestamps": {
+    "createdAt": "2026-10-28T20:22:13.481Z",
+    "updatedAt": "2026-10-28T20:22:14.002Z",
+    "completedAt": "2026-10-28T20:22:13.950Z",
+    "confirmedAt": "2026-10-28T20:22:13.900Z",
+    "expiresAt": "2026-10-29T20:22:13.481Z",
+    "occurredAt": "2026-10-28T20:22:11.000Z",
+    "discoveredAt": "2026-10-28T20:22:12.204Z",
+    "postedAt": "2026-10-27T15:00:00.000Z",
+    "firstAttemptedAt": "2026-10-28T20:22:13.610Z",
+    "deliveredAt": "2026-10-28T20:22:13.702Z",
+    "nextRetryAt": "2026-10-28T20:23:13.610Z",
+    "exhaustedAt": "2026-10-29T20:22:13.610Z",
+    "drawnAt": "2026-10-28T20:22:15.330Z",
+    "lastUsedAt": "2026-10-29T08:01:44.120Z",
+    "pausedAt": "2026-10-29T09:00:00.000Z"
+  },
+  "request": null,
+  "caller": {
+    "authMethod": "oauth",
+    "apiKey": null,
+    "oauthClient": {
+      "id": "claude",
+      "name": "Claude"
+    }
+  },
+  "charge": {
+    "credits": 1300,
+    "balanceAfter": 898700,
+    "at": "2026-10-28T20:22:13.900Z"
+  },
+  "details": {},
+  "related": []
+}

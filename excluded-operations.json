@@ -30,7 +30,7 @@
     ]
   },
   {
-    "reason": "Lists, searches, feeds and trends of live X data. Their results change on every call, so Terraform state cannot hold them.",
+    "reason": "Lists, searches, feeds, trends and checks of live X data. Their results change on every call, so Terraform state cannot hold them.",
     "operations": [
       "GET /api/v1/x/tweets",
       "GET /api/v1/x/tweets/search",

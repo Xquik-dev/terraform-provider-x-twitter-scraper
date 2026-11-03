@@ -3,12 +3,12 @@
 page_title: "x-twitter-scraper_activity Data Source - X Twitter Scraper"
 subcategory: ""
 description: |-
-  Every activity keeps a full record you can fetch & export.
+  Reads 1 activity of your account by its ID.
 ---
 
 # x-twitter-scraper_activity (Data Source)
 
-Every activity keeps a full record you can fetch & export.
+Reads 1 activity of your account by its ID.
 
 
 
@@ -23,7 +23,7 @@ Every activity keeps a full record you can fetch & export.
 
 - `caller` (Attributes) (see [below for nested schema](#nestedatt--caller))
 - `charge` (Attributes) Credits charged for this activity. (see [below for nested schema](#nestedatt--charge))
-- `details` (Map of String) Fields of this kind of activity, such as its target. A field can hold JSON, such as the data of a monitor event or the payload of a webhook delivery.
+- `details` (Map of String) Fields of this kind of activity, such as its target. Each value is JSON text. Read it with `jsondecode`.
 - `kind` (String) Kind of the activity. Only a signed-in dashboard session sees an `api_key` record.
 - `object` (String)
 - `related` (Attributes List) Up to 5 other activities on the same subject within 7 days, newest first. (see [below for nested schema](#nestedatt--related))

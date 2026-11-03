@@ -18,7 +18,7 @@ var _ datasource.DataSourceWithConfigValidators = (*ActivityDataSource)(nil)
 
 func DataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		MarkdownDescription: "Every activity keeps a full record you can fetch & export.",
+		MarkdownDescription: "Reads 1 activity of your account by its ID.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Activity ID. It is the id of an Activity log row and the last part of the dashboard's activity page URL.",
@@ -47,7 +47,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"details": schema.MapAttribute{
-				Description: "Fields of this kind of activity, such as its target. A field can hold JSON, such as the data of a monitor event or the payload of a webhook delivery.",
+				Description: "Fields of this kind of activity, such as its target. Each value is JSON text. Read it with `jsondecode`.",
 				Computed:    true,
 				CustomType:  customfield.NewMapType[jsontypes.Normalized](ctx),
 				ElementType: jsontypes.NormalizedType{},
