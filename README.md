@@ -68,6 +68,7 @@ Every X write resource stores its canonical response. Uncertain retries keep the
 ## Read existing Xquik data
 
 - `account` for account usage and limits
+- `activity` for 1 record of your account's activity log
 - `draft` and `style` for drafts and writing styles
 - `monitor` and `monitor_keyword` for account and keyword monitors
 - `event` and `draw` for events and giveaway draws
