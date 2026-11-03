@@ -1,6 +1,6 @@
 module github.com/Xquik-dev/terraform-provider-x-twitter-scraper
 
-go 1.27.2
+go 1.27.3
 
 tool honnef.co/go/tools/cmd/staticcheck
 

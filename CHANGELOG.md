@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.9.0 (2026-10-26)
+## 0.9.0 (2026-11-03)
 
 [Full changelog from v0.8.0 to v0.9.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.8.0...v0.9.0)
 
@@ -14,6 +14,7 @@
 
 ### Security
 
+* Build with Go 1.27.3, which fixes GO-2026-6809 in the standard library.
 * Build with golang.org/x/net 0.62.0, which fixes GO-2026-6860 and GO-2026-6866. Both are in its `html` package, which the provider never imports.
 
 ### Chores
