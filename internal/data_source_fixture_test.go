@@ -117,6 +117,22 @@ func TestDataSourcesReadTheSpecExamples(t *testing.T) {
 			"tweet.retweeted_tweet.quoted_tweet.text":    wantText("Retweeted quote"),
 			"tweet.retweeted_tweet.retweeted_tweet.text": wantText("Retweeted retweet"),
 		}},
+		{"x-twitter-scraper_activity", "naF3xqHLWDTs", "/api/v1/activity/naF3xqHLWDTs", "activity.json", map[string]stateWant{
+			"kind":                  wantText("monitor_change"),
+			"status":                wantText("completed"),
+			"request_id":            wantText("9f2c1d7e4b8a4c55a1e0d3b2c6f7a8e9"),
+			"timestamps.created_at": wantText("2026-10-28T20:22:13.481Z"),
+			"request.method":        wantText("PATCH"),
+			"request.http_status":   wantNumber(200),
+			"request.duration_ms":   wantNumber(37),
+			"caller.auth_method":    wantText("api_key"),
+			"caller.api_key.prefix": wantText("xq_ab12"),
+			"caller.oauth_client":   wantNull{},
+			"charge":                wantNull{},
+			"details.monitorKind":   wantText(`"account"`),
+			"related.0.id":          wantText("Q7wErTyUiOpA"),
+			"related.0.created_at":  wantText("2026-10-21T09:12:40.002Z"),
+		}},
 	} {
 		t.Run(test.typeName, func(t *testing.T) {
 			t.Parallel()

@@ -8,6 +8,10 @@
 
 * The `x_account` data source replaces a timestamp attribute with `connected_at`, which holds the same value. If `terraform plan` reports an unsupported `x_account` attribute, read `connected_at` instead.
 
+### Features
+
+* The new `activity` data source reads 1 activity of your account by its ID. It returns the request, the caller, the charge, every timestamp and up to 5 related activities.
+
 ### Security
 
 * Build with golang.org/x/net 0.62.0, which fixes GO-2026-6860 and GO-2026-6866. Both are in its `html` package, which the provider never imports.

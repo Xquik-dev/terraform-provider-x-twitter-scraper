@@ -88,6 +88,7 @@ Prefix each name with `x-twitter-scraper_` inside Terraform blocks.
 ## Data source map
 
 - `account` for usage
+- `activity` for the activity log
 - `draft` and `style` for content
 - `monitor`, `monitor_keyword` and `event` for monitoring
 - `draw` for giveaway draws

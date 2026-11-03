@@ -11,6 +11,7 @@ import (
 	"os"
 
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/account"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/activity"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/compose"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/draft"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/draw"
@@ -152,6 +153,7 @@ func (p *XTwitterScraperProvider) Resources(ctx context.Context) []func() resour
 func (p *XTwitterScraperProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		account.NewAccountDataSource,
+		activity.NewActivityDataSource,
 		draft.NewDraftDataSource,
 		style.NewStyleDataSource,
 		monitor.NewMonitorDataSource,
