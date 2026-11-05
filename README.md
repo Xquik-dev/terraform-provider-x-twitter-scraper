@@ -17,6 +17,43 @@ Xquik charges only for delivered, unique, filter-matching results and never pads
 
 [Quickstart](docs/guides/quickstart.md) | [Provider docs](docs/index.md) | [Examples](examples) | [REST API](https://docs.xquik.com/api-reference/overview) | [OpenAPI](https://xquik.com/openapi.json) | [Security](SECURITY.md)
 
+## Install the Terraform Twitter provider
+
+This provider requires Terraform CLI 1.0 or newer.
+
+```hcl
+terraform {
+  required_providers {
+    x-twitter-scraper = {
+      source  = "Xquik-dev/x-twitter-scraper"
+      version = "~> 0.7"
+    }
+  }
+}
+
+provider "x-twitter-scraper" {}
+```
+
+Then run `terraform init`.
+
+## Create a Twitter monitor & Twitter webhook
+
+A monitor watches 1 account. The webhook receives each new post & reply, signed with HMAC.
+
+```hcl
+resource "x-twitter-scraper_monitor" "founder" {
+  event_types = ["tweet.new", "tweet.reply"]
+  username    = "elonmusk"
+}
+
+resource "x-twitter-scraper_webhook" "alerts" {
+  event_types = ["tweet.new", "tweet.reply"]
+  url         = "https://example.com/webhook"
+}
+```
+
+Then run `terraform apply`.
+
 <!-- trust:start -->
 
 ## Trust & usage
@@ -84,25 +121,6 @@ Use the [Xquik REST API](https://docs.xquik.com/api-reference/overview) for Twit
 
 Use an Xquik SDK for application code. Use this provider for related Twitter automation.
 
-## Install
-
-This provider requires Terraform CLI 1.0 or newer.
-
-```hcl
-terraform {
-  required_providers {
-    x-twitter-scraper = {
-      source  = "Xquik-dev/x-twitter-scraper"
-      version = "~> 0.7"
-    }
-  }
-}
-
-provider "x-twitter-scraper" {}
-```
-
-Then run `terraform init`.
-
 ## Authenticate
 
 Prefer environment variables.
@@ -140,12 +158,26 @@ See [OpenSSF evidence](OPENSSF.md) for the current criteria assessment.
 Treat plans and state as sensitive. API responses can contain private data.
 Report vulnerabilities through [GitHub private reporting](SECURITY.md).
 
+## Questions
+
+### Do I need an X developer account?
+
+No. Public reads need only an Xquik API key. Private reads & X account actions
+need a connected X account.
+
+### Is this the official X API?
+
+No. Xquik is an independent third-party service with its own REST API. This provider
+calls that API, not the official X API.
+
 ## More Xquik tools
 
 - [X (Twitter) scraper API & Twitter MCP server](https://github.com/Xquik-dev/x-twitter-scraper) with REST, MCP & Skill setup.
 - Twitter API SDKs for [TypeScript](https://github.com/Xquik-dev/x-twitter-scraper-typescript), [Python](https://github.com/Xquik-dev/x-twitter-scraper-python), [Go](https://github.com/Xquik-dev/x-twitter-scraper-go), [Ruby](https://github.com/Xquik-dev/x-twitter-scraper-ruby), [Java](https://github.com/Xquik-dev/x-twitter-scraper-java), [Kotlin](https://github.com/Xquik-dev/x-twitter-scraper-kotlin), [C#](https://github.com/Xquik-dev/x-twitter-scraper-csharp) & [PHP](https://github.com/Xquik-dev/x-twitter-scraper-php).
-- [Twitter CLI & X CLI](https://github.com/Xquik-dev/x-twitter-scraper-cli) for terminal workflows.
-- [Twitter advanced search operators](https://github.com/Xquik-dev/x-twitter-advanced-search) with tested examples.
+- [Twitter CLI & X CLI](https://github.com/Xquik-dev/x-twitter-scraper-cli) and [Twitter advanced search operators](https://github.com/Xquik-dev/x-twitter-advanced-search) with tested examples.
+- Twitter agent plugins for [OpenClaw](https://github.com/Xquik-dev/tweetclaw) & [Hermes Agent](https://github.com/Xquik-dev/hermes-tweet), and the [Twitter API documentation source](https://github.com/Xquik-dev/xquik-docs).
+- Twitter integrations for [n8n](https://github.com/Xquik-dev/n8n-nodes-xquik), [Prefect](https://github.com/Xquik-dev/prefect-xquik), [Haystack](https://github.com/Xquik-dev/xquik-haystack), [Paperclip](https://github.com/Xquik-dev/paperclip-plugin-xquik), [Terraform](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper), [Convex](https://github.com/Xquik-dev/xquik-convex), [Supabase](https://github.com/Xquik-dev/xquik-supabase) & [Strapi](https://github.com/Xquik-dev/strapi-plugin-xquik).
+- Twitter MCP for [AI agents](https://github.com/Xquik-dev/xquik-mcp), [VS Code](https://github.com/Xquik-dev/xquik-vscode) & [Raycast](https://github.com/Xquik-dev/xquik-raycast).
 - [Xquik X API & Twitter scraper](https://xquik.com) and the [Twitter API documentation](https://docs.xquik.com/api-reference/overview).
 
 ## Develop locally
