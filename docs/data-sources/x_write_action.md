@@ -18,7 +18,7 @@ X write actions (tweets, likes, follows, DMs)
 ### Read-Only
 
 - `account` (Attributes) Connected account selected for the write. (see [below for nested schema](#nestedatt--account))
-- `action` (String) Available values are "create_tweet", "delete_tweet", "like", "unlike", "retweet", "unretweet", "follow", "unfollow", "remove_follower", "send_dm", "upload_media", "update_profile", "update_avatar", "update_banner", "create_community", "delete_community", "join_community" and "leave_community".
+- `action` (String) Available values are "create_tweet", "delete_tweet", "like", "unlike", "retweet", "unretweet", "bookmark", "unbookmark", "follow", "unfollow", "remove_follower", "block", "unblock", "mute", "unmute", "send_dm", "upload_media", "update_profile", "update_avatar", "update_banner", "create_community", "delete_community", "join_community" and "leave_community".
 - `billing` (Attributes) plannedCredits is the approved maximum. chargedCredits comes from the settled credit ledger. Pending or failed writes are not charged. (see [below for nested schema](#nestedatt--billing))
 - `charged` (Boolean)
 - `charged_credits` (String)

@@ -1,55 +1,80 @@
-# X API & Twitter API Terraform provider by Xquik
+# Twitter Monitor & X API Terraform Provider by Xquik
 
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13729/badge)](https://www.bestpractices.dev/projects/13729)
-[![Convex Component](https://www.convex.dev/components/badge/convex-xquik)](https://www.convex.dev/components/convex-xquik)
+Run an X (Twitter) monitor & signed webhooks as code with Xquik's Terraform provider.
+It turns Xquik monitors, signed webhooks, drafts & X (Twitter) actions into Terraform resources.
 
-Use this X API & Twitter API Terraform provider to manage X automation as code.
-It turns Xquik monitors, signed webhooks, drafts & X actions into Terraform resources.
-Scrape Twitter search, timelines & followers with the [Xquik REST API](https://docs.xquik.com/api-reference/overview).
-That API works as a Twitter scraper & tweet scraper for your apps.
-The provider is a Twitter API alternative built on that same API.
-
-Xquik is the world's fastest and cheapest X Twitter scraper service with the most complete X data.
+Xquik is the world's fastest and cheapest X (Twitter) scraper service with the most complete X (Twitter) data.
+Most other Apify Actors charge before filtering or deduplication.
 Xquik charges only for delivered, unique, filter-matching results and never pads rows.
+Xquik is independent and not affiliated with X Corp.
 
-> Xquik is an independent third-party service. Not affiliated with X Corp.
-> "Twitter" and "X" are trademarks of X Corp.
+<!-- trust:win:start -->
+The Xquik REST API read 45 tweets per second at $0.15 per 1,000 on 2026-10-15. The fastest of 4 rival Actors read 12.5 per second. The cheapest cost $0.173 per 1,000. [Compare each run](https://xquik.com/benchmarks#benchmark-x-tweet-scraper).
+<!-- trust:win:end -->
 
-[Quickstart](docs/guides/quickstart.md) | [Provider docs](docs/index.md) | [Examples](examples) | [REST API](https://docs.xquik.com/api-reference/overview) | [OpenAPI](https://xquik.com/openapi.json) | [Security](SECURITY.md)
+## Install the Terraform Twitter provider
+
+This provider requires Terraform CLI 1.0 or newer.
+Declare it from the [Terraform Registry](https://registry.terraform.io/providers/Xquik-dev/x-twitter-scraper/latest).
+
+```hcl
+terraform {
+  required_providers {
+    x-twitter-scraper = {
+      source  = "Xquik-dev/x-twitter-scraper"
+      version = "~> 0.9"
+    }
+  }
+}
+
+provider "x-twitter-scraper" {}
+```
+
+Create an API key in the [Xquik dashboard](https://dashboard.xquik.com) and export it.
+
+```sh
+export X_TWITTER_SCRAPER_API_KEY="your-api-key"
+```
+
+Then run `terraform init`.
+
+## Create a Twitter monitor & Twitter webhook
+
+A monitor watches 1 account. The webhook receives each new post & reply, signed with HMAC.
+
+```hcl
+resource "x-twitter-scraper_monitor" "founder" {
+  event_types = ["tweet.new", "tweet.reply"]
+  username    = "elonmusk"
+}
+
+resource "x-twitter-scraper_webhook" "alerts" {
+  event_types = ["tweet.new", "tweet.reply"]
+  url         = "https://example.com/webhook"
+}
+```
+
+Then run `terraform apply`.
+
+Next, read the [Terraform quickstart](docs/guides/quickstart.md), [provider docs](docs/index.md) or [example configurations](examples).
 
 <!-- trust:start -->
 
-## Trust & usage
+## Benchmarks & usage
 
-[![Twitter API package downloads](https://img.shields.io/endpoint?url=https%3A%2F%2Fxquik.com%2Fbadges%2Fdownloads.json)](https://xquik.com/trust#downloads)
-[![Twitter scraper users on Apify](https://img.shields.io/endpoint?url=https%3A%2F%2Fxquik.com%2Fbadges%2Fapify-users.json)](https://apify.com/xquik)
-[![Twitter scraper runs on Apify](https://img.shields.io/endpoint?url=https%3A%2F%2Fxquik.com%2Fbadges%2Fapify-runs.json)](https://apify.com/xquik)
-[![Tweet scraper rating on Apify](https://img.shields.io/endpoint?url=https%3A%2F%2Fxquik.com%2Fbadges%2Fapify-rating.json)](https://apify.com/xquik/x-tweet-scraper/reviews)
-[![Xquik Twitter API accounts](https://img.shields.io/endpoint?url=https%3A%2F%2Fxquik.com%2Fbadges%2Faccounts.json)](https://xquik.com/trust#accounts)
-[![Twitter Skill installs](https://img.shields.io/endpoint?url=https%3A%2F%2Fxquik.com%2Fbadges%2Fskill-installs.json)](https://xquik.com/trust#skill-installs)
-[![Xquik verified revenue on TrustMRR](https://img.shields.io/endpoint?url=https%3A%2F%2Fxquik.com%2Fbadges%2Frevenue.json)](https://trustmrr.com/startup/xquik)
-[![Twitter API median response time](https://img.shields.io/endpoint?url=https%3A%2F%2Fxquik.com%2Fbadges%2Frest-p50.json)](https://xquik.com/trust#speed)
-[![Xquik GitHub stars](https://img.shields.io/endpoint?url=https%3A%2F%2Fxquik.com%2Fbadges%2Fgithub-stars.json)](https://github.com/Xquik-dev)
-[![x-twitter-scraper downloads on Terraform Registry](https://img.shields.io/endpoint?url=https%3A%2F%2Fxquik.com%2Fbadges%2Fterraform-x-twitter-scraper.json)](https://registry.terraform.io/providers/Xquik-dev/x-twitter-scraper/latest)
+[![Twitter API package downloads](https://img.shields.io/endpoint?url=https%3A%2F%2Fxquik.com%2Fbadges%2Fdownloads.json)](https://xquik.com/benchmarks#downloads)
+[![Twitter API p99 server read time](https://img.shields.io/endpoint?url=https%3A%2F%2Fxquik.com%2Fbadges%2Frest-p99.json)](https://xquik.com/benchmarks#speed)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13729/badge)](https://www.bestpractices.dev/projects/13729)
 
-- 51,000+ downloads of Xquik's Twitter API packages on npm, PyPI, RubyGems, NuGet, Packagist & Terraform ([source](https://xquik.com/trust#downloads)) <!-- trust:downloads 51020 -->
-- 7,800+ users of Xquik's Twitter scraper Actors on Apify ([source](https://apify.com/xquik)) <!-- trust:apify-users 7800 -->
-- 5,700,000+ runs of Xquik's Twitter scraper Actors on Apify ([source](https://apify.com/xquik)) <!-- trust:apify-runs 5704701 -->
-- 4.66 of 5 for the X Tweet Scraper from 16 Apify reviews ([source](https://apify.com/xquik/x-tweet-scraper/reviews)) <!-- trust:apify-rating 4.66 16 -->
-- 3,900+ accounts on xquik.com ([source](https://xquik.com/trust#accounts)) <!-- trust:accounts 3924 -->
-- 1,600+ installs of Xquik's Twitter Skills on skills.sh ([source](https://xquik.com/trust#skill-installs)) <!-- trust:skill-installs 1612 -->
-- $38,000+ in revenue verified by TrustMRR ([source](https://trustmrr.com/startup/xquik)) <!-- trust:revenue 38115 -->
-- 501 ms median REST API read time over the last 7 days ([source](https://xquik.com/trust#speed)) <!-- trust:rest-p50 501 -->
-- 370+ GitHub stars across Xquik's repos ([source](https://github.com/Xquik-dev)) <!-- trust:github-stars 374 -->
-- 110+ downloads of x-twitter-scraper on Terraform Registry ([source](https://registry.terraform.io/providers/Xquik-dev/x-twitter-scraper/latest)) <!-- trust:terraform-x-twitter-scraper 115 -->
+- 63,000+ downloads of Xquik's Twitter API packages on npm, PyPI, RubyGems, NuGet, Packagist & Terraform ([source](https://xquik.com/benchmarks#downloads)) <!-- trust:downloads 63185 -->
+- 6.4 s p99 REST API server read time over 7 days, failed reads included ([source](https://xquik.com/benchmarks#speed)) <!-- trust:rest-p99 6317 -->
 - This repo meets the OpenSSF Best Practices passing criteria ([source](https://www.bestpractices.dev/projects/13729)) <!-- trust:openssf-terraform-provider-x-twitter-scraper 1 -->
 
-Checked on 2026-10-15. See each number with its date & source on [xquik.com/trust](https://xquik.com/trust) or as [JSON](https://xquik.com/trust.json).
+Checked on 2026-11-07. See each number with its date & source on [xquik.com/benchmarks](https://xquik.com/benchmarks) or as [JSON](https://xquik.com/trust.json).
 
 <!-- trust:end -->
 
-## Manage durable X automation
+## Manage durable X (Twitter) automation
 
 | Workflow | Resources |
 | --- | --- |
@@ -64,7 +89,8 @@ Checked on 2026-10-15. See each number with its date & source on [xquik.com/trus
 | Create, delete, join, and leave communities | `x_community`, `x_community_delete`, `x_community_join`, `x_community_leave` |
 | Request support and guest checkout | `support_ticket`, `guest_wallet` |
 
-Every X write resource stores its canonical response. Uncertain retries keep the same idempotency key.
+Each X (Twitter) write resource stores its canonical response.
+Uncertain retries keep the same idempotency key.
 
 ## Read existing Xquik data
 
@@ -74,45 +100,19 @@ Every X write resource stores its canonical response. Uncertain retries keep the
 - `monitor` and `monitor_keyword` for account and keyword monitors
 - `event` and `draw` for events and giveaway draws
 - `x_tweet`, `x_user` and `x_account` for tweet, user and account lookups
-- `x_list`, `x_job`, `x_space` and `x_broadcast` for X Lists, job listings, Spaces and live broadcasts
+- `x_list`, `x_job`, `x_space` and `x_broadcast` for X Lists, jobs, Spaces and broadcasts
 - `x_write_action` for durable write status
 - `support_ticket` for support requests
 
 ## Run Twitter search outside Terraform
 
-Use the [Xquik REST API](https://docs.xquik.com/api-reference/overview) for Twitter search, timelines, follower exports & other reads without the official Twitter API.
-
-Use an Xquik SDK for application code. Use this provider for related Twitter automation.
-
-## Install
-
-This provider requires Terraform CLI 1.0 or newer.
-
-```hcl
-terraform {
-  required_providers {
-    x-twitter-scraper = {
-      source  = "Xquik-dev/x-twitter-scraper"
-      version = "~> 0.7"
-    }
-  }
-}
-
-provider "x-twitter-scraper" {}
-```
-
-Then run `terraform init`.
+Use the [Xquik REST API](https://docs.xquik.com/api-reference/overview) for X (Twitter) search, timelines & follower exports.
+Use an Xquik SDK for application code.
 
 ## Authenticate
 
-Prefer environment variables.
-
-```sh
-export X_TWITTER_SCRAPER_API_KEY="your-api-key"
-```
-
+Prefer the `X_TWITTER_SCRAPER_API_KEY` environment variable.
 Bearer authentication uses `X_TWITTER_SCRAPER_BEARER_TOKEN`.
-
 Never commit credentials or Terraform state.
 
 ## Publish a tweet
@@ -131,22 +131,37 @@ resource "x-twitter-scraper_x_tweet" "announcement" {
 
 Changing the request replaces the resource. Give the new write a new key.
 
-## Reliability & security
+## Security
 
-`bin/check-local` checks API coverage, formatting, licenses, race safety, Windows builds, coverage, reproducible builds, fuzzing, CodeQL findings & known vulnerabilities.
-Maintainers publish releases with `bin/release-local`, which signs the checksums with the provider's GPG key.
-
+Treat plans and state as sensitive, because API responses can hold private data.
+Maintainers sign release checksums with the provider's GPG key.
 See [OpenSSF evidence](OPENSSF.md) for the current criteria assessment.
-Treat plans and state as sensitive. API responses can contain private data.
 Report vulnerabilities through [GitHub private reporting](SECURITY.md).
+
+## Questions
+
+### Do I need an X developer account?
+
+No. Public reads need only an Xquik API key.
+Private reads & account actions need a connected X (Twitter) account.
+
+### Is this the official X API?
+
+No. Xquik runs its own REST API. This provider calls that API, not the official X API.
 
 ## More Xquik tools
 
 - [X (Twitter) scraper API & Twitter MCP server](https://github.com/Xquik-dev/x-twitter-scraper) with REST, MCP & Skill setup.
-- Twitter API SDKs for [TypeScript](https://github.com/Xquik-dev/x-twitter-scraper-typescript), [Python](https://github.com/Xquik-dev/x-twitter-scraper-python), [Go](https://github.com/Xquik-dev/x-twitter-scraper-go), [Ruby](https://github.com/Xquik-dev/x-twitter-scraper-ruby), [Java](https://github.com/Xquik-dev/x-twitter-scraper-java), [Kotlin](https://github.com/Xquik-dev/x-twitter-scraper-kotlin), [C#](https://github.com/Xquik-dev/x-twitter-scraper-csharp) & [PHP](https://github.com/Xquik-dev/x-twitter-scraper-php).
+- Twitter API SDKs for [TypeScript](https://github.com/Xquik-dev/x-twitter-scraper-typescript), [Python](https://github.com/Xquik-dev/x-twitter-scraper-python), [Go](https://github.com/Xquik-dev/x-twitter-scraper-go) & [Java](https://github.com/Xquik-dev/x-twitter-scraper-java).
+- Twitter API SDKs for [Ruby](https://github.com/Xquik-dev/x-twitter-scraper-ruby), [Kotlin](https://github.com/Xquik-dev/x-twitter-scraper-kotlin), [C#](https://github.com/Xquik-dev/x-twitter-scraper-csharp) & [PHP](https://github.com/Xquik-dev/x-twitter-scraper-php).
 - [Twitter CLI & X CLI](https://github.com/Xquik-dev/x-twitter-scraper-cli) for terminal workflows.
 - [Twitter advanced search operators](https://github.com/Xquik-dev/x-twitter-advanced-search) with tested examples.
-- [Xquik X API & Twitter scraper](https://xquik.com) and the [Twitter API documentation](https://docs.xquik.com/api-reference/overview).
+- X (Twitter) agent plugins for [OpenClaw](https://github.com/Xquik-dev/tweetclaw) & [Hermes Agent](https://github.com/Xquik-dev/hermes-tweet).
+- X (Twitter) integrations for [n8n](https://github.com/Xquik-dev/n8n-nodes-xquik), [Prefect](https://github.com/Xquik-dev/prefect-xquik), [Haystack](https://github.com/Xquik-dev/xquik-haystack) & [Paperclip](https://github.com/Xquik-dev/paperclip-plugin-xquik).
+- X (Twitter) integrations for [Convex](https://github.com/Xquik-dev/xquik-convex), [Supabase](https://github.com/Xquik-dev/xquik-supabase) & [Strapi](https://github.com/Xquik-dev/strapi-plugin-xquik).
+- Twitter MCP for [AI agents](https://github.com/Xquik-dev/xquik-mcp), [VS Code](https://github.com/Xquik-dev/xquik-vscode) & [Raycast](https://github.com/Xquik-dev/xquik-raycast).
+- [Xquik X API & Twitter scraper](https://xquik.com).
+- [Twitter API documentation](https://docs.xquik.com/api-reference/overview) and its [source](https://github.com/Xquik-dev/xquik-docs).
 
 ## Develop locally
 
@@ -155,6 +170,6 @@ Report vulnerabilities through [GitHub private reporting](SECURITY.md).
 bin/check-local
 ```
 
-`bin/check-local` runs every required check. See [CONTRIBUTING.md](CONTRIBUTING.md) before changing generated code.
+`bin/check-local` runs every required check. Read [CONTRIBUTING.md](CONTRIBUTING.md) before you change generated code.
 
 Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.

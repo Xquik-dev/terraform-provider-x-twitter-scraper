@@ -11,6 +11,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -176,8 +177,8 @@ func TestOperationValidationRejectsAccountCollisionAndInvalidFields(t *testing.T
 }
 
 func TestOperationRegistryIsCompleteAndUnique(t *testing.T) {
-	if len(operations) != 18 {
-		t.Fatalf("operation count = %d, want 18", len(operations))
+	if len(operations) != 24 {
+		t.Fatalf("operation count = %d, want 24", len(operations))
 	}
 	actions := map[string]bool{}
 	resources := map[string]bool{}
@@ -190,6 +191,31 @@ func TestOperationRegistryIsCompleteAndUnique(t *testing.T) {
 		}
 		actions[op.action] = true
 		resources[op.resourceSuffix] = true
+	}
+}
+
+func TestBookmarkBlockAndMuteWritesUseTheirRoutes(t *testing.T) {
+	routes := []struct {
+		action string
+		method string
+		path   string
+	}{
+		{"bookmark", http.MethodPost, "x/tweets/123/bookmark"},
+		{"unbookmark", http.MethodDelete, "x/tweets/123/bookmark"},
+		{"block", http.MethodPost, "x/users/123/block"},
+		{"unblock", http.MethodDelete, "x/users/123/block"},
+		{"mute", http.MethodPost, "x/users/123/mute"},
+		{"unmute", http.MethodDelete, "x/users/123/mute"},
+	}
+	for _, route := range routes {
+		index := slices.IndexFunc(operations, func(op operation) bool { return op.action == route.action })
+		if index < 0 {
+			t.Fatalf("operation %s is missing", route.action)
+		}
+		op := operations[index]
+		if op.method != route.method || op.path("123") != route.path {
+			t.Errorf("%s = %s %s, want %s %s", route.action, op.method, op.path("123"), route.method, route.path)
+		}
 	}
 }
 

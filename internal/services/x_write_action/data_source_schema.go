@@ -27,7 +27,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Required: true,
 			},
 			"action": schema.StringAttribute{
-				Description: `Available values are "create_tweet", "delete_tweet", "like", "unlike", "retweet", "unretweet", "follow", "unfollow", "remove_follower", "send_dm", "upload_media", "update_profile", "update_avatar", "update_banner", "create_community", "delete_community", "join_community" and "leave_community".`,
+				Description: `Available values are "create_tweet", "delete_tweet", "like", "unlike", "retweet", "unretweet", "bookmark", "unbookmark", "follow", "unfollow", "remove_follower", "block", "unblock", "mute", "unmute", "send_dm", "upload_media", "update_profile", "update_avatar", "update_banner", "create_community", "delete_community", "join_community" and "leave_community".`,
 				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive(
@@ -37,9 +37,15 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						"unlike",
 						"retweet",
 						"unretweet",
+						"bookmark",
+						"unbookmark",
 						"follow",
 						"unfollow",
 						"remove_follower",
+						"block",
+						"unblock",
+						"mute",
+						"unmute",
 						"send_dm",
 						"upload_media",
 						"update_profile",
