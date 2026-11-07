@@ -40,9 +40,15 @@ func NewLikeResource() resource.Resource            { return resourceFor("like")
 func NewUnlikeResource() resource.Resource          { return resourceFor("unlike") }
 func NewRetweetResource() resource.Resource         { return resourceFor("retweet") }
 func NewUnretweetResource() resource.Resource       { return resourceFor("unretweet") }
+func NewBookmarkResource() resource.Resource        { return resourceFor("bookmark") }
+func NewUnbookmarkResource() resource.Resource      { return resourceFor("unbookmark") }
 func NewFollowResource() resource.Resource          { return resourceFor("follow") }
 func NewUnfollowResource() resource.Resource        { return resourceFor("unfollow") }
 func NewRemoveFollowerResource() resource.Resource  { return resourceFor("remove_follower") }
+func NewBlockResource() resource.Resource           { return resourceFor("block") }
+func NewUnblockResource() resource.Resource         { return resourceFor("unblock") }
+func NewMuteResource() resource.Resource            { return resourceFor("mute") }
+func NewUnmuteResource() resource.Resource          { return resourceFor("unmute") }
 func NewSendDMResource() resource.Resource          { return resourceFor("send_dm") }
 func NewUploadMediaResource() resource.Resource     { return resourceFor("upload_media") }
 func NewUpdateProfileResource() resource.Resource   { return resourceFor("update_profile") }
