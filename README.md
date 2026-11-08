@@ -1,4 +1,4 @@
-# Twitter Monitor & X API Terraform Provider by Xquik
+# Terraform X (Twitter) Monitor & API Provider by Xquik
 
 Run an X (Twitter) monitor & signed webhooks as code with Xquik's Terraform provider.
 It turns Xquik monitors, signed webhooks, drafts & X (Twitter) actions into Terraform resources.
@@ -62,11 +62,11 @@ Next, read the [Terraform quickstart](docs/guides/quickstart.md), [provider docs
 
 ## Benchmarks & usage
 
-[![Twitter API package downloads](https://img.shields.io/endpoint?url=https%3A%2F%2Fxquik.com%2Fbadges%2Fdownloads.json)](https://xquik.com/benchmarks#downloads)
-[![Twitter API p99 server read time](https://img.shields.io/endpoint?url=https%3A%2F%2Fxquik.com%2Fbadges%2Frest-p99.json)](https://xquik.com/benchmarks#speed)
+[![X (Twitter) API package downloads](https://img.shields.io/endpoint?url=https%3A%2F%2Fxquik.com%2Fbadges%2Fdownloads.json)](https://xquik.com/benchmarks#downloads)
+[![X (Twitter) API p99 server read time](https://img.shields.io/endpoint?url=https%3A%2F%2Fxquik.com%2Fbadges%2Frest-p99.json)](https://xquik.com/benchmarks#speed)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13729/badge)](https://www.bestpractices.dev/projects/13729)
 
-- 63,000+ downloads of Xquik's Twitter API packages on npm, PyPI, RubyGems, NuGet, Packagist & Terraform ([source](https://xquik.com/benchmarks#downloads)) <!-- trust:downloads 63185 -->
+- 63,000+ downloads of Xquik's X (Twitter) API packages across 6 registries ([source](https://xquik.com/benchmarks#downloads)) <!-- trust:downloads 63185 -->
 - 6.4 s p99 REST API server read time over 7 days, failed reads included ([source](https://xquik.com/benchmarks#speed)) <!-- trust:rest-p99 6317 -->
 - This repo meets the OpenSSF Best Practices passing criteria ([source](https://www.bestpractices.dev/projects/13729)) <!-- trust:openssf-terraform-provider-x-twitter-scraper 1 -->
 
@@ -81,8 +81,8 @@ Checked on 2026-11-07. See each number with its date & source on [xquik.com/benc
 | Compose and refine posts | `compose`, `draft`, `style` |
 | Monitor accounts and keywords | `monitor`, `monitor_keyword` |
 | Deliver signed events | `webhook` |
-| Publish and delete posts | `x_tweet`, `x_tweet_delete` |
-| Like, unlike, repost, and undo reposts | `x_tweet_like`, `x_tweet_unlike`, `x_tweet_retweet`, `x_tweet_unretweet` |
+| Publish and delete tweets | `x_tweet`, `x_tweet_delete` |
+| Like, unlike, retweet, and undo retweets | `x_tweet_like`, `x_tweet_unlike`, `x_tweet_retweet`, `x_tweet_unretweet` |
 | Follow, unfollow, and remove followers | `x_user_follow`, `x_user_unfollow`, `x_user_remove_follower` |
 | Send direct messages and upload media | `x_dm`, `x_media` |
 | Update profiles, avatars, and banners | `x_profile`, `x_profile_avatar`, `x_profile_banner` |
@@ -100,7 +100,7 @@ Uncertain retries keep the same idempotency key.
 - `monitor` and `monitor_keyword` for account and keyword monitors
 - `event` and `draw` for events and giveaway draws
 - `x_tweet`, `x_user` and `x_account` for tweet, user and account lookups
-- `x_list`, `x_job`, `x_space` and `x_broadcast` for X Lists, jobs, Spaces and broadcasts
+- `x_list`, `x_job`, `x_space` and `x_broadcast` for X (Twitter) Lists, jobs, Spaces and broadcasts
 - `x_write_action` for durable write status
 - `support_ticket` for support requests
 
@@ -140,7 +140,7 @@ Report vulnerabilities through [GitHub private reporting](SECURITY.md).
 
 ## Questions
 
-### Do I need an X developer account?
+### Do I need an X (Twitter) developer account?
 
 No. Public reads need only an Xquik API key.
 Private reads & account actions need a connected X (Twitter) account.
@@ -151,17 +151,17 @@ No. Xquik runs its own REST API. This provider calls that API, not the official 
 
 ## More Xquik tools
 
-- [X (Twitter) scraper API & Twitter MCP server](https://github.com/Xquik-dev/x-twitter-scraper) with REST, MCP & Skill setup.
-- Twitter API SDKs for [TypeScript](https://github.com/Xquik-dev/x-twitter-scraper-typescript), [Python](https://github.com/Xquik-dev/x-twitter-scraper-python), [Go](https://github.com/Xquik-dev/x-twitter-scraper-go) & [Java](https://github.com/Xquik-dev/x-twitter-scraper-java).
-- Twitter API SDKs for [Ruby](https://github.com/Xquik-dev/x-twitter-scraper-ruby), [Kotlin](https://github.com/Xquik-dev/x-twitter-scraper-kotlin), [C#](https://github.com/Xquik-dev/x-twitter-scraper-csharp) & [PHP](https://github.com/Xquik-dev/x-twitter-scraper-php).
+- [X (Twitter) scraper API & X (Twitter) MCP server](https://github.com/Xquik-dev/x-twitter-scraper) with REST, MCP & Skill setup.
+- X (Twitter) API SDKs for [TypeScript](https://github.com/Xquik-dev/x-twitter-scraper-typescript), [Python](https://github.com/Xquik-dev/x-twitter-scraper-python), [Go](https://github.com/Xquik-dev/x-twitter-scraper-go) & [Java](https://github.com/Xquik-dev/x-twitter-scraper-java).
+- X (Twitter) API SDKs for [Ruby](https://github.com/Xquik-dev/x-twitter-scraper-ruby), [Kotlin](https://github.com/Xquik-dev/x-twitter-scraper-kotlin), [C#](https://github.com/Xquik-dev/x-twitter-scraper-csharp) & [PHP](https://github.com/Xquik-dev/x-twitter-scraper-php).
 - [Twitter CLI & X CLI](https://github.com/Xquik-dev/x-twitter-scraper-cli) for terminal workflows.
 - [Twitter advanced search operators](https://github.com/Xquik-dev/x-twitter-advanced-search) with tested examples.
 - X (Twitter) agent plugins for [OpenClaw](https://github.com/Xquik-dev/tweetclaw) & [Hermes Agent](https://github.com/Xquik-dev/hermes-tweet).
 - X (Twitter) integrations for [n8n](https://github.com/Xquik-dev/n8n-nodes-xquik), [Prefect](https://github.com/Xquik-dev/prefect-xquik), [Haystack](https://github.com/Xquik-dev/xquik-haystack) & [Paperclip](https://github.com/Xquik-dev/paperclip-plugin-xquik).
 - X (Twitter) integrations for [Convex](https://github.com/Xquik-dev/xquik-convex), [Supabase](https://github.com/Xquik-dev/xquik-supabase) & [Strapi](https://github.com/Xquik-dev/strapi-plugin-xquik).
-- Twitter MCP for [AI agents](https://github.com/Xquik-dev/xquik-mcp), [VS Code](https://github.com/Xquik-dev/xquik-vscode) & [Raycast](https://github.com/Xquik-dev/xquik-raycast).
+- X (Twitter) MCP for [AI agents](https://github.com/Xquik-dev/xquik-mcp), [VS Code](https://github.com/Xquik-dev/xquik-vscode) & [Raycast](https://github.com/Xquik-dev/xquik-raycast).
 - [Xquik X API & Twitter scraper](https://xquik.com).
-- [Twitter API documentation](https://docs.xquik.com/api-reference/overview) and its [source](https://github.com/Xquik-dev/xquik-docs).
+- [X (Twitter) API documentation](https://docs.xquik.com/api-reference/overview) and its [source](https://github.com/Xquik-dev/xquik-docs).
 
 ## Develop locally
 
