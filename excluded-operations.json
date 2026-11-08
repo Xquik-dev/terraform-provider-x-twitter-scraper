@@ -172,7 +172,7 @@
     ]
   },
   {
-    "reason": "Runs paid one-off jobs, such as extractions, cost estimates and AI analysis, that Terraform cannot plan or keep in state. The Stainless generator config skips Terraform for extractions and x.analysis.",
+    "reason": "Runs paid one-off jobs, such as extractions, cost estimates, AI analysis and follower audits, that Terraform cannot plan or keep in state. A follower audit is a paid read, and Terraform reads each data source again on every plan, so it would pay for the audit each time. The Stainless generator config skips Terraform for extractions and x.analysis.",
     "operations": [
       "POST /api/v1/extractions",
       "POST /api/v1/extractions/estimate",
@@ -184,7 +184,8 @@
       "POST /api/v1/x/analysis/brand",
       "POST /api/v1/x/analysis/news",
       "POST /api/v1/x/analysis/market-signals",
-      "POST /api/v1/x/analysis/classify"
+      "POST /api/v1/x/analysis/classify",
+      "GET /api/v1/x/users/{id}/follower-audit"
     ]
   },
   {
