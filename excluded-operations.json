@@ -191,6 +191,14 @@
     ]
   },
   {
+    "reason": "Creates, reads or revokes a connect link that a person opens to sign in. A link works like a password until it's used, so Terraform state must not hold it.",
+    "operations": [
+      "POST /api/v1/x/account-connection-links",
+      "GET /api/v1/x/account-connection-links/{id}",
+      "DELETE /api/v1/x/account-connection-links/{id}"
+    ]
+  },
+  {
     "reason": "Starts a hosted checkout or reads a balance. A checkout needs a person to confirm and pay, a balance changes with every paid call, and the Stainless generator config skips Terraform for subscribe.",
     "operations": [
       "POST /api/v1/subscribe",
