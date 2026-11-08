@@ -50,10 +50,24 @@ func TestTypedModulePasses(t *testing.T) {
 	directory := module(t, map[string]string{"probe.go": `// Package probe is typed.
 package probe
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 // Identity returns its argument.
 func Identity[T any](value T) T { return value }
+
+// Copy sets value through targets that keep their static type.
+func Copy(value reflect.Value, err error, count int) {
+	Identity(value).Set(value)
+	reflect.Indirect(value).Set(value)
+	reflect.New(value.Type()).Elem().Set(value)
+	reflect.ValueOf(err).Elem().Set(value)
+	target := reflect.ValueOf(&count).Elem()
+	target = reflect.New(target.Type()).Elem()
+	target.Set(value)
+}
 
 // Describe names the error kind.
 func Describe(err error) string {
@@ -68,7 +82,7 @@ func Describe(err error) string {
 }
 `})
 	passed, output := check(t, directory, "linux")
-	if !passed || !strings.Contains(output, "Type coverage 100.00%, 6 of 6 declarations typed.\nEscape hatches 0.\n") {
+	if !passed || !strings.Contains(output, "Type coverage 100.00%, 10 of 10 declarations typed.\nEscape hatches 0.\n") {
 		t.Fatalf("passed %v with output\n%s", passed, output)
 	}
 }
@@ -110,6 +124,42 @@ func TestEscapeHatchesFail(t *testing.T) {
 		"discarded reflect ok": {
 			map[string]string{"probe.go": "package probe\n\nimport \"reflect\"\n\nfunc Value(value reflect.Value) error { err, _ := reflect.TypeAssert[error](value); return err }\n"},
 			"probe.go:5:46: type assertion that discards its ok result",
+		},
+		"reflect.Value.Set into the pointee of &x": {
+			map[string]string{"probe.go": "package probe\n\nimport \"reflect\"\n\nfunc Text(v reflect.Value) (s string) {\n\treflect.ValueOf(&s).Elem().Set(v)\n\treturn s\n}\n"},
+			"probe.go:6:29: reflect.Value.Set into reflect.ValueOf(pointer).Elem() panics on a type mismatch",
+		},
+		"reflect.Value.Set into the pointee of a pointer in a local": {
+			map[string]string{"probe.go": "package probe\n\nimport \"reflect\"\n\nfunc Text(v reflect.Value) (s string) {\n\tp := &s\n\treflect.ValueOf(p).Elem().Set(v)\n\treturn s\n}\n"},
+			"probe.go:7:28: reflect.Value.Set into reflect.ValueOf(pointer).Elem() panics on a type mismatch",
+		},
+		"reflect.Value.Set into the pointee of new(T)": {
+			map[string]string{"probe.go": "package probe\n\nimport \"reflect\"\n\nfunc Text(v reflect.Value) (s string) {\n\treflect.ValueOf(new(string)).Elem().Set(v)\n\treturn s\n}\n"},
+			"probe.go:6:38: reflect.Value.Set into reflect.ValueOf(pointer).Elem() panics on a type mismatch",
+		},
+		"parenthesized reflect.Value.Set into a pointee": {
+			map[string]string{"probe.go": "package probe\n\nimport \"reflect\"\n\nfunc Text(v reflect.Value) (s string) {\n\t(reflect.ValueOf((&s)).Elem()).Set(v)\n\treturn s\n}\n"},
+			"probe.go:6:33: reflect.Value.Set into reflect.ValueOf(pointer).Elem() panics on a type mismatch",
+		},
+		"reflect.Value.Set into a pointee held in a local": {
+			map[string]string{"probe.go": "package probe\n\nimport \"reflect\"\n\nfunc Text(v reflect.Value) (s string) {\n\ttarget := reflect.ValueOf(&s).Elem()\n\ttarget.Set(v)\n\treturn s\n}\n"},
+			"probe.go:7:9: reflect.Value.Set into reflect.ValueOf(pointer).Elem() panics on a type mismatch",
+		},
+		"reflect.Value.Set into the pointee of a reflect.ValueOf held in a local": {
+			map[string]string{"probe.go": "package probe\n\nimport \"reflect\"\n\nfunc Text(v reflect.Value) (s string) {\n\tpointer := reflect.ValueOf(&s)\n\tpointer.Elem().Set(v)\n\treturn s\n}\n"},
+			"probe.go:7:17: reflect.Value.Set into reflect.ValueOf(pointer).Elem() panics on a type mismatch",
+		},
+		"reflect.Value.Set into a pointee through reflect.Indirect": {
+			map[string]string{"probe.go": "package probe\n\nimport \"reflect\"\n\nfunc Text(v reflect.Value) (s string) {\n\treflect.Indirect(reflect.ValueOf(&s)).Set(v)\n\treturn s\n}\n"},
+			"probe.go:6:40: reflect.Value.Set into reflect.ValueOf(pointer).Elem() panics on a type mismatch",
+		},
+		"reflect.Value.Set method value on a pointee": {
+			map[string]string{"probe.go": "package probe\n\nimport \"reflect\"\n\nfunc Text(v reflect.Value) (s string) {\n\tset := reflect.ValueOf(&s).Elem().Set\n\tset(v)\n\treturn s\n}\n"},
+			"probe.go:6:36: reflect.Value.Set into reflect.ValueOf(pointer).Elem() panics on a type mismatch",
+		},
+		"reflect.Value.Set method expression on a pointee": {
+			map[string]string{"probe.go": "package probe\n\nimport \"reflect\"\n\nfunc Text(v reflect.Value) (s string) {\n\treflect.Value.Set(reflect.ValueOf(&s).Elem(), v)\n\treturn s\n}\n"},
+			"probe.go:6:16: reflect.Value.Set into reflect.ValueOf(pointer).Elem() panics on a type mismatch",
 		},
 		"unsafe import": {
 			map[string]string{"probe.go": "package probe\n\nimport \"unsafe\"\n\nvar Size = unsafe.Sizeof(0)\n"},
