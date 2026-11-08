@@ -19,6 +19,7 @@ import (
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/guest_wallet"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/monitor"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/monitor_keyword"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/monitor_post"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/style"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/support_ticket"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/services/webhook"
@@ -126,6 +127,7 @@ func (p *XTwitterScraperProvider) Resources(ctx context.Context) []func() resour
 		style.NewResource,
 		monitor.NewResource,
 		monitorkeyword.NewResource,
+		monitorpost.NewResource,
 		webhook.NewResource,
 		xwrite.NewCreateTweetResource,
 		xwrite.NewDeleteTweetResource,

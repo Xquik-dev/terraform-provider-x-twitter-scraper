@@ -149,15 +149,6 @@
     ]
   },
   {
-    "reason": "Creates, reads, updates and deletes post monitors. The provider has no post monitor resource yet.",
-    "operations": [
-      "POST /api/v1/monitors/posts",
-      "GET /api/v1/monitors/posts/{id}",
-      "PATCH /api/v1/monitors/posts/{id}",
-      "DELETE /api/v1/monitors/posts/{id}"
-    ]
-  },
-  {
     "reason": "Streams server-sent events without end, and a Terraform read must finish. The Stainless generator config skips Terraform for events.stream.",
     "operations": [
       "GET /api/v1/events/stream"
