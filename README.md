@@ -79,7 +79,7 @@ Checked on 2026-11-07. See each number with its date & source on [xquik.com/benc
 | Workflow | Resources |
 | --- | --- |
 | Compose and refine posts | `compose`, `draft`, `style` |
-| Monitor accounts and keywords | `monitor`, `monitor_keyword` |
+| Monitor accounts, keywords and posts | `monitor`, `monitor_keyword`, `monitor_post` |
 | Deliver signed events | `webhook` |
 | Publish and delete posts | `x_tweet`, `x_tweet_delete` |
 | Like, unlike, repost, and undo reposts | `x_tweet_like`, `x_tweet_unlike`, `x_tweet_retweet`, `x_tweet_unretweet` |
@@ -97,7 +97,7 @@ Uncertain retries keep the same idempotency key.
 - `account` for account usage and limits
 - `activity` for 1 record of your account's activity log
 - `draft` and `style` for drafts and writing styles
-- `monitor` and `monitor_keyword` for account and keyword monitors
+- `monitor`, `monitor_keyword` and `monitor_post` for account, keyword and post monitors
 - `event` and `draw` for events and giveaway draws
 - `x_tweet`, `x_user` and `x_account` for tweet, user and account lookups
 - `x_list`, `x_job`, `x_space` and `x_broadcast` for X Lists, jobs, Spaces and broadcasts

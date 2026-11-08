@@ -136,6 +136,7 @@ func resourceSupportsUpdate(resourceUnderTest resource.Resource) bool {
 	return slices.Contains([]string{
 		"x-twitter-scraper_monitor",
 		"x-twitter-scraper_monitor_keyword",
+		"x-twitter-scraper_monitor_post",
 		"x-twitter-scraper_style",
 		"x-twitter-scraper_support_ticket",
 		"x-twitter-scraper_webhook",
@@ -146,6 +147,7 @@ func resourceSupportsDelete(resourceUnderTest resource.Resource) bool {
 	return slices.Contains([]string{
 		"x-twitter-scraper_draft",
 		"x-twitter-scraper_monitor_keyword",
+		"x-twitter-scraper_monitor_post",
 		"x-twitter-scraper_style",
 	}, resourceTypeName(resourceUnderTest))
 }

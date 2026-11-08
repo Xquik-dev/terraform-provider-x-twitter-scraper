@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.10.0 (2026-11-08)
+
+[Full changelog from v0.9.0 to v0.10.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.9.0...v0.10.0)
+
+### Features
+
+* The new `monitor_post` resource watches 1 post's replies, quotes, counts, edits & deletion. Import it by its monitor ID.
+* `is_active = false` on a new `monitor_post` creates it paused. A paused monitor reads nothing & costs nothing until you set it to true.
+* The new `x_tweet_bookmark`, `x_tweet_unbookmark`, `x_user_block`, `x_user_unblock`, `x_user_mute` and `x_user_unmute` resources bookmark a post, block or mute an account, and undo each one.
+
+### Chores
+
+* Build with Go SDK 0.23.0.
+
 ## 0.9.0 (2026-11-03)
 
 [Full changelog from v0.8.0 to v0.9.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.8.0...v0.9.0)

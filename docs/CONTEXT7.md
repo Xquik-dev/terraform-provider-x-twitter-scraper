@@ -74,7 +74,7 @@ a verified terminal state and never blindly retries an uncertain dispatch.
 ## Resource map
 
 - `compose`, `draft` and `style` for content
-- `monitor`, `monitor_keyword` and `webhook` for monitoring
+- `monitor`, `monitor_keyword`, `monitor_post` and `webhook` for monitoring
 - `x_tweet` and `x_tweet_delete` for posts
 - `x_tweet_like`, `x_tweet_unlike`, `x_tweet_retweet` and `x_tweet_unretweet` for engagement
 - `x_user_follow`, `x_user_unfollow` and `x_user_remove_follower` for relationships
