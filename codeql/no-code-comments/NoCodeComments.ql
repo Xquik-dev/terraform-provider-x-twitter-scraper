@@ -4,7 +4,7 @@
 
 /**
  * @name Code comment
- * @description Code has no comments. A comment needs a legal marker, a functional directive or an https link that proves it. Each Go package other than main may keep 1 package comment outside its test files, which staticcheck ST1000 requires.
+ * @description Code has no comments. A comment in its file's first comment group above the package clause needs a legal marker or no text. Any other comment needs a functional directive or an https link that proves it. Each Go package other than main may keep 1 package comment outside its test files, which staticcheck ST1000 requires.
  * @kind problem
  * @problem.severity error
  * @id go/no-code-comments
@@ -16,7 +16,15 @@ predicate proven(Comment comment) {
   exists(CommentGroup group, int index, int later |
     comment = group.getComment(index) and
     later >= index and
-    group.getComment(later).getText().regexpMatch("(?s).*(https://|SPDX-|REUSE-Ignore).*")
+    group.getComment(later).getText().regexpMatch("(?s).*https://.*")
+  )
+  or
+  exists(CommentGroup group |
+    group = comment.getFile().getCommentGroup(0) and
+    comment = group.getComment(_) and
+    group.getLocation().getEndLine() <
+      comment.getFile().getPackageNameExpr().getLocation().getStartLine() and
+    comment.getText().regexpMatch("(?s)\\s*|.*(SPDX-|REUSE-Ignore).*")
   )
 }
 
