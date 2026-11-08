@@ -227,5 +227,11 @@
       "DELETE /api/v1/monitors/{id}",
       "DELETE /api/v1/webhooks/{id}"
     ]
+  },
+  {
+    "reason": "Creates or updates a monitor by username. The monitor resource already creates it with POST and updates it with PATCH, so a second resource would manage the same object.",
+    "operations": [
+      "PUT /api/v1/monitors/username/{username}"
+    ]
   }
 ]
