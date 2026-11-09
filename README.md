@@ -1,5 +1,9 @@
 # Terraform X (Twitter) Monitor & API Provider by Xquik
 
+[![Framer builds a tweet ticker with Xquik](https://img.youtube.com/vi/4UOSpoOoC3Y/maxresdefault.jpg)](https://youtu.be/4UOSpoOoC3Y?t=367)\
+[Watch Framer build a tweet ticker with Xquik, from 6:07](https://youtu.be/4UOSpoOoC3Y?t=367).
+This Terraform provider calls the Xquik API.
+
 Run an X (Twitter) monitor & signed webhooks as code with Xquik's Terraform provider.
 It turns Xquik monitors, signed webhooks, drafts & X (Twitter) actions into Terraform resources.
 
