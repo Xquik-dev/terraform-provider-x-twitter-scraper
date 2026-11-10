@@ -17,3 +17,11 @@ regexes = [
   '''(?i)idempotency.?key''',
   '''(?i)(expectedSecret|\bSecret\s*=)''',
 ]
+
+[[allowlists]]
+description = "The example x_account resource sets its password argument to the literal word password."
+targetRules = ["hashicorp-tf-password"]
+regexTarget = "secret"
+regexes = [
+  '''^"password"$''',
+]
