@@ -1,6 +1,6 @@
 module github.com/Xquik-dev/terraform-provider-x-twitter-scraper
 
-go 1.27.3
+go 1.27.4
 
 require (
 	github.com/Xquik-dev/x-twitter-scraper-go v0.23.0
