@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Documentation
+
+* `excluded-operations.json` states each rule for a left-out operation on its own, and `CONTRIBUTING.md` describes changes made by hand.
+
 ## 0.10.0 (2026-11-08)
 
 [Full changelog from v0.9.0 to v0.10.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.9.0...v0.10.0)

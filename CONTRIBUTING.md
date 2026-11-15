@@ -25,11 +25,14 @@ Keep each pull request focused.
 
 Preserve public contracts defined by the provider schemas and API SDK.
 
-Generated files say so in their opening comment.
+Maintainers write and review every file in this repository by hand.
+No code generator runs.
 
-Change the generator when a generated contract needs correction.
+Each service under `internal/services` holds its resource or data source, its schema and its tests.
+Write a new one in the style of the services around it.
+Keep every change additive, and never remove or rename a resource, data source or attribute.
 
-Hand-maintained provider logic lives under `internal/services/x_write`.
+The write actions live under `internal/services/x_write`.
 
 Regenerate Terraform Registry documentation after changing a schema.
 
