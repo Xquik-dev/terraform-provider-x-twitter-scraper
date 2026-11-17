@@ -191,9 +191,10 @@
     ]
   },
   {
-    "reason": "Creates, reads or revokes a connect link that a person opens to sign in. A link works like a password until it's used, so Terraform state must not hold it.",
+    "reason": "Creates, lists, reads or revokes the connect links a person opens to sign in. A link works like a password until it's used and expires after 30 minutes, so it's no resource for Terraform to manage, and Terraform state must not hold its token.",
     "operations": [
       "POST /api/v1/x/account-connection-links",
+      "GET /api/v1/x/account-connection-links",
       "GET /api/v1/x/account-connection-links/{id}",
       "DELETE /api/v1/x/account-connection-links/{id}"
     ]
