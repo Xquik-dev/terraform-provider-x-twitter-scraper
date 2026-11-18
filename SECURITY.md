@@ -10,6 +10,8 @@ Upgrade to the latest stable release before requesting backports.
 
 Use [GitHub private vulnerability reporting](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/security/advisories/new).
 
+Email [support@xquik.com](mailto:support@xquik.com) with the subject `Security report` when private reporting is unavailable.
+
 Never publish exploit details in an issue or discussion.
 
 Include these details.
@@ -21,8 +23,6 @@ Include these details.
 - Suggested fix, when available
 
 Remove API keys, bearer tokens, account identifiers, and personal data.
-
-Email [security@xquik.com](mailto:security@xquik.com) if private reporting fails.
 
 ## Response process
 
