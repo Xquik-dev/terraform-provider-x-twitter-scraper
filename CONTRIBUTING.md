@@ -176,12 +176,16 @@ from a clean `main` that matches `origin/main`, and it takes these steps.
 1. Reads the version from `.release-please-manifest.json`
 2. Stops when tag `v<version>` is on GitHub, the GitHub release is published,
    or the Terraform Registry already lists the version
-3. Runs `bin/check-local` and the dependency audit
+3. Stops unless the `xquik-local-checks` commit status passed on the `main`
+   commit, then runs the dependency audit
 4. Builds the zips and SHA256SUMS with GoReleaser and checks them against
    what the registry reads
 5. Signs SHA256SUMS with the provider's GPG key
 6. Uploads the assets to a draft release and checks them there
 7. Pushes the tag and publishes the release with notes from `CHANGELOG.md`
+
+Run `bin/check-local` on a Linux machine first so the `main` commit has the
+`xquik-local-checks` status.
 
 The GPG passphrase lives in the macOS Keychain. Set
 `RELEASE_SIGNING_KEYCHAIN_SERVICE` to the name of that Keychain item. The
@@ -190,8 +194,8 @@ through a pipe, never through a command line argument.
 
 Run `bin/release-local --dry-run` to build every asset and print the version,
 the assets with sizes and checksums, the registry manifest and the release
-notes. A dry run needs no Keychain variable, posts no commit status and stops
-before signing, the tag and the release.
+notes. A dry run needs no Keychain variable, goes on without a passing
+`xquik-local-checks` status and stops before signing, the tag and the release.
 
 The Terraform Registry reads the signed release from GitHub.
 

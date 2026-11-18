@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.10.0 (2026-11-08)
+## 0.10.0 (2026-11-18)
 
 [Full changelog from v0.9.0 to v0.10.0](https://github.com/Xquik-dev/terraform-provider-x-twitter-scraper/compare/v0.9.0...v0.10.0)
 

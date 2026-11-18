@@ -13,6 +13,7 @@ readonly repository="Xquik-dev/terraform-provider-x-twitter-scraper"
 readonly project="terraform-provider-x-twitter-scraper"
 readonly registry_versions_url="https://registry.terraform.io/v1/providers/Xquik-dev/x-twitter-scraper/versions"
 readonly gpg_key_id="4900C25E85324F28"
+readonly status_context="xquik-local-checks"
 readonly version_pattern='^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z][0-9A-Za-z.-]*)?$'
 
 dry_run=false
@@ -171,11 +172,22 @@ else
     refuse "The Keychain has no item named by RELEASE_SIGNING_KEYCHAIN_SERVICE. Add the GPG passphrase there, then rerun."
 fi
 
-step "Running bin/check-local"
-if [[ "$dry_run" == true ]]; then
-  bin/check-local --no-status
+step "Checking the $status_context commit status of $commit"
+checks_state="$(
+  gh api "repos/$repository/commits/$commit/status" |
+    jq -r --arg context "$status_context" 'first(.statuses[] | select(.context == $context) | .state)'
+)" || refuse "GitHub did not return the commit status of $commit. Check the network and gh auth status, then rerun."
+if [[ -z "$checks_state" ]]; then
+  checks_found="Commit $commit has no $status_context status."
 else
-  bin/check-local
+  checks_found="The $status_context status of $commit is $checks_state."
+fi
+if [[ "$checks_state" == success ]]; then
+  echo "$checks_found"
+elif [[ "$dry_run" == true ]]; then
+  echo "$checks_found A real release would stop here."
+else
+  refuse "$checks_found Run bin/check-local on a clean checkout of $commit, then rerun."
 fi
 
 step "Auditing dependencies with govulncheck"
