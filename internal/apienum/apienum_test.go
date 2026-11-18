@@ -2,13 +2,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package apienum_test
+package apienum
 
-import (
-	"testing"
-
-	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/apienum"
-)
+import "testing"
 
 func TestDescribeListsEveryValue(t *testing.T) {
 	t.Parallel()
@@ -20,7 +16,7 @@ func TestDescribeListsEveryValue(t *testing.T) {
 		{[]string{"post.edited", "post.deleted"}, `Available values are "post.edited" and "post.deleted".`},
 		{[]string{"active", "paused", "needs_attention"}, `Available values are "active", "paused" and "needs_attention".`},
 	} {
-		if got := apienum.Describe(test.values); got != test.want {
+		if got := Describe(test.values); got != test.want {
 			t.Errorf("Describe(%q) = %q, want %q", test.values, got, test.want)
 		}
 	}
