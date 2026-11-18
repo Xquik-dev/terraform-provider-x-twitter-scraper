@@ -19,10 +19,6 @@ prepare_release() {
   local version="${1:-1.2.3}"
   copy_file bin/release-local
   copy_file scripts/release-listing
-  stub bin/check-local <<'EOF'
-#!/usr/bin/env bash
-echo "check-local${*:+ $*}" >>"$FAKE_LOGS/order"
-EOF
   stub scripts/audit <<'EOF'
 #!/usr/bin/env bash
 echo "audit" >>"$FAKE_LOGS/order"
@@ -174,6 +170,15 @@ case "$1 $2" in
       exit 1
     fi
     ;;
+  "api repos/Xquik-dev/terraform-provider-x-twitter-scraper/commits/"*"/status")
+    if [ -n "${FAKE_STATUS_LOOKUP_FAILS:-}" ]; then
+      echo "gh: Bad Gateway (HTTP 502)" >&2
+      exit 1
+    fi
+    status="${FAKE_COMMIT_STATUS:-}"
+    [ -n "$status" ] || status='{"state": "success", "statuses": [{"context": "xquik-local-checks", "state": "success"}]}'
+    echo "$status"
+    ;;
   "auth status") exit 0 ;;
   "api --paginate") echo "${FAKE_RELEASES:-[[]]}" ;;
   "release create") : >"$FAKE_LOGS/draft" ;;
@@ -230,6 +235,10 @@ gh api --paginate --slurp repos/$repository/releases?per_page=100
 curl -fsS --max-time 30 --proto =https https://registry.terraform.io/v1/providers/Xquik-dev/x-twitter-scraper/versions
 gpg --batch --with-colons --list-secret-keys 4900C25E85324F28"
 
+status_lookup() {
+  echo "gh api repos/$repository/commits/$(sandbox_git rev-parse HEAD)/status"
+}
+
 test_a_dry_run_builds_every_asset_prints_the_listing_and_releases_nothing() {
   local digest
   prepare_release
@@ -240,6 +249,7 @@ test_a_dry_run_builds_every_asset_prints_the_listing_and_releases_nothing() {
   assert_equal 0 "$run_status" "the exit code"
   digest="$(cd "$sandbox_repo/dist" && shasum -a 256 "${project}_1.2.3_linux_amd64.zip" | cut -d ' ' -f 1)"
   assert_contains "$run_stdout" "GPG key 4900C25E85324F28 is in the keyring. A dry run never signs." "stdout"
+  assert_contains "$run_stdout" "The xquik-local-checks status of $(sandbox_git rev-parse HEAD) is success." "stdout"
   assert_contains "$run_stdout" "Version  1.2.3
 Tag  v1.2.3
 Registry address  registry.terraform.io/Xquik-dev/x-twitter-scraper
@@ -261,7 +271,7 @@ GitHub release notes from CHANGELOG.md
   * sign the checksums from a local runner" "stdout"
   assert_ends_with "$run_stdout" "Dry run finished. Nothing was published, tagged or released." "stdout"
   assert_equal "$lookups
-check-local --no-status
+$(status_lookup)
 audit
 goreleaser release --clean --skip=publish,validate,sign with GORELEASER_CURRENT_TAG=v1.2.3
 check-release-debug-info" "$(order_without_paths)" "the steps"
@@ -373,7 +383,7 @@ test_a_release_signs_through_a_pipe_uploads_then_tags_and_publishes() {
   assert_ends_with "$run_stdout" "Released v1.2.3 at https://github.com/$repository/releases/tag/v1.2.3. The Terraform Registry reads it from GitHub." "stdout"
   assert_equal "$lookups
 security find-generic-password -s $test_service
-check-local
+$(status_lookup)
 audit
 goreleaser release --clean --skip=publish,validate,sign with GORELEASER_CURRENT_TAG=v1.2.3
 check-release-debug-info
@@ -408,7 +418,7 @@ test_a_release_reuses_an_existing_draft() {
   assert_contains "$(log_of order)" "gh release upload v1.2.3" "the steps"
 }
 
-test_a_missing_signing_key_stops_a_real_run_before_the_checks() {
+test_a_missing_signing_key_stops_a_real_run_before_the_check_status() {
   prepare_release
   run_env=("RELEASE_SIGNING_KEYCHAIN_SERVICE=$test_service" "FAKE_NO_KEY=1")
 
@@ -416,10 +426,10 @@ test_a_missing_signing_key_stops_a_real_run_before_the_checks() {
 
   assert_equal 1 "$run_status" "the exit code"
   assert_equal "GPG secret key 4900C25E85324F28 is not in the keyring. Import it, then rerun." "$run_stderr" "stderr"
-  assert_not_contains "$(log_of order)" "check-local" "the steps"
+  assert_not_contains "$(log_of order)" "$(status_lookup)" "the steps"
 }
 
-test_a_missing_keychain_item_stops_a_real_run_before_the_checks() {
+test_a_missing_keychain_item_stops_a_real_run_before_the_check_status() {
   prepare_release
   run_env=("RELEASE_SIGNING_KEYCHAIN_SERVICE=$test_service" "FAKE_NO_KEYCHAIN_ITEM=1")
 
@@ -427,7 +437,7 @@ test_a_missing_keychain_item_stops_a_real_run_before_the_checks() {
 
   assert_equal 1 "$run_status" "the exit code"
   assert_equal "The Keychain has no item named by RELEASE_SIGNING_KEYCHAIN_SERVICE. Add the GPG passphrase there, then rerun." "$run_stderr" "stderr"
-  assert_not_contains "$(log_of order)" "check-local" "the steps"
+  assert_not_contains "$(log_of order)" "$(status_lookup)" "the steps"
 }
 
 test_a_signature_that_does_not_verify_stops_before_the_tag_and_the_upload() {
@@ -453,7 +463,7 @@ test_an_armored_signature_stops_before_the_tag_and_the_upload() {
   assert_not_contains "$(log_of order)" "gh release" "the steps"
 }
 
-test_a_published_release_stops_a_real_run_before_the_checks() {
+test_a_published_release_stops_a_real_run_before_the_check_status() {
   prepare_release
   run_env=("RELEASE_SIGNING_KEYCHAIN_SERVICE=$test_service" "FAKE_PUBLISHED=1")
 
@@ -461,10 +471,10 @@ test_a_published_release_stops_a_real_run_before_the_checks() {
 
   assert_equal 1 "$run_status" "the exit code"
   assert_equal "GitHub release v1.2.3 is already published. Bump the version, then rerun." "$run_stderr" "stderr"
-  assert_not_contains "$(log_of order)" "check-local" "the steps"
+  assert_not_contains "$(log_of order)" "$(status_lookup)" "the steps"
 }
 
-test_a_version_the_registry_has_stops_a_real_run_before_the_checks() {
+test_a_version_the_registry_has_stops_a_real_run_before_the_check_status() {
   prepare_release
   run_env=("RELEASE_SIGNING_KEYCHAIN_SERVICE=$test_service" 'FAKE_REGISTRY_VERSIONS={"version": "1.2.3"}')
 
@@ -472,7 +482,7 @@ test_a_version_the_registry_has_stops_a_real_run_before_the_checks() {
 
   assert_equal 1 "$run_status" "the exit code"
   assert_equal "The Terraform Registry already has 1.2.3. Bump the version, then rerun." "$run_stderr" "stderr"
-  assert_not_contains "$(log_of order)" "check-local" "the steps"
+  assert_not_contains "$(log_of order)" "$(status_lookup)" "the steps"
 }
 
 test_a_registry_that_does_not_answer_stops_the_run() {
@@ -485,7 +495,7 @@ test_a_registry_that_does_not_answer_stops_the_run() {
   assert_equal "The Terraform Registry did not answer. Check the network, then rerun." "$run_stderr" "stderr"
 }
 
-test_a_failed_release_lookup_stops_the_run_before_the_checks() {
+test_a_failed_release_lookup_stops_the_run_before_the_check_status() {
   prepare_release
   run_env=("FAKE_TAG_LOOKUP_FAILS=1")
 
@@ -493,7 +503,70 @@ test_a_failed_release_lookup_stops_the_run_before_the_checks() {
 
   assert_equal 1 "$run_status" "the exit code"
   assert_equal "GitHub did not answer for release v1.2.3. Check the network and gh auth status, then rerun." "$run_stderr" "stderr"
-  assert_not_contains "$(log_of order)" "check-local" "the steps"
+  assert_not_contains "$(log_of order)" "$(status_lookup)" "the steps"
+}
+
+test_a_failing_check_status_stops_a_real_run_before_the_audit_and_the_build() {
+  local commit
+  prepare_release
+  commit="$(sandbox_git rev-parse HEAD)"
+  run_env=("RELEASE_SIGNING_KEYCHAIN_SERVICE=$test_service" 'FAKE_COMMIT_STATUS={"state": "failure", "statuses": [{"context": "xquik-local-checks", "state": "failure"}]}')
+
+  run_in_repo bin/release-local
+
+  assert_equal 1 "$run_status" "the exit code"
+  assert_equal "The xquik-local-checks status of $commit is failure. Run bin/check-local on a clean checkout of $commit, then rerun." "$run_stderr" "stderr"
+  assert_equal "$lookups
+security find-generic-password -s $test_service
+$(status_lookup)" "$(order_without_paths)" "the steps"
+  assert_equal "" "$(sandbox_git tag)" "the local tags"
+}
+
+test_a_missing_check_status_stops_a_real_run_before_the_audit_and_the_build() {
+  local commit
+  prepare_release
+  commit="$(sandbox_git rev-parse HEAD)"
+  run_env=("RELEASE_SIGNING_KEYCHAIN_SERVICE=$test_service" 'FAKE_COMMIT_STATUS={"state": "success", "statuses": [{"context": "ci/other", "state": "success"}]}')
+
+  run_in_repo bin/release-local
+
+  assert_equal 1 "$run_status" "the exit code"
+  assert_equal "Commit $commit has no xquik-local-checks status. Run bin/check-local on a clean checkout of $commit, then rerun." "$run_stderr" "stderr"
+  assert_equal "$lookups
+security find-generic-password -s $test_service
+$(status_lookup)" "$(order_without_paths)" "the steps"
+  assert_equal "" "$(sandbox_git tag)" "the local tags"
+}
+
+test_a_dry_run_reports_a_failing_check_status_and_goes_on_to_build() {
+  local commit
+  prepare_release
+  commit="$(sandbox_git rev-parse HEAD)"
+  run_env=('FAKE_COMMIT_STATUS={"state": "failure", "statuses": [{"context": "xquik-local-checks", "state": "failure"}]}')
+
+  run_in_repo bin/release-local --dry-run
+
+  assert_equal "" "$run_stderr" "stderr"
+  assert_equal 0 "$run_status" "the exit code"
+  assert_contains "$run_stdout" "The xquik-local-checks status of $commit is failure. A real release would stop here." "stdout"
+  assert_contains "$(order_without_paths)" "$(status_lookup)
+audit
+goreleaser release --clean --skip=publish,validate,sign with GORELEASER_CURRENT_TAG=v1.2.3" "the steps"
+  assert_ends_with "$run_stdout" "Dry run finished. Nothing was published, tagged or released." "stdout"
+}
+
+test_a_failed_check_status_lookup_stops_the_run() {
+  local commit
+  prepare_release
+  commit="$(sandbox_git rev-parse HEAD)"
+  run_env=("FAKE_STATUS_LOOKUP_FAILS=1")
+
+  run_in_repo bin/release-local --dry-run
+
+  assert_equal 1 "$run_status" "the exit code"
+  assert_equal "gh: Bad Gateway (HTTP 502)
+GitHub did not return the commit status of $commit. Check the network and gh auth status, then rerun." "$run_stderr" "stderr"
+  assert_not_contains "$(log_of order)" "audit" "the steps"
 }
 
 test_two_drafts_for_the_tag_stop_the_run() {
