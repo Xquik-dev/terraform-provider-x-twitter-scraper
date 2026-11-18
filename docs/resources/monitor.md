@@ -18,6 +18,7 @@ X account monitoring with 1-second checks
 ### Required
 
 - `event_types` (List of String) Array of event types to subscribe to.
+Available values are "tweet.new", "tweet.reply", "tweet.retweet", "tweet.quote", "tweet.media", "tweet.link", "tweet.poll", "tweet.mention", "tweet.hashtag", "tweet.longform", "profile.avatar.changed", "profile.banner.changed", "profile.name.changed", "profile.username.changed", "profile.bio.changed", "profile.location.changed", "profile.url.changed", "profile.verified.changed", "profile.protected.changed", "profile.pinned_tweet.changed", "profile.unavailable.changed", "tweet.deleted", "broadcast.started", "space.started", "following.added", "following.removed", "follower.added", "follower.removed", "profile.followers.changed" and "profile.following.changed".
 - `username` (String) X username (without @)
 
 ### Optional

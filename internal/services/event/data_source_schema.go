@@ -6,7 +6,9 @@ package event
 
 import (
 	"context"
+	"slices"
 
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/apienum"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
@@ -19,6 +21,7 @@ import (
 var _ datasource.DataSourceWithConfigValidators = (*EventDataSource)(nil)
 
 func DataSourceSchema(ctx context.Context) schema.Schema {
+	eventTypes := slices.Concat(apienum.EventType, apienum.PostEventType)
 	return schema.Schema{
 		Description: "Activity events from monitored accounts",
 		Attributes: map[string]schema.Attribute{
@@ -33,17 +36,10 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				CustomType: timetypes.RFC3339Type{},
 			},
 			"type": schema.StringAttribute{
-				Description: `Available values are "tweet.new", "tweet.reply", "tweet.retweet", "tweet.quote", "follower.gained" and "follower.lost".`,
+				Description: apienum.Describe(eventTypes),
 				Computed:    true,
 				Validators: []validator.String{
-					stringvalidator.OneOfCaseInsensitive(
-						"tweet.new",
-						"tweet.reply",
-						"tweet.retweet",
-						"tweet.quote",
-						"follower.gained",
-						"follower.lost",
-					),
+					stringvalidator.OneOfCaseInsensitive(eventTypes...),
 				},
 			},
 			"username": schema.StringAttribute{

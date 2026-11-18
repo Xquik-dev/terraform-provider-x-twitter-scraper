@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/apicoverage"
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/apienum"
 )
 
 func main() {
@@ -18,5 +19,5 @@ func main() {
 		fmt.Fprintln(os.Stderr, "The coverage check could not read the current folder. Run it from the repository root.")
 		os.Exit(1)
 	}
-	os.Exit(apicoverage.Run(os.Getenv(apicoverage.SpecVariable), root, http.DefaultClient, os.Stdout, os.Stderr))
+	os.Exit(apicoverage.Run(os.Getenv(apicoverage.SpecVariable), root, apienum.Spec, http.DefaultClient, os.Stdout, os.Stderr))
 }

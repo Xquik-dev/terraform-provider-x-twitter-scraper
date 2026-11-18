@@ -149,7 +149,7 @@ func TestEmptySourceUsesPublicSpec(t *testing.T) {
 		return nil, errors.New("offline")
 	})}
 	var out, failures bytes.Buffer
-	code := Run("", writeProvider(t, docsExclusion), client, &out, &failures)
+	code := Run("", writeProvider(t, docsExclusion), nil, client, &out, &failures)
 	if code != 1 || requested != "https://xquik.com/openapi.json" || !strings.HasPrefix(failures.String(), "Could not read the API spec from https://xquik.com/openapi.json.") {
 		t.Fatalf("code = %d, requested = %q, failures = %q", code, requested, failures.String())
 	}

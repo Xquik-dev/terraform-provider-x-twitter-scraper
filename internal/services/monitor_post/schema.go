@@ -11,6 +11,7 @@ import (
 	"strings"
 	"unicode/utf16"
 
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/apienum"
 	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
@@ -56,7 +57,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"event_types": schema.ListAttribute{
-				Description: "Post event types to send. Without it, a monitor sends new replies, new quotes, like & retweet changes, edits & deletion.",
+				Description: "Post event types to send. Without it, a monitor sends new replies, new quotes, like & retweet changes, edits & deletion.\n" + apienum.Describe(apienum.PostEventType),
 				Optional:    true,
 				Computed:    true,
 				CustomType:  customfield.NewListType[types.String](ctx),
@@ -64,18 +65,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 					listvalidator.SizeBetween(1, 10),
 					listvalidator.UniqueValues(),
 					listvalidator.ValueStringsAre(
-						stringvalidator.OneOf(
-							"post.reply.new",
-							"post.quote.new",
-							"post.likes.changed",
-							"post.retweets.changed",
-							"post.replies.changed",
-							"post.quotes.changed",
-							"post.bookmarks.changed",
-							"post.views.changed",
-							"post.edited",
-							"post.deleted",
-						),
+						stringvalidator.OneOf(apienum.PostEventType...),
 					),
 				},
 				ElementType:   types.StringType,

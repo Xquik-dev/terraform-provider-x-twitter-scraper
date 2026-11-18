@@ -381,7 +381,7 @@ func writeSpec(t *testing.T, content string) string {
 func runCheck(t *testing.T, root, source string) (int, string, string) {
 	t.Helper()
 	var out, failures bytes.Buffer
-	code := Run(source, root, http.DefaultClient, &out, &failures)
+	code := Run(source, root, nil, http.DefaultClient, &out, &failures)
 	return code, out.String(), failures.String()
 }
 

@@ -55,9 +55,14 @@ func (p pathItem) methods() map[string]*specOperation {
 	}
 }
 
+type components struct {
+	Schemas map[string]json.RawMessage `json:"schemas"`
+}
+
 type spec struct {
-	Servers []server            `json:"servers"`
-	Paths   map[string]pathItem `json:"paths"`
+	Servers    []server            `json:"servers"`
+	Paths      map[string]pathItem `json:"paths"`
+	Components components          `json:"components"`
 }
 
 type exclusionGroup struct {
@@ -112,15 +117,19 @@ func fetchSpec(source string, client *http.Client) ([]byte, error) {
 	return io.ReadAll(response.Body)
 }
 
-func specOperations(source string, client *http.Client) (operations, error) {
+func readSpec(source string, client *http.Client) (spec, error) {
 	data, err := fetchSpec(source, client)
 	if err != nil {
-		return nil, unreadableSpec(source)
+		return spec{}, unreadableSpec(source)
 	}
 	var document spec
 	if err := json.Unmarshal(data, &document); err != nil || len(document.Paths) == 0 {
-		return nil, unreadableSpec(source)
+		return spec{}, unreadableSpec(source)
 	}
+	return document, nil
+}
+
+func specOperations(document spec, source string) (operations, error) {
 	found := operations{}
 	for key, item := range document.Paths {
 		for method, op := range item.methods() {
