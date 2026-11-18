@@ -154,6 +154,16 @@ a space and the absolute path from the spec. List each operation once.
 ]
 ```
 
+The check also compares the `EventType` and `PostEventType` enums in the
+spec with `internal/apienum/enums.go`. The `monitor`, `webhook`, `event` and
+`monitor_post` schemas validate event types against that file. The check
+fails on a value that only 1 side has and on an enum the spec lacks.
+
+Run `go generate ./internal/apienum` to rewrite `enums.go` from the spec, then
+run `./scripts/generate-docs`. The generator reads the spec from the same place
+as the check. To track another enum, add its name to the `//go:generate` line
+in `internal/apienum/apienum.go`.
+
 ## Release
 
 A release is the annotated tag `v<version>` plus a GitHub release that holds

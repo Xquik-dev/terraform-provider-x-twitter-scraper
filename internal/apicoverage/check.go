@@ -7,6 +7,7 @@
 package apicoverage
 
 import (
+	"cmp"
 	"fmt"
 	"io"
 	"net/http"
@@ -26,26 +27,30 @@ const (
 	missingNextStep   = "Add a resource or data source for each operation above, or list it in excluded-operations.json with a reason."
 )
 
-func check(root, source string, client *http.Client) ([]string, string, error) {
+func check(root, source string, enums map[string][]string, client *http.Client) ([]string, []string, error) {
 	excluded, err := readExclusions(os.DirFS(root))
 	if err != nil {
-		return nil, "", err
+		return nil, nil, err
 	}
-	api, err := specOperations(source, client)
+	document, err := readSpec(source, client)
 	if err != nil {
-		return nil, "", err
+		return nil, nil, err
+	}
+	api, err := specOperations(document, source)
+	if err != nil {
+		return nil, nil, err
 	}
 	directory, err := sdkDir(root)
 	if err != nil {
-		return nil, "", err
+		return nil, nil, err
 	}
 	index, err := readSDK(os.DirFS(directory))
 	if err != nil {
-		return nil, "", err
+		return nil, nil, err
 	}
 	requests, problems, err := providerRequests(root, index)
 	if err != nil || len(problems) > 0 {
-		return problems, "", err
+		return problems, nil, err
 	}
 	implemented := operations{}
 	for _, found := range requests {
@@ -72,26 +77,25 @@ func check(root, source string, client *http.Client) ([]string, string, error) {
 	if len(missing) > 0 {
 		missing = append(missing, missingNextStep)
 	}
-	if failures := append(missing, stale...); len(failures) > 0 {
-		return failures, "", nil
+	enumFailures, enumSummaries := compareEnums(document, enums)
+	if failures := slices.Concat(missing, stale, enumFailures); len(failures) > 0 {
+		return failures, nil, nil
 	}
 	covered := len(api) - len(excluded)
-	return nil, fmt.Sprintf("The provider covers %d of %d API operations, and %s lists the other %d.", covered, len(api), exclusionFile, len(excluded)), nil
+	summary := fmt.Sprintf("The provider covers %d of %d API operations, and %s lists the other %d.", covered, len(api), exclusionFile, len(excluded))
+	return nil, append([]string{summary}, enumSummaries...), nil
 }
 
-func sentence(err error) string {
+func Sentence(err error) string {
 	text := err.Error()
 	first, size := utf8.DecodeRuneInString(text)
 	return string(unicode.ToUpper(first)) + text[size:] + "."
 }
 
-func Run(source, root string, client *http.Client, out, failures io.Writer) int {
-	if source == "" {
-		source = defaultSpecSource
-	}
-	lines, summary, err := check(root, source, client)
+func Run(source, root string, enums map[string][]string, client *http.Client, out, failures io.Writer) int {
+	lines, summaries, err := check(root, cmp.Or(source, defaultSpecSource), enums, client)
 	if err != nil {
-		lines = append(lines, sentence(err))
+		lines = append(lines, Sentence(err))
 	}
 	for _, line := range lines {
 		fmt.Fprintln(failures, line)
@@ -99,6 +103,8 @@ func Run(source, root string, client *http.Client, out, failures io.Writer) int 
 	if len(lines) > 0 {
 		return 1
 	}
-	fmt.Fprintln(out, summary)
+	for _, line := range summaries {
+		fmt.Fprintln(out, line)
+	}
 	return 0
 }

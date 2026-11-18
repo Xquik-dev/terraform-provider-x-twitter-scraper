@@ -10,6 +10,12 @@
 * `is_active = false` on a new `monitor_post` creates it paused. A paused monitor reads nothing & costs nothing until you set it to true.
 * The new `x_tweet_bookmark`, `x_tweet_unbookmark`, `x_user_block`, `x_user_unblock`, `x_user_mute` and `x_user_unmute` resources bookmark a post, block or mute an account, and undo each one.
 
+### Bug Fixes
+
+* The `monitor` resource and data source take all 30 account event types the API lists, up from 21. `follower.added`, `follower.removed`, `following.added`, `following.removed`, `profile.followers.changed`, `profile.following.changed`, `tweet.deleted`, `broadcast.started` and `space.started` now pass validation.
+* The `webhook` resource takes the 30 account event types and the 10 `post.*` event types, up from 21.
+* The `event` data source lists the 40 event types the API sends. `follower.added` and `follower.removed` replace `follower.gained` and `follower.lost`, which the API dropped.
+
 ### Chores
 
 * Build with Go SDK 0.23.0.

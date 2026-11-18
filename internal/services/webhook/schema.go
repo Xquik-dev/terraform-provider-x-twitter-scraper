@@ -6,7 +6,9 @@ package webhook
 
 import (
 	"context"
+	"slices"
 
+	"github.com/Xquik-dev/terraform-provider-x-twitter-scraper/internal/apienum"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -21,6 +23,7 @@ import (
 var _ resource.ResourceWithConfigValidators = (*WebhookResource)(nil)
 
 func ResourceSchema(ctx context.Context) schema.Schema {
+	eventTypes := slices.Concat(apienum.EventType, apienum.PostEventType)
 	return schema.Schema{
 		MarkdownDescription: "Webhook endpoint management and delivery",
 		Attributes: map[string]schema.Attribute{
@@ -33,33 +36,11 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"event_types": schema.ListAttribute{
-				Description: "Array of event types to subscribe to.",
+				Description: "Array of event types to subscribe to.\n" + apienum.Describe(eventTypes),
 				Required:    true,
 				Validators: []validator.List{
 					listvalidator.ValueStringsAre(
-						stringvalidator.OneOfCaseInsensitive(
-							"tweet.new",
-							"tweet.reply",
-							"tweet.retweet",
-							"tweet.quote",
-							"tweet.media",
-							"tweet.link",
-							"tweet.poll",
-							"tweet.mention",
-							"tweet.hashtag",
-							"tweet.longform",
-							"profile.avatar.changed",
-							"profile.banner.changed",
-							"profile.name.changed",
-							"profile.username.changed",
-							"profile.bio.changed",
-							"profile.location.changed",
-							"profile.url.changed",
-							"profile.verified.changed",
-							"profile.protected.changed",
-							"profile.pinned_tweet.changed",
-							"profile.unavailable.changed",
-						),
+						stringvalidator.OneOfCaseInsensitive(eventTypes...),
 					),
 				},
 				ElementType: types.StringType,
